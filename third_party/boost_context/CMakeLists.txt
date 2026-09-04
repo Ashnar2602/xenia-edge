@@ -62,14 +62,7 @@ endif()
 
 enable_language(${_bc_asm_lang})
 
-if(_bc_asm_lang STREQUAL "ASM_MASM")
-  # ml64 prints " Assembling: <file>" (and its diagnostics) to stdout, with no
-  # flag to silence just the progress line. Redirect stdout to NUL for a clean
-  # build log. ninja still fails the build on a nonzero exit, so a break is
-  # never silent -- only ml64's own error text would be hidden, and the asm is
-  # frozen upstream code. Drop the redirect temporarily if you ever debug it.
-  string(APPEND CMAKE_ASM_MASM_COMPILE_OBJECT " > nul")
-endif()
+# ml64 prints " Assembling: <file>" to stdout, but redirection > nul breaks Ninja on Windows.
 
 add_library(boost_context STATIC
   "${_bc_asm_dir}/make_${_bc_variant}"
@@ -86,3 +79,6 @@ if(MSVC)
     $<$<COMPILE_LANGUAGE:ASM_MASM>:/nologo>
   )
 endif()
+
+set_target_properties(boost_context PROPERTIES LINKER_LANGUAGE CXX)
+
