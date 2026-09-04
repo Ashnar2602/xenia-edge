@@ -25,6 +25,11 @@ namespace xe {
 namespace ui {
 namespace d3d12 {
 
+namespace neural {
+class NeuralRenderingManager;
+}  // namespace neural
+
+
 class D3D12UIDrawContext final : public UIDrawContext {
  public:
   D3D12UIDrawContext(Presenter& presenter, uint32_t render_target_width,
@@ -285,8 +290,8 @@ class D3D12Presenter final : public Presenter {
   };
 
   explicit D3D12Presenter(HostGpuLossCallback host_gpu_loss_callback,
-                          const D3D12Provider& provider)
-      : Presenter(host_gpu_loss_callback), provider_(provider) {}
+                          const D3D12Provider& provider);
+
 
   bool dxgi_supports_tearing() const { return dxgi_supports_tearing_; }
 
@@ -334,6 +339,8 @@ class D3D12Presenter final : public Presenter {
   // (ConnectOrReconnectPaintingToSurfaceFromUIThread,
   // DisconnectPaintingFromSurfaceFromUIThreadImpl) by the thread doing it, as
   // well as by presenter initialization and shutdown.
+  std::unique_ptr<neural::NeuralRenderingManager> neural_manager_;
+
   PaintContext paint_context_;
 };
 

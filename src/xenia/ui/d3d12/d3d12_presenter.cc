@@ -21,12 +21,17 @@
 #include "xenia/ui/d3d12/d3d12_provider.h"
 #include "xenia/ui/d3d12/d3d12_util.h"
 #include "xenia/ui/surface_win.h"
+#include "xenia/ui/d3d12/neural/neural_rendering_manager.h"
 
 DEFINE_bool(
     d3d12_allow_variable_refresh_rate_and_tearing, true,
     "In fullscreen, allow using variable refresh rate on displays supporting "
     "it. On displays not supporting VRR, screen tearing may occur in certain "
     "cases.",
+    "D3D12");
+DEFINE_bool(
+    d3d12_neural_rendering, false,
+    "Enable DLSS 5 Neural Rendering post-processing hook (1:1).",
     "D3D12");
 DECLARE_bool(d3d12_debug);
 
@@ -47,6 +52,10 @@ namespace shaders {
 #include "xenia/ui/shaders/bytecode/d3d12_dxil/guest_output_ffx_fsr_rcas_ps.h"
 #include "xenia/ui/shaders/bytecode/d3d12_dxil/guest_output_triangle_strip_rect_vs.h"
 }  // namespace shaders
+
+D3D12Presenter::D3D12Presenter(HostGpuLossCallback host_gpu_loss_callback,
+                               const D3D12Provider& provider)
+    : Presenter(host_gpu_loss_callback), provider_(provider) {}
 
 D3D12Presenter::~D3D12Presenter() {
   // Await completion of the usage of everything before destroying anything,
@@ -520,6 +529,15 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
   }
 
   if (guest_output_resource) {
+    if (cvars::d3d12_neural_rendering && neural_manager_) {
+      ID3D12Resource* processed_resource = neural_manager_->Process(
+          command_list, guest_output_resource.Get());
+      if (processed_resource &&
+          processed_resource != guest_output_resource.Get()) {
+        guest_output_resource = processed_resource;
+      }
+    }
+
     GuestOutputPaintFlow guest_output_flow = GetGuestOutputPaintFlow(
         guest_output_properties, paint_context_.swap_chain_width,
         paint_context_.swap_chain_height, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION,
@@ -1495,6 +1513,9 @@ bool D3D12Presenter::InitializeSurfaceIndependent() {
   if (!ui_completion_timeline_) {
     return false;
   }
+
+  neural_manager_ = neural::NeuralRenderingManager::Create(
+      device, provider_.GetDirectQueue());
 
   return InitializeCommonSurfaceIndependent();
 }
