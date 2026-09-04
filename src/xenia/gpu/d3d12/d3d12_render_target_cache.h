@@ -140,6 +140,49 @@ class D3D12RenderTargetCache final : public RenderTargetCache {
   static DXGI_FORMAT GetDepthSRVStencilDXGIFormat(
       xenos::DepthRenderTargetFormat format);
 
+  enum class DepthDirectionConfidence : uint32_t {
+    kUnknown = 0,
+    kHeuristic = 1,
+    kKnown = 2,
+  };
+
+  struct DepthCandidateInfo {
+    ID3D12Resource* resource = nullptr;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    DXGI_FORMAT dxgi_format = DXGI_FORMAT_UNKNOWN;
+    xenos::DepthRenderTargetFormat format =
+        xenos::DepthRenderTargetFormat::kD24S8;
+    uint32_t sample_count = 1;
+    bool is_float = false;
+
+    // Viewport / subrect
+    uint32_t vp_x = 0;
+    uint32_t vp_y = 0;
+    uint32_t vp_width = 0;
+    uint32_t vp_height = 0;
+    uint32_t color_width = 0;
+    uint32_t color_height = 0;
+    ID3D12Resource* color_resource = nullptr;
+
+    // Depth bounds and direction
+    float depth_near = 0.0f;
+    float depth_far = 1.0f;
+    bool inverted = false;
+    DepthDirectionConfidence confidence = DepthDirectionConfidence::kUnknown;
+
+    // Heuristic scoring & ambiguity
+    float score = 0.0f;
+    float second_best_score = 0.0f;
+    float score_margin = 0.0f;
+    std::string reason;
+    bool valid = false;
+    uint32_t explicit_sample = 0xFFFFFFFF;
+  };
+
+  DepthCandidateInfo FindBestDepthCandidate(uint32_t guest_width,
+                                            uint32_t guest_height);
+
  protected:
   bool IsGammaFormatHostStorageSeparate() const override;
 
@@ -638,6 +681,28 @@ class D3D12RenderTargetCache final : public RenderTargetCache {
   ID3D12PipelineState* resolve_rov_clear_32bpp_pipeline_ = nullptr;
   // Clearing 64bpp color.
   ID3D12PipelineState* resolve_rov_clear_64bpp_pipeline_ = nullptr;
+
+  struct DepthUsageStats {
+    uint32_t draw_count = 0;
+    uint32_t last_draw_sequence = 0;
+    bool has_z_writes = false;
+    xenos::CompareFunction last_zfunc = xenos::CompareFunction::kNever;
+    uint32_t last_color_width = 0;
+    uint32_t last_color_height = 0;
+    ID3D12Resource* last_color_resource = nullptr;
+
+    // Viewport & Z transformation from registers at draw time
+    uint32_t vp_x = 0;
+    uint32_t vp_y = 0;
+    uint32_t vp_width = 0;
+    uint32_t vp_height = 0;
+    float depth_near = 0.0f;
+    float depth_far = 1.0f;
+    bool z_params_valid = false;
+    uint32_t explicit_sample = 0xFFFFFFFF;
+  };
+  std::unordered_map<ID3D12Resource*, DepthUsageStats> frame_depth_stats_;
+  uint32_t current_frame_draw_sequence_ = 0;
 };
 
 }  // namespace d3d12

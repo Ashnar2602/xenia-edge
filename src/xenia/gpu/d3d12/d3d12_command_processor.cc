@@ -2134,11 +2134,41 @@ void D3D12CommandProcessor::IssueSwap(uint32_t frontbuffer_ptr,
                             apply_gamma_descriptor_gamma_ramp.first);
         }
 
+        auto& d3d12_context = static_cast<
+            ui::d3d12::D3D12Presenter::D3D12GuestOutputRefreshContext&>(
+            context);
         ID3D12Resource* guest_output_resource =
-            static_cast<
-                ui::d3d12::D3D12Presenter::D3D12GuestOutputRefreshContext&>(
-                context)
-                .resource_uav_capable();
+            d3d12_context.resource_uav_capable();
+
+        if (render_target_cache_) {
+          auto depth_info = render_target_cache_->FindBestDepthCandidate(
+              uint32_t(swap_texture_desc.Width),
+              uint32_t(swap_texture_desc.Height));
+          ui::d3d12::D3D12Presenter::GuestDepthCandidate cand;
+          cand.resource = depth_info.resource;
+          cand.width = depth_info.width;
+          cand.height = depth_info.height;
+          cand.dxgi_format = depth_info.dxgi_format;
+          cand.sample_count = depth_info.sample_count;
+          cand.is_float = depth_info.is_float;
+          cand.inverted = depth_info.inverted;
+          cand.depth_near = depth_info.depth_near;
+          cand.depth_far = depth_info.depth_far;
+          cand.confidence = static_cast<uint32_t>(depth_info.confidence);
+          cand.vp_x = depth_info.vp_x;
+          cand.vp_y = depth_info.vp_y;
+          cand.vp_width = depth_info.vp_width;
+          cand.vp_height = depth_info.vp_height;
+          cand.color_width = depth_info.color_width;
+          cand.color_height = depth_info.color_height;
+          cand.explicit_sample = depth_info.explicit_sample;
+          cand.score = depth_info.score;
+          cand.second_best_score = depth_info.second_best_score;
+          cand.score_margin = depth_info.score_margin;
+          cand.reason = depth_info.reason;
+          cand.valid = depth_info.valid;
+          d3d12_context.SetDepthCandidate(cand);
+        }
 
         if (use_fxaa) {
           fxaa_source_texture_submission_ = GetCurrentSubmission();
@@ -2149,9 +2179,7 @@ void D3D12CommandProcessor::IssueSwap(uint32_t frontbuffer_ptr,
         D3D12_RESOURCE_STATES apply_gamma_dest_initial_state =
             use_fxaa ? D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
                      : ui::d3d12::D3D12Presenter::kGuestOutputInternalState;
-        static_cast<ui::d3d12::D3D12Presenter::D3D12GuestOutputRefreshContext&>(
-            context)
-            .resource_uav_capable();
+
         PushTransitionBarrier(apply_gamma_dest, apply_gamma_dest_initial_state,
                               D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         // From now on, even in case of failure, apply_gamma_dest must be

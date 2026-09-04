@@ -18,6 +18,7 @@
 #include "xenia/ui/profile_editor_dialog_wx.h"
 #include "xenia/ui/quick_settings_dialog_wx.h"
 #include "xenia/ui/windowed_app_wx.h"
+#include "xenia/kernel/kernel_flags.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -661,11 +662,15 @@ void EmulatorWindow::OnEmulatorInitialized() {
   // right there. The import needs the library.
   InitializeGameLibrary();
 
-  if (!emulator_->kernel_state()
-           ->xam_state()
-           ->profile_manager()
-           ->GetAccountCount()) {
-    ShowNoProfilePrompt();
+  auto* pm = emulator_->kernel_state()
+                 ->xam_state()
+                 ->profile_manager();
+  if (!pm->GetAccountCount()) {
+    if (cvars::headless) {
+      pm->CreateProfile("Player", /*autologin=*/true);
+    } else {
+      ShowNoProfilePrompt();
+    }
   }
 
   // When a title launches outside of RunTitle (e.g. --target on the command

@@ -71,6 +71,31 @@ class D3D12Presenter final : public Presenter {
   // The format used internally by Windows composition.
   static constexpr DXGI_FORMAT kSwapChainFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
 
+  struct GuestDepthCandidate {
+    ID3D12Resource* resource = nullptr;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    DXGI_FORMAT dxgi_format = DXGI_FORMAT_UNKNOWN;
+    uint32_t sample_count = 1;
+    bool is_float = false;
+    bool inverted = false;
+    float depth_near = 0.0f;
+    float depth_far = 1.0f;
+    uint32_t confidence = 0;  // 0 = Unknown, 1 = Heuristic, 2 = Known
+    uint32_t vp_x = 0;
+    uint32_t vp_y = 0;
+    uint32_t vp_width = 0;
+    uint32_t vp_height = 0;
+    uint32_t color_width = 0;
+    uint32_t color_height = 0;
+    uint32_t explicit_sample = 0;
+    float score = 0.0f;
+    float second_best_score = 0.0f;
+    float score_margin = 0.0f;
+    std::string reason;
+    bool valid = false;
+  };
+
   // The callback must use the main direct queue of the provider.
   class D3D12GuestOutputRefreshContext final
       : public GuestOutputRefreshContext {
@@ -84,8 +109,16 @@ class D3D12Presenter final : public Presenter {
     // to kGuestOutputInternalState before finishing.
     ID3D12Resource* resource_uav_capable() const { return resource_.Get(); }
 
+    void SetDepthCandidate(const GuestDepthCandidate& candidate) {
+      depth_candidate_ = candidate;
+    }
+    const GuestDepthCandidate& depth_candidate() const {
+      return depth_candidate_;
+    }
+
    private:
     Microsoft::WRL::ComPtr<ID3D12Resource> resource_;
+    GuestDepthCandidate depth_candidate_;
   };
 
   static std::unique_ptr<D3D12Presenter> Create(
@@ -323,6 +356,8 @@ class D3D12Presenter final : public Presenter {
   std::array<std::pair<uint64_t, Microsoft::WRL::ComPtr<ID3D12Resource>>,
              kGuestOutputMailboxSize>
       guest_output_resources_;
+  std::array<GuestDepthCandidate, kGuestOutputMailboxSize>
+      guest_output_depth_candidates_;
   // The guest output resources are protected by two completion timelines - the
   // refresher one (for writing to them via the guest_output_resources_
   // references) and the paint one (for presenting it via the

@@ -14,12 +14,13 @@
 
 #if XE_PLATFORM_WIN32
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
+#include "xenia/ui/d3d12/d3d12_api.h"
 #include <wrl/client.h>
 
 #include <cstdint>
 #include <memory>
+
+#include "xenia/ui/d3d12/d3d12_presenter.h"
 
 namespace xe {
 namespace ui {
@@ -28,6 +29,7 @@ namespace neural {
 
 class SyntheticNgxSession;
 class MotionEstimator;
+class DepthProvider;
 
 class NeuralRenderingManager {
  public:
@@ -39,12 +41,15 @@ class NeuralRenderingManager {
   ~NeuralRenderingManager();
 
   // Processes the guest output.
-  // In Commit 2/3, bootstraps and coordinates SyntheticNgxSession and MotionEstimator.
-  // strictly returns input_guest_output (passthrough) since temporal inputs (MV + Depth)
-  // are not yet wired up to swap chain.
-  ID3D12Resource* Process(ID3D12GraphicsCommandList* command_list,
-                          ID3D12Resource* input_guest_output,
-                          uint64_t guest_generation = 0);
+  // In Commit 2/3/4, coordinates SyntheticNgxSession, MotionEstimator, and DepthProvider.
+  // strictly returns input_guest_output (passthrough) unless debug view is enabled.
+  ID3D12Resource* Process(
+      ID3D12GraphicsCommandList* command_list,
+      ID3D12Resource* input_guest_output,
+      uint64_t guest_generation = 0,
+      const D3D12Presenter::GuestDepthCandidate& depth_candidate = {});
+
+  void OnFrameSubmitted(ID3D12CommandQueue* direct_queue);
 
   uint32_t current_width() const { return current_width_; }
   uint32_t current_height() const { return current_height_; }
@@ -53,12 +58,14 @@ class NeuralRenderingManager {
 
   SyntheticNgxSession* ngx_session() const { return ngx_session_.get(); }
   MotionEstimator* motion_estimator() const { return motion_estimator_.get(); }
+  DepthProvider* depth_provider() const { return depth_provider_.get(); }
 
  private:
   ID3D12Device* device_ = nullptr;
   ID3D12CommandQueue* direct_queue_ = nullptr;
   std::unique_ptr<SyntheticNgxSession> ngx_session_;
   std::unique_ptr<MotionEstimator> motion_estimator_;
+  std::unique_ptr<DepthProvider> depth_provider_;
 
   uint32_t current_width_ = 0;
   uint32_t current_height_ = 0;

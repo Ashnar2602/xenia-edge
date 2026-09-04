@@ -445,6 +445,9 @@ bool D3D12Presenter::RefreshGuestOutputImpl(
   D3D12GuestOutputRefreshContext context(
       is_8bpc_out_ref, guest_output_resource_ref.second.Get());
   bool refresher_succeeded = refresher(context);
+  if (refresher_succeeded) {
+    guest_output_depth_candidates_[mailbox_index] = context.depth_candidate();
+  }
   // Even if the refresher has returned false, it still might have submitted
   // some commands referencing the resource. It's better to put an excessive
   // signal and wait slightly longer, for nothing important, while shutting down
@@ -514,6 +517,7 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
   GuestOutputPaintConfig guest_output_paint_config;
   Microsoft::WRL::ComPtr<ID3D12Resource> guest_output_resource;
   uint64_t guest_generation = 0;
+  GuestDepthCandidate guest_depth_candidate;
   {
     uint32_t guest_output_mailbox_index;
     std::unique_lock<std::mutex> guest_output_consumer_lock(
@@ -522,6 +526,8 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
     if (guest_output_mailbox_index != UINT32_MAX) {
       guest_output_resource =
           guest_output_resources_[guest_output_mailbox_index].second;
+      guest_depth_candidate =
+          guest_output_depth_candidates_[guest_output_mailbox_index];
     }
     // Incremented the reference count of the guest output resource - safe to
     // leave the consumer critical section now as everything here either will be
@@ -532,7 +538,8 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
   if (guest_output_resource) {
     if (cvars::d3d12_neural_rendering && neural_manager_) {
       ID3D12Resource* processed_resource = neural_manager_->Process(
-          command_list, guest_output_resource.Get(), guest_generation);
+          command_list, guest_output_resource.Get(), guest_generation,
+          guest_depth_candidate);
       if (processed_resource &&
           processed_resource != guest_output_resource.Get()) {
         guest_output_resource = processed_resource;
@@ -1097,6 +1104,9 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
     ui_completion_timeline_->SignalAndAdvance(direct_queue);
   }
   paint_context_.paint_completion_timeline->SignalAndAdvance(direct_queue);
+  if (cvars::d3d12_neural_rendering && neural_manager_) {
+    neural_manager_->OnFrameSubmitted(direct_queue);
+  }
   // Present as soon as possible, without waiting for vsync (the host refresh
   // rate may be something like 144 Hz, which is not a multiple of the common
   // 30 Hz or 60 Hz guest refresh rate), and allowing dropping outdated queued

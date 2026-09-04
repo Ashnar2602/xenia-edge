@@ -1068,6 +1068,80 @@ bool D3D12RenderTargetCache::Update(
                                        depth_and_color_render_targets,
                                        last_update_transfers());
       SetCommandListRenderTargets(depth_and_color_render_targets);
+
+      if (depth_and_color_render_targets[0]) {
+        auto* depth_rt = static_cast<D3D12RenderTarget*>(
+            depth_and_color_render_targets[0]);
+        ID3D12Resource* res = depth_rt->resource();
+        if (res) {
+          ++current_frame_draw_sequence_;
+          auto& stats = frame_depth_stats_[res];
+          stats.draw_count++;
+          stats.last_draw_sequence = current_frame_draw_sequence_;
+          if (normalized_depth_control.z_write_enable) {
+            stats.has_z_writes = true;
+          }
+          if (normalized_depth_control.z_enable) {
+            stats.last_zfunc = normalized_depth_control.zfunc;
+          }
+          if (depth_and_color_render_targets[1]) {
+            auto* color_rt = static_cast<D3D12RenderTarget*>(
+                depth_and_color_render_targets[1]);
+            stats.last_color_resource = color_rt->resource();
+            stats.last_color_width =
+                color_rt->key().GetWidth() * GetKeyScaleX(color_rt->key());
+            stats.last_color_height =
+                GetRenderTargetHeight(color_rt->key().pitch_tiles_at_32bpp,
+                                      color_rt->key().msaa_samples) *
+                GetKeyScaleY(color_rt->key());
+          }
+
+          const RegisterFile& regs = register_file();
+          auto pa_cl_vte_cntl = regs.Get<reg::PA_CL_VTE_CNTL>();
+          auto pa_cl_clip_cntl = regs.Get<reg::PA_CL_CLIP_CNTL>();
+
+          float scale_z = pa_cl_vte_cntl.vport_z_scale_ena
+                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_ZSCALE)
+                              : 1.0f;
+          float offset_z = pa_cl_vte_cntl.vport_z_offset_ena
+                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_ZOFFSET)
+                               : 0.0f;
+
+          float host_clip_offset_z;
+          float host_clip_scale_z;
+          if (pa_cl_clip_cntl.dx_clip_space_def) {
+            host_clip_offset_z = offset_z;
+            host_clip_scale_z = scale_z;
+          } else {
+            host_clip_offset_z = offset_z - scale_z;
+            host_clip_scale_z = scale_z * 2.0f;
+          }
+
+          stats.depth_near = host_clip_offset_z;
+          stats.depth_far = host_clip_offset_z + host_clip_scale_z;
+          stats.z_params_valid = (std::abs(scale_z) > 1e-6f);
+
+          float scale_x = pa_cl_vte_cntl.vport_x_scale_ena
+                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_XSCALE)
+                              : 1.0f;
+          float scale_y = pa_cl_vte_cntl.vport_y_scale_ena
+                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_YSCALE)
+                              : 1.0f;
+          float offset_x = pa_cl_vte_cntl.vport_x_offset_ena
+                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_XOFFSET)
+                               : 0.0f;
+          float offset_y = pa_cl_vte_cntl.vport_y_offset_ena
+                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_YOFFSET)
+                               : 0.0f;
+
+          float scale_x_abs = std::abs(scale_x);
+          float scale_y_abs = std::abs(scale_y);
+          stats.vp_x = uint32_t(std::max(0.0f, offset_x - scale_x_abs));
+          stats.vp_y = uint32_t(std::max(0.0f, offset_y - scale_y_abs));
+          stats.vp_width = uint32_t(scale_x_abs * 2.0f);
+          stats.vp_height = uint32_t(scale_y_abs * 2.0f);
+        }
+      }
     } break;
     case Path::kPixelShaderInterlock: {
       // For ROV, only the barrier is needed - already scheduled if required.
@@ -3954,6 +4028,285 @@ void D3D12RenderTargetCache::DumpRenderTargets(uint32_t dump_base,
   }
 
   command_processor_.PopDebugMarker();
+}
+
+D3D12RenderTargetCache::DepthCandidateInfo
+D3D12RenderTargetCache::FindBestDepthCandidate(uint32_t guest_width,
+                                               uint32_t guest_height) {
+  DepthCandidateInfo best_candidate;
+  best_candidate.score = -1000.0f;
+  best_candidate.valid = false;
+
+  DepthCandidateInfo second_candidate;
+  second_candidate.score = -1000.0f;
+
+  if (GetPath() != Path::kHostRenderTargets) {
+    static bool logged_rov_warning = false;
+    if (!logged_rov_warning) {
+      XELOGW(
+          "D3D12RenderTargetCache: Neural depth provider currently supports "
+          "HostRenderTargets path only. ROV/PixelShaderInterlock path will "
+          "bypass neural rendering.");
+      logged_rov_warning = true;
+    }
+    return best_candidate;
+  }
+
+  float guest_ar =
+      float(guest_width) / float(std::max(guest_height, uint32_t(1)));
+  uint32_t total_draws = std::max(current_frame_draw_sequence_, uint32_t(1));
+
+  for (const auto& [key, rt] : render_targets()) {
+    if (!key.is_depth || !rt) {
+      continue;
+    }
+    auto* d3d12_rt = static_cast<D3D12RenderTarget*>(rt);
+    ID3D12Resource* res = d3d12_rt->resource();
+    if (!res) {
+      continue;
+    }
+
+    uint32_t width = key.GetWidth() * GetKeyScaleX(key);
+    uint32_t height =
+        GetRenderTargetHeight(key.pitch_tiles_at_32bpp, key.msaa_samples) *
+        GetKeyScaleY(key);
+    if (!width || !height) {
+      continue;
+    }
+
+    float depth_ar = float(width) / float(height);
+    uint32_t sample_count =
+        (key.msaa_samples == xenos::MsaaSamples::k2X && !msaa_2x_supported())
+            ? 4
+            : (1u << uint32_t(key.msaa_samples));
+
+    auto it_stats = frame_depth_stats_.find(res);
+    const DepthUsageStats* stats =
+        (it_stats != frame_depth_stats_.end()) ? &it_stats->second : nullptr;
+
+    float score = 0.0f;
+    std::string reason = "";
+
+    // Aspect ratio match
+    if (std::abs(depth_ar - guest_ar) < 0.05f) {
+      score += 30.0f;
+      reason += "[AR match +30] ";
+    }
+
+    // Resolution plausibility
+    if (width >= (guest_width * 3) / 4 && height >= (guest_height * 3) / 4) {
+      score += 30.0f;
+      reason += "[Plausible res +30] ";
+    } else if (width < 256 || height < 256) {
+      score -= 50.0f;
+      reason += "[Tiny res -50] ";
+    }
+
+    // Shadow map penalty (square target in non-square guest)
+    if (width == height && std::abs(guest_ar - 1.0f) > 0.1f) {
+      score -= 60.0f;
+      reason += "[Square shadow-map -60] ";
+    }
+
+    float d_near = 0.0f;
+    float d_far = 1.0f;
+    bool inverted = false;
+    DepthDirectionConfidence confidence = DepthDirectionConfidence::kUnknown;
+    uint32_t vp_x = 0;
+    uint32_t vp_y = 0;
+    uint32_t vp_w = width;
+    uint32_t vp_h = height;
+    uint32_t color_w = 0;
+    uint32_t color_h = 0;
+    ID3D12Resource* color_res = nullptr;
+    uint32_t explicit_sample = 0xFFFFFFFF;
+
+    if (stats) {
+      vp_x = stats->vp_x;
+      vp_y = stats->vp_y;
+      vp_w = stats->vp_width ? stats->vp_width : width;
+      vp_h = stats->vp_height ? stats->vp_height : height;
+      color_w = stats->last_color_width;
+      color_h = stats->last_color_height;
+      color_res = stats->last_color_resource;
+      explicit_sample = stats->explicit_sample;
+
+      // Draw count
+      uint32_t clamped_draws = std::min(stats->draw_count, 30u);
+      score += float(clamped_draws);
+      reason +=
+          fmt::format("[Draws: {} +{}] ", stats->draw_count, clamped_draws);
+      if (stats->draw_count == 1) {
+        score -= 20.0f;
+        reason += "[Single draw -20] ";
+      }
+
+      // Proximity to swap
+      float proximity = float(stats->last_draw_sequence) / float(total_draws);
+      score += proximity * 15.0f;
+      reason += fmt::format("[Proximity: {:.2f} +{:.1f}] ", proximity,
+                            proximity * 15.0f);
+
+      // Color association (Requirement 6)
+      if (stats->last_color_width == guest_width &&
+          stats->last_color_height == guest_height) {
+        score += 35.0f;
+        reason += "[Color RT exact match +35] ";
+      } else if (stats->last_color_width > 0 && stats->last_color_height > 0) {
+        float color_ar =
+            float(stats->last_color_width) / float(stats->last_color_height);
+        if (std::abs(color_ar - depth_ar) < 0.05f) {
+          score += 20.0f;
+          reason += "[Color RT AR match +20] ";
+        }
+      }
+
+      if (stats->has_z_writes) {
+        score += 10.0f;
+        reason += "[Z-writes +10] ";
+      }
+
+      // Mathematical Z-direction detection (Requirement 1)
+      // DepthInverted = depth_near > depth_far
+      if (stats->z_params_valid) {
+        d_near = stats->depth_near;
+        d_far = stats->depth_far;
+        inverted = (d_near > d_far);
+
+        // Consistency verification against zfunc
+        if (stats->last_zfunc == xenos::CompareFunction::kGreater ||
+            stats->last_zfunc == xenos::CompareFunction::kGreaterEqual) {
+          if (inverted) {
+            confidence = DepthDirectionConfidence::kKnown;
+            reason += "[Z math+zfunc: Reversed-Z KNOWN] ";
+          } else {
+            confidence = DepthDirectionConfidence::kHeuristic;
+            reason += "[Z math/zfunc conflict -> HEURISTIC] ";
+          }
+        } else if (stats->last_zfunc == xenos::CompareFunction::kLess ||
+                   stats->last_zfunc == xenos::CompareFunction::kLessEqual) {
+          if (!inverted) {
+            confidence = DepthDirectionConfidence::kKnown;
+            reason += "[Z math+zfunc: Standard-Z KNOWN] ";
+          } else {
+            confidence = DepthDirectionConfidence::kHeuristic;
+            reason += "[Z math/zfunc conflict -> HEURISTIC] ";
+          }
+        } else {
+          confidence = DepthDirectionConfidence::kKnown;
+          reason += fmt::format("[Z math: near={:.2f}, far={:.2f} KNOWN] ",
+                                d_near, d_far);
+        }
+      } else if (stats->last_zfunc != xenos::CompareFunction::kNever) {
+        // Fallback heuristic based solely on zfunc
+        if (stats->last_zfunc == xenos::CompareFunction::kGreater ||
+            stats->last_zfunc == xenos::CompareFunction::kGreaterEqual) {
+          inverted = true;
+          d_near = 1.0f;
+          d_far = 0.0f;
+          confidence = DepthDirectionConfidence::kHeuristic;
+          reason += "[zfunc only: Reversed-Z HEURISTIC] ";
+        } else if (stats->last_zfunc == xenos::CompareFunction::kLess ||
+                   stats->last_zfunc == xenos::CompareFunction::kLessEqual) {
+          inverted = false;
+          d_near = 0.0f;
+          d_far = 1.0f;
+          confidence = DepthDirectionConfidence::kHeuristic;
+          reason += "[zfunc only: Standard-Z HEURISTIC] ";
+        }
+      }
+
+      if (confidence == DepthDirectionConfidence::kKnown) {
+        score += 15.0f;
+      } else if (confidence == DepthDirectionConfidence::kUnknown) {
+        score -= 50.0f;
+        reason += "[UNKNOWN depth direction -50] ";
+      }
+    } else {
+      // Stale / not used in this frame
+      score -= 100.0f;
+      reason += "[Stale/Not used this frame -100] ";
+    }
+
+    DepthCandidateInfo current_candidate;
+    current_candidate.resource = res;
+    current_candidate.width = width;
+    current_candidate.height = height;
+    current_candidate.dxgi_format =
+        GetDepthSRVDepthDXGIFormat(key.GetDepthFormat());
+    current_candidate.format = key.GetDepthFormat();
+    current_candidate.sample_count = sample_count;
+    current_candidate.is_float =
+        (key.GetDepthFormat() == xenos::DepthRenderTargetFormat::kD24FS8);
+    current_candidate.vp_x = vp_x;
+    current_candidate.vp_y = vp_y;
+    current_candidate.vp_width = vp_w;
+    current_candidate.vp_height = vp_h;
+    current_candidate.color_width = color_w;
+    current_candidate.color_height = color_h;
+    current_candidate.color_resource = color_res;
+    current_candidate.depth_near = d_near;
+    current_candidate.depth_far = d_far;
+    current_candidate.inverted = inverted;
+    current_candidate.confidence = confidence;
+    current_candidate.score = score;
+    current_candidate.reason = reason;
+    current_candidate.valid = (score > 0.0f &&
+                               confidence != DepthDirectionConfidence::kUnknown);
+    current_candidate.explicit_sample = explicit_sample;
+
+    // Track best and second-best candidate for ambiguity evaluation (Requirement 7)
+    if (score > best_candidate.score) {
+      second_candidate = best_candidate;
+      best_candidate = current_candidate;
+    } else if (score > second_candidate.score) {
+      second_candidate = current_candidate;
+    }
+  }
+
+  // Reset per-frame tracking
+  frame_depth_stats_.clear();
+  current_frame_draw_sequence_ = 0;
+
+  float score_margin = best_candidate.score - second_candidate.score;
+  best_candidate.second_best_score = second_candidate.score;
+  best_candidate.score_margin = score_margin;
+
+  // Ambiguity check: if top candidates are too close, reject candidate to avoid oscillation
+  if (best_candidate.score > 0.0f && second_candidate.score > 0.0f &&
+      score_margin < 5.0f) {
+    best_candidate.valid = false;
+    best_candidate.reason += fmt::format(
+        "[AMBIGUOUS: margin {:.1f} < 5.0 vs 2nd-best {:.1f}] ",
+        score_margin, second_candidate.score);
+    XELOGW(
+        "D3D12RenderTargetCache: Ambiguous depth candidates (best: {:.1f}, "
+        "second: {:.1f}, margin: {:.1f}) -> bypassing depth provider",
+        best_candidate.score, second_candidate.score, score_margin);
+  }
+
+  static ID3D12Resource* last_selected_res = nullptr;
+  if (best_candidate.valid && best_candidate.resource != last_selected_res) {
+    const char* conf_str =
+        best_candidate.confidence == DepthDirectionConfidence::kKnown
+            ? "KNOWN"
+            : (best_candidate.confidence == DepthDirectionConfidence::kHeuristic
+                   ? "HEURISTIC"
+                   : "UNKNOWN");
+    XELOGI(
+        "D3D12RenderTargetCache: Selected depth candidate {} ({}x{}, samples: "
+        "{}, float: {}, near: {:.2f}, far: {:.2f}, inv: {}, conf: {}, score: "
+        "{:.1f}, margin: {:.1f}): {}",
+        reinterpret_cast<void*>(best_candidate.resource), best_candidate.width,
+        best_candidate.height, best_candidate.sample_count,
+        best_candidate.is_float, best_candidate.depth_near,
+        best_candidate.depth_far, best_candidate.inverted, conf_str,
+        best_candidate.score, best_candidate.score_margin,
+        best_candidate.reason);
+    last_selected_res = best_candidate.resource;
+  }
+
+  return best_candidate;
 }
 
 }  // namespace d3d12
