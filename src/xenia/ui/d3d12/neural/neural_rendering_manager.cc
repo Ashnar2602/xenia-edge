@@ -60,7 +60,8 @@ NeuralRenderingManager::~NeuralRenderingManager() {
 
 ID3D12Resource* NeuralRenderingManager::Process(
     ID3D12GraphicsCommandList* command_list,
-    ID3D12Resource* input_guest_output) {
+    ID3D12Resource* input_guest_output,
+    uint64_t guest_generation) {
   if (!input_guest_output) {
     return nullptr;
   }
@@ -76,6 +77,7 @@ ID3D12Resource* NeuralRenderingManager::Process(
   const DXGI_FORMAT format = desc.Format;
 
   // Track dynamic changes in guest output dimensions or format.
+  bool format_or_res_changed = false;
   if (width != current_width_ || height != current_height_ ||
       format != current_format_) {
     XELOGI(
@@ -87,6 +89,7 @@ ID3D12Resource* NeuralRenderingManager::Process(
     current_width_ = width;
     current_height_ = height;
     current_format_ = format;
+    format_or_res_changed = true;
 
     if (ngx_session_) {
       ngx_session_->Invalidate();
@@ -103,10 +106,22 @@ ID3D12Resource* NeuralRenderingManager::Process(
         current_width_, current_height_, uint32_t(current_format_));
   }
 
-  // Execute motion estimation for the current frame.
-  if (motion_estimator_ && motion_estimator_->is_valid()) {
-    motion_estimator_->EstimateMotion(command_list, input_guest_output,
-                                      frame_index_++);
+  // Check guest frame cadence:
+  // Advance history and execute optical flow ONLY when a new guest frame is produced.
+  // Repeated presentation of the same guest frame (e.g. 30 FPS game on 60/120 Hz display)
+  // must NOT advance history or trigger redundant NVOFA work.
+  bool is_new_guest_frame =
+      (guest_generation != 0 && guest_generation != last_guest_generation_) ||
+      format_or_res_changed;
+
+  if (is_new_guest_frame) {
+    last_guest_generation_ = guest_generation;
+
+    // Execute motion estimation only for new guest frames.
+    if (motion_estimator_ && motion_estimator_->is_valid()) {
+      motion_estimator_->EstimateMotion(command_list, input_guest_output,
+                                        guest_generation);
+    }
   }
 
   // Ensure the synthetic NGX session feature is initialized for current resolution.

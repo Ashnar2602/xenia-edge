@@ -513,11 +513,12 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
   GuestOutputProperties guest_output_properties;
   GuestOutputPaintConfig guest_output_paint_config;
   Microsoft::WRL::ComPtr<ID3D12Resource> guest_output_resource;
+  uint64_t guest_generation = 0;
   {
     uint32_t guest_output_mailbox_index;
     std::unique_lock<std::mutex> guest_output_consumer_lock(
         ConsumeGuestOutput(guest_output_mailbox_index, &guest_output_properties,
-                           &guest_output_paint_config));
+                           &guest_output_paint_config, &guest_generation));
     if (guest_output_mailbox_index != UINT32_MAX) {
       guest_output_resource =
           guest_output_resources_[guest_output_mailbox_index].second;
@@ -531,7 +532,7 @@ Presenter::PaintResult D3D12Presenter::PaintAndPresentImpl(
   if (guest_output_resource) {
     if (cvars::d3d12_neural_rendering && neural_manager_) {
       ID3D12Resource* processed_resource = neural_manager_->Process(
-          command_list, guest_output_resource.Get());
+          command_list, guest_output_resource.Get(), guest_generation);
       if (processed_resource &&
           processed_resource != guest_output_resource.Get()) {
         guest_output_resource = processed_resource;

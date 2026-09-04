@@ -647,7 +647,8 @@ class Presenter {
   [[nodiscard]] std::unique_lock<std::mutex> ConsumeGuestOutput(
       uint32_t& mailbox_index_or_max_if_inactive_out,
       GuestOutputProperties* properties_out,
-      GuestOutputPaintConfig* paint_config_out);
+      GuestOutputPaintConfig* paint_config_out,
+      uint64_t* guest_generation_out = nullptr);
   // The properties are passed explicitly, not taken from the current acquired
   // image, so it can be called for a copy of the acquired image's properties
   // outside the consumer lock if the implementation has its own synchronization
@@ -947,6 +948,9 @@ class Presenter {
   // accessible only by the guest output refreshing - it's the image that the
   // refresher may write to.
   uint32_t guest_output_mailbox_writable_ = 1;
+  // Monotonically increasing generation number for newly refreshed guest frames.
+  std::atomic<uint64_t> guest_output_frame_generation_{1};
+  uint64_t guest_output_generations_[kGuestOutputMailboxSize] = {};
   // The guest output images may be consumed by two operations - painting, and
   // capturing to a CPU-side buffer. These two usually never happen in parallel
   // in reality though, as they're usually not even needed both at once in the

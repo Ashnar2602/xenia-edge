@@ -110,11 +110,11 @@ bool NvidiaOpticalFlowEstimator::LoadNvOfApi() {
   }
 
   XELOGI(
-      "NvidiaOpticalFlowEstimator: NvOF API detected, maxVersion=0x{:X} "
-      "(Major: {}, Minor: {})",
-      max_ver, (max_ver >> 4), (max_ver & 0xF));
+      "NvidiaOpticalFlowEstimator: NvOF API detected, driver maxVersion=0x{:X} "
+      "(Major: {}, Minor: {}), requesting clientVersion=0x{:X}",
+      max_ver, (max_ver >> 4), (max_ver & 0xF), kNvOfClientApiVersionD3D12);
 
-  status = pfn_create_instance(max_ver, &of_api_);
+  status = pfn_create_instance(kNvOfClientApiVersionD3D12, &of_api_);
   if (status != NV_OF_SUCCESS) {
     XELOGW("NvidiaOpticalFlowEstimator: NvOFAPICreateInstanceD3D12 failed: {}",
            static_cast<int>(status));
@@ -123,7 +123,7 @@ bool NvidiaOpticalFlowEstimator::LoadNvOfApi() {
     return false;
   }
 
-  // Create test Optical Flow instance on device to verify hardware support
+  // Create Optical Flow instance on device
   status = of_api_.nvCreateOpticalFlowD3D12(device_, &of_handle_);
   if (status != NV_OF_SUCCESS || !of_handle_) {
     XELOGW(
@@ -134,17 +134,8 @@ bool NvidiaOpticalFlowEstimator::LoadNvOfApi() {
     return false;
   }
 
-  // Resolve internal object and unregister function
-  internal_d3d12_obj_ =
-      *reinterpret_cast<void**>(reinterpret_cast<uint8_t*>(of_handle_) + 0x30);
-  if (internal_d3d12_obj_) {
-    void** internal_vtable = *reinterpret_cast<void***>(internal_d3d12_obj_);
-    pfn_internal_unregister_ =
-        reinterpret_cast<PFN_NvOFInternalUnregister>(internal_vtable[10]);
-  }
-
   XELOGI(
-      "NvidiaOpticalFlowEstimator: Successfully created NVOFA D3D12 instance "
+      "NvidiaOpticalFlowEstimator: Successfully created official NVOFA D3D12 instance "
       "handle: {:p}",
       static_cast<void*>(of_handle_));
 
@@ -419,8 +410,7 @@ bool NvidiaOpticalFlowEstimator::AllocateResources(uint32_t width,
     NV_OF_REGISTER_RESOURCE_PARAMS_D3D12 reg = {};
     reg.resource = input_buffers_[i].Get();
     reg.hOFGpuBuffer = &h_input_buffers_[i];
-    status = of_api_.nvOFRegisterResourceD3D12(of_handle_, &reg,
-                                              &h_input_buffers_[i]);
+    status = of_api_.nvOFRegisterResourceD3D12(of_handle_, &reg);
     if (status != NV_OF_SUCCESS || !h_input_buffers_[i]) {
       XELOGE("NvidiaOpticalFlowEstimator: Failed to register input buffer {}", i);
       return false;
@@ -455,8 +445,7 @@ bool NvidiaOpticalFlowEstimator::AllocateResources(uint32_t width,
   NV_OF_REGISTER_RESOURCE_PARAMS_D3D12 reg_flow = {};
   reg_flow.resource = raw_flow_buffer_.Get();
   reg_flow.hOFGpuBuffer = &h_raw_flow_buffer_;
-  status = of_api_.nvOFRegisterResourceD3D12(of_handle_, &reg_flow,
-                                            &h_raw_flow_buffer_);
+  status = of_api_.nvOFRegisterResourceD3D12(of_handle_, &reg_flow);
   if (status != NV_OF_SUCCESS || !h_raw_flow_buffer_) {
     XELOGE("NvidiaOpticalFlowEstimator: Failed to register raw flow buffer");
     return false;
@@ -520,23 +509,22 @@ bool NvidiaOpticalFlowEstimator::AllocateResources(uint32_t width,
 }
 
 void NvidiaOpticalFlowEstimator::ReleaseResources() {
-  if (of_handle_) {
-    if (pfn_internal_unregister_ && internal_d3d12_obj_) {
-      if (h_input_buffers_[0]) {
-        pfn_internal_unregister_(internal_d3d12_obj_, &h_input_buffers_[0]);
-        h_input_buffers_[0] = nullptr;
-      }
-      if (h_input_buffers_[1]) {
-        pfn_internal_unregister_(internal_d3d12_obj_, &h_input_buffers_[1]);
-        h_input_buffers_[1] = nullptr;
-      }
-      if (h_raw_flow_buffer_) {
-        pfn_internal_unregister_(internal_d3d12_obj_, &h_raw_flow_buffer_);
-        h_raw_flow_buffer_ = nullptr;
-      }
+  if (of_handle_ && of_api_.nvOFUnregisterResourceD3D12) {
+    if (h_input_buffers_[0]) {
+      of_api_.nvOFUnregisterResourceD3D12(&h_input_buffers_[0]);
+      h_input_buffers_[0] = nullptr;
+    }
+    if (h_input_buffers_[1]) {
+      of_api_.nvOFUnregisterResourceD3D12(&h_input_buffers_[1]);
+      h_input_buffers_[1] = nullptr;
+    }
+    if (h_raw_flow_buffer_) {
+      of_api_.nvOFUnregisterResourceD3D12(&h_raw_flow_buffer_);
+      h_raw_flow_buffer_ = nullptr;
     }
   }
 
+  // Release D3D12 resources while optical flow session is still open
   input_buffers_[0].Reset();
   input_buffers_[1].Reset();
   raw_flow_buffer_.Reset();

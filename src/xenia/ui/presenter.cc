@@ -389,6 +389,9 @@ bool Presenter::RefreshGuestOutput(
     guest_output_active_last_refresh_ = false;
   }
 
+  guest_output_generations_[guest_output_mailbox_writable_] =
+      guest_output_frame_generation_.fetch_add(1, std::memory_order_relaxed);
+
   // Make the new image the next to present on the host (the "ready" one),
   // replacing the one already specified as the next (dropping it instead of
   // enqueueing the new image after it) to achieve the lowest latency (also,
@@ -620,7 +623,8 @@ bool Presenter::InitializeCommonSurfaceIndependent() {
 std::unique_lock<std::mutex> Presenter::ConsumeGuestOutput(
     uint32_t& mailbox_index_or_max_if_inactive_out,
     GuestOutputProperties* properties_out,
-    GuestOutputPaintConfig* paint_config_out) {
+    GuestOutputPaintConfig* paint_config_out,
+    uint64_t* guest_generation_out) {
   if (paint_config_out) {
     // Get the up-to-date guest output paint configuration settings set by the
     // UI thread.
@@ -668,6 +672,11 @@ std::unique_lock<std::mutex> Presenter::ConsumeGuestOutput(
       properties.IsActive() ? mailbox_index : UINT32_MAX;
   if (properties_out) {
     *properties_out = properties;
+  }
+  if (guest_generation_out) {
+    *guest_generation_out = properties.IsActive()
+                                ? guest_output_generations_[mailbox_index]
+                                : 0;
   }
   return std::move(consumer_lock);
 }

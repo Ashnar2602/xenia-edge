@@ -82,8 +82,6 @@ class NvidiaOpticalFlowEstimator final : public MotionEstimator {
   HMODULE h_nvof_dll_ = nullptr;
   NV_OF_D3D12_API_FUNCTION_LIST of_api_ = {};
   NvOFHandle of_handle_ = nullptr;
-  void* internal_d3d12_obj_ = nullptr;
-  PFN_NvOFInternalUnregister pfn_internal_unregister_ = nullptr;
 
   uint32_t width_ = 0;
   uint32_t height_ = 0;

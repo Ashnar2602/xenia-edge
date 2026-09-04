@@ -24,6 +24,9 @@ namespace ui {
 namespace d3d12 {
 namespace neural {
 
+// NVIDIA Optical Flow SDK minimum official API version supporting DirectX 12
+constexpr uint32_t kNvOfClientApiVersionD3D12 = 0x30;
+
 // Opaque handles
 typedef struct NvOFHandle_st* NvOFHandle;
 typedef struct NvOFGPUBufferHandle_st* NvOFGPUBufferHandle;
@@ -94,74 +97,66 @@ enum NV_OF_PERF_LEVEL {
   NV_OF_PERF_LEVEL_MAX
 };
 
-// D3D12 Fence point
+// D3D12 Fence synchronization primitive
 struct NV_OF_FENCE_POINT {
   ID3D12Fence* fence;
   uint64_t value;
 };
 
-// Layout for NvOFRegisterResourceD3D12
-// Verified on Blackwell / Ada architecture via probe_nvof.cc
+// Official layout for NvOFRegisterResourceD3D12
 struct NV_OF_REGISTER_RESOURCE_PARAMS_D3D12 {
-  ID3D12Resource* resource;          // 0x00
-  uint64_t pad1;                     // 0x08
-  uint64_t pad2;                     // 0x10
-  NvOFGPUBufferHandle* hOFGpuBuffer; // 0x18
-  uint64_t pad3;                     // 0x20
-  uint64_t pad4;                     // 0x28
+  ID3D12Resource* resource;
+  NV_OF_FENCE_POINT inputFencePoint;
+  NvOFGPUBufferHandle* hOFGpuBuffer;
+  NV_OF_FENCE_POINT outputFencePoint;
 };
 
-// Session init params
+// Official layout for NvOFInit
 struct NV_OF_INIT_PARAMS {
-  uint32_t width;                            // 0x00
-  uint32_t height;                           // 0x04
-  NV_OF_OUTPUT_VECTOR_GRID_SIZE outGridSize; // 0x08
-  uint32_t hintGridSize;                     // 0x0c
-  NV_OF_MODE mode;                           // 0x10
-  NV_OF_PERF_LEVEL perfLevel;                // 0x14
-  NV_OF_BOOL enableExternalHints;            // 0x18
-  NV_OF_BOOL enableOutputCost;               // 0x1c
-  void* hPrivData;                           // 0x20
-  uint32_t disparityRange;                   // 0x28
-  NV_OF_BOOL enableRoi;                      // 0x2c
-  uint32_t reserved1;                        // 0x30
-  uint32_t reserved2;                        // 0x34
-  uint32_t reserved3;                        // 0x38
-  uint32_t reserved4;                        // 0x3c
+  uint32_t width;
+  uint32_t height;
+  NV_OF_OUTPUT_VECTOR_GRID_SIZE outGridSize;
+  uint32_t hintGridSize;
+  NV_OF_MODE mode;
+  NV_OF_PERF_LEVEL perfLevel;
+  NV_OF_BOOL enableExternalHints;
+  NV_OF_BOOL enableOutputCost;
+  void* hPrivData;
+  uint32_t disparityRange;
+  NV_OF_BOOL enableRoi;
+  uint32_t reserved[4];
 };
 
-// Execute input params (0x48 bytes)
-// Verified on Blackwell / Ada architecture via probe_nvof.cc
+// Official layout for NvOFExecuteD3D12 Input
 struct NV_OF_EXECUTE_INPUT_PARAMS_D3D12 {
-  NvOFGPUBufferHandle inputFrame;        // 0x00 (current frame T)
-  NvOFGPUBufferHandle referenceFrame;    // 0x08 (previous frame T-1)
-  NvOFGPUBufferHandle externalHints;     // 0x10 (nullptr)
-  NV_OF_BOOL disableTemporalHints;       // 0x18 (NV_OF_TRUE)
-  uint32_t pad1;                         // 0x1c
-  void* hPrivData;                       // 0x20
-  uint32_t pad2;                         // 0x28
-  uint32_t numRois;                      // 0x2c (0)
-  void* roiData;                         // 0x30 (nullptr)
-  uint32_t pad3;                         // 0x38
-  uint32_t numFencePoints;               // 0x3c (1)
-  NV_OF_FENCE_POINT* fencePoint;         // 0x40
+  NvOFGPUBufferHandle inputFrame;
+  NvOFGPUBufferHandle referenceFrame;
+  NvOFGPUBufferHandle externalHints;
+  NV_OF_BOOL disableTemporalHints;
+  uint32_t pad1;
+  void* hPrivData;
+  uint32_t pad2;
+  uint32_t numRois;
+  void* roiData;
+  uint32_t pad3;
+  uint32_t numFencePoints;
+  NV_OF_FENCE_POINT* fencePoint;
 };
 
-// Execute output params (0x40 bytes)
-// Verified on Blackwell / Ada architecture via probe_nvof.cc
+// Official layout for NvOFExecuteD3D12 Output
 struct NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12 {
-  NvOFGPUBufferHandle outputBuffer;        // 0x00 (forward flow R16G16_SINT)
-  NvOFGPUBufferHandle bwdOutputBuffer;     // 0x08 (must be nullptr for forward mode)
-  void* hPrivData;                         // 0x10
-  NvOFGPUBufferHandle outputCostBuffer;    // 0x18 (optional cost, nullptr)
-  NvOFGPUBufferHandle bwdOutputCostBuffer; // 0x20 (must be nullptr)
-  NvOFGPUBufferHandle globalFlowBuffer;    // 0x28 (nullptr)
-  uint32_t pad;                            // 0x30
-  uint32_t numFencePoints;                 // 0x34 (1)
-  NV_OF_FENCE_POINT* fencePoint;           // 0x38
+  NvOFGPUBufferHandle outputBuffer;
+  NvOFGPUBufferHandle bwdOutputBuffer;
+  void* hPrivData;
+  NvOFGPUBufferHandle outputCostBuffer;
+  NvOFGPUBufferHandle bwdOutputCostBuffer;
+  NvOFGPUBufferHandle globalFlowBuffer;
+  uint32_t pad;
+  uint32_t numFencePoints;
+  NV_OF_FENCE_POINT* fencePoint;
 };
 
-// NVOFA D3D12 Function Table
+// Official NVOFA D3D12 API Function Table
 struct NV_OF_D3D12_API_FUNCTION_LIST {
   NV_OF_STATUS(__stdcall* nvCreateOpticalFlowD3D12)(ID3D12Device* device,
                                                    NvOFHandle* phOF);
@@ -175,13 +170,13 @@ struct NV_OF_D3D12_API_FUNCTION_LIST {
       DXGI_FORMAT* pFormats);
   NV_OF_STATUS(__stdcall* nvOFRegisterResourceD3D12)(
       NvOFHandle hOF,
-      const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams,
-      NvOFGPUBufferHandle* phBuffer);
+      const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
   NV_OF_STATUS(__stdcall* nvOFUnregisterResourceD3D12)(
-      NvOFHandle hOF, NvOFGPUBufferHandle hBuffer);
-  NV_OF_STATUS(__stdcall* nvOFExecuteD3D12)(NvOFHandle hOF,
-                                           const void* pExecuteInParams,
-                                           void* pExecuteOutParams);
+      NvOFGPUBufferHandle* phBuffer);
+  NV_OF_STATUS(__stdcall* nvOFExecuteD3D12)(
+      NvOFHandle hOF,
+      const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* executeInParams,
+      NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* executeOutParams);
   NV_OF_STATUS(__stdcall* nvOFDestroy)(NvOFHandle hOF);
   NV_OF_STATUS(__stdcall* nvOFGetLastError)(NvOFHandle hOF, char lastError[],
                                             uint32_t* size);
@@ -193,8 +188,6 @@ typedef NV_OF_STATUS(__stdcall* PFN_NvOFGetMaxSupportedApiVersion)(
     uint32_t* version);
 typedef NV_OF_STATUS(__stdcall* PFN_NvOFAPICreateInstanceD3D12)(
     uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList);
-typedef NV_OF_STATUS(__stdcall* PFN_NvOFInternalUnregister)(
-    void* this_ptr, NvOFGPUBufferHandle* phBuf);
 
 }  // namespace neural
 }  // namespace d3d12

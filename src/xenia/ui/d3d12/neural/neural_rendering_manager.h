@@ -39,15 +39,17 @@ class NeuralRenderingManager {
   ~NeuralRenderingManager();
 
   // Processes the guest output.
-  // In Commit 2, bootstraps and coordinates SyntheticNgxSession, but strictly
-  // returns input_guest_output (passthrough) since temporal inputs (MV + Depth)
-  // are not yet wired up.
+  // In Commit 2/3, bootstraps and coordinates SyntheticNgxSession and MotionEstimator.
+  // strictly returns input_guest_output (passthrough) since temporal inputs (MV + Depth)
+  // are not yet wired up to swap chain.
   ID3D12Resource* Process(ID3D12GraphicsCommandList* command_list,
-                          ID3D12Resource* input_guest_output);
+                          ID3D12Resource* input_guest_output,
+                          uint64_t guest_generation = 0);
 
   uint32_t current_width() const { return current_width_; }
   uint32_t current_height() const { return current_height_; }
   DXGI_FORMAT current_format() const { return current_format_; }
+  uint64_t last_guest_generation() const { return last_guest_generation_; }
 
   SyntheticNgxSession* ngx_session() const { return ngx_session_.get(); }
   MotionEstimator* motion_estimator() const { return motion_estimator_.get(); }
@@ -62,6 +64,7 @@ class NeuralRenderingManager {
   uint32_t current_height_ = 0;
   DXGI_FORMAT current_format_ = DXGI_FORMAT_UNKNOWN;
   uint64_t frame_index_ = 0;
+  uint64_t last_guest_generation_ = 0;
 
   bool logged_first_frame_ = false;
 };
