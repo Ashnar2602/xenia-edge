@@ -32,6 +32,11 @@ DEFINE_bool(
     "Debug view: display raw depth grayscale on screen instead of color",
     "GPU");
 
+DEFINE_bool(
+    d3d12_neural_allow_heuristic_msaa_depth, true,
+    "Allow heuristic closest-to-camera MSAA depth resolution for PoC evaluation.",
+    "GPU");
+
 namespace xe {
 namespace ui {
 namespace d3d12 {
@@ -288,8 +293,15 @@ void DepthProvider::ReleaseResources() {
 
 void DepthProvider::Invalidate() {
   current_frame_.valid = false;
+  current_frame_.trusted = false;
   current_frame_.resource = nullptr;
   last_frame_was_valid_ = false;
+  if (candidate_trust_state_ != CandidateTrustState::kUntrusted) {
+    candidate_trust_state_ = CandidateTrustState::kUntrusted;
+    candidate_trust_transitions_++;
+  }
+  consecutive_validations_ = 0;
+  current_cand_res_ = nullptr;
 }
 
 void DepthProvider::RetireCompletedValidationSlots() {
@@ -312,8 +324,33 @@ void DepthProvider::RetireCompletedValidationSlots() {
           float max_f = *reinterpret_cast<const float*>(&max_u);
           if (min_u != 0xFFFFFFFF && std::abs(max_f - min_f) >= 0.0001f) {
             slot.is_valid = true;
+            // If this readback matches the active candidate, promote to TRUSTED
+            if (slot.candidate_resource == current_cand_res_) {
+              if (candidate_trust_state_ != CandidateTrustState::kTrusted) {
+                consecutive_validations_++;
+                if (consecutive_validations_ >= 1) {
+                  candidate_trust_state_ = CandidateTrustState::kTrusted;
+                  candidate_trust_transitions_++;
+                  XELOGI(
+                      "DepthProvider: Candidate {:#x} -> TRUSTED (async depth min={:.4f}, max={:.4f})",
+                      reinterpret_cast<uintptr_t>(slot.candidate_resource),
+                      min_f, max_f);
+                }
+              }
+            }
           } else {
             slot.is_valid = false;
+            validation_failures_++;
+            if (slot.candidate_resource == current_cand_res_ &&
+                candidate_trust_state_ == CandidateTrustState::kTrusted) {
+              candidate_trust_state_ = CandidateTrustState::kUntrusted;
+              consecutive_validations_ = 0;
+              candidate_trust_transitions_++;
+              XELOGW(
+                  "DepthProvider: Candidate {:#x} TRUSTED -> UNTRUSTED (validation failed: min_u={:#x}, diff={:.6f})",
+                  reinterpret_cast<uintptr_t>(slot.candidate_resource),
+                  min_u, std::abs(max_f - min_f));
+            }
           }
           D3D12_RANGE written_range = {0, 0};
           slot.readback_buffer->Unmap(0, &written_range);
@@ -346,13 +383,27 @@ void DepthProvider::ProcessFrame(
     uint64_t guest_generation) {
   RetireCompletedValidationSlots();
 
+  // Determine MSAA policy (Commit 5 FASE C)
+  DepthMsaaPolicy msaa_policy = DepthMsaaPolicy::kExact;
+  if (candidate.sample_count > 1) {
+    if (candidate.explicit_sample != 0xFFFFFFFF) {
+      msaa_policy = DepthMsaaPolicy::kExact;
+    } else if (cvars::d3d12_neural_allow_heuristic_msaa_depth) {
+      msaa_policy = DepthMsaaPolicy::kHeuristic;
+    } else {
+      msaa_policy = DepthMsaaPolicy::kUnsupported;
+    }
+  }
+
   // Validate candidate criteria:
   // - Resource and valid flag
   // - Confidence classification (UNKNOWN -> invalid -> bypass)
   // - Ambiguity check (margin < 5.0 -> invalid -> bypass)
+  // - Supported MSAA policy
   if (!is_initialized_ || !command_list || !candidate.valid ||
       !candidate.resource || candidate.confidence == 0 ||
-      (candidate.second_best_score > 0.0f && candidate.score_margin < 5.0f)) {
+      (candidate.second_best_score > 0.0f && candidate.score_margin < 5.0f) ||
+      msaa_policy == DepthMsaaPolicy::kUnsupported) {
     Invalidate();
     return;
   }
@@ -360,6 +411,61 @@ void DepthProvider::ProcessFrame(
   if (!EnsureResources(target_width, target_height)) {
     Invalidate();
     return;
+  }
+
+  // Resolve standard-Z vs reversed-Z (diagnostic override available)
+  bool final_inverted = candidate.inverted;
+  if (cvars::d3d12_neural_depth_mode == "standard") {
+    final_inverted = false;
+  } else if (cvars::d3d12_neural_depth_mode == "reversed") {
+    final_inverted = true;
+  }
+
+  // Candidate identity check for health / trust validation (Commit 5 FASE A)
+  bool identity_changed =
+      (candidate.resource != current_cand_res_ ||
+       candidate.dxgi_format != current_cand_fmt_ ||
+       candidate.width != current_cand_w_ ||
+       candidate.height != current_cand_h_ ||
+       candidate.vp_x != current_vp_x_ ||
+       candidate.vp_y != current_vp_y_ ||
+       candidate.vp_width != current_vp_w_ ||
+       candidate.vp_height != current_vp_h_ ||
+       final_inverted != current_cand_inverted_ ||
+       msaa_policy != current_msaa_policy_);
+
+  if (identity_changed) {
+    current_cand_res_ = candidate.resource;
+    current_cand_fmt_ = candidate.dxgi_format;
+    current_cand_w_ = candidate.width;
+    current_cand_h_ = candidate.height;
+    current_vp_x_ = candidate.vp_x;
+    current_vp_y_ = candidate.vp_y;
+    current_vp_w_ = candidate.vp_width;
+    current_vp_h_ = candidate.vp_height;
+    current_cand_inverted_ = final_inverted;
+    current_msaa_policy_ = msaa_policy;
+
+    if (candidate_trust_state_ != CandidateTrustState::kUntrusted) {
+      candidate_trust_state_ = CandidateTrustState::kUntrusted;
+      candidate_trust_transitions_++;
+    }
+    consecutive_validations_ = 0;
+    XELOGI(
+        "DepthProvider: Candidate identity changed -> UNTRUSTED (res={:#x}, "
+        "{}x{}, fmt {:X}, MSAA {} policy {})",
+        reinterpret_cast<uintptr_t>(candidate.resource), candidate.width,
+        candidate.height, uint32_t(candidate.dxgi_format),
+        candidate.sample_count,
+        msaa_policy == DepthMsaaPolicy::kExact ? "EXACT" : "HEURISTIC");
+  }
+
+  new_guest_frames_++;
+  bool is_trusted = (candidate_trust_state_ == CandidateTrustState::kTrusted);
+  if (is_trusted) {
+    frames_depth_candidate_trusted_++;
+  } else {
+    frames_bypassed_awaiting_validation_++;
   }
 
   // Temporal stability and discontinuity detection
@@ -401,14 +507,6 @@ void DepthProvider::ProcessFrame(
     last_cand_height_ = candidate.height;
   }
   last_frame_was_valid_ = true;
-
-  // Resolve standard-Z vs reversed-Z (diagnostic override available)
-  bool final_inverted = candidate.inverted;
-  if (cvars::d3d12_neural_depth_mode == "standard") {
-    final_inverted = false;
-  } else if (cvars::d3d12_neural_depth_mode == "reversed") {
-    final_inverted = true;
-  }
 
   // Viewport and subrect mapping
   float vp_scale_x = 1.0f;
@@ -602,7 +700,9 @@ void DepthProvider::ProcessFrame(
   current_frame_.confidence = candidate.confidence;
   current_frame_.score = candidate.score;
   current_frame_.score_margin = candidate.score_margin;
-  current_frame_.valid = IsGenerationValidated(guest_generation);
+  current_frame_.msaa_policy = msaa_policy;
+  current_frame_.trusted = is_trusted;
+  current_frame_.valid = is_trusted;
 }
 
 }  // namespace neural

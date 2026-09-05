@@ -13,7 +13,12 @@
 
 #include <cmath>
 
+#include "xenia/base/cvar.h"
 #include "xenia/base/logging.h"
+
+DEFINE_int32(d3d12_neural_motion_grid_size, 2,
+             "NVOFA vector grid size (1 = 1x1 full res, 2 = 2x2 half res).",
+             "GPU");
 
 namespace shaders {
 #include "xenia/ui/shaders/bytecode/d3d12_dxil/neural_color_convert_cs.h"
@@ -360,7 +365,11 @@ bool NvidiaOpticalFlowEstimator::AllocateResources(uint32_t width,
                                                   uint32_t height) {
   width_ = width;
   height_ = height;
-  grid_size_ = NV_OF_OUTPUT_VECTOR_GRID_SIZE_2;
+  if (cvars::d3d12_neural_motion_grid_size == 1) {
+    grid_size_ = NV_OF_OUTPUT_VECTOR_GRID_SIZE_1;
+  } else {
+    grid_size_ = NV_OF_OUTPUT_VECTOR_GRID_SIZE_2;
+  }
   grid_width_ = (width_ + static_cast<uint32_t>(grid_size_) - 1) /
                 static_cast<uint32_t>(grid_size_);
   grid_height_ = (height_ + static_cast<uint32_t>(grid_size_) - 1) /

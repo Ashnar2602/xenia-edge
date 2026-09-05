@@ -11,6 +11,7 @@
 
 #if XE_PLATFORM_WIN32
 
+#include "xenia/base/clock.h"
 #include "xenia/base/cvar.h"
 #include "xenia/base/filesystem.h"
 #include "xenia/base/logging.h"
@@ -432,6 +433,15 @@ bool SyntheticNgxSession::InitializeNgx() {
 
 bool SyntheticNgxSession::CreateContractTextures(uint32_t width, uint32_t height,
                                                 DXGI_FORMAT format) {
+  D3D12_FEATURE_DATA_FORMAT_SUPPORT format_support = {format};
+  if (FAILED(device_->CheckFeatureSupport(
+          D3D12_FEATURE_FORMAT_SUPPORT, &format_support, sizeof(format_support))) ||
+      !(format_support.Support1 & D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW)) {
+    XELOGE("SyntheticNgxSession: Output format {} does not support UAV",
+           uint32_t(format));
+    return false;
+  }
+
   D3D12_RESOURCE_DESC desc = {};
   desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
   desc.Width = width;
@@ -442,18 +452,7 @@ bool SyntheticNgxSession::CreateContractTextures(uint32_t width, uint32_t height
   desc.SampleDesc.Quality = 0;
   desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
-  // 1. Color input resource
-  desc.Format = format;
-  desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-  if (FAILED(device_->CreateCommittedResource(
-          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE, &desc,
-          D3D12_RESOURCE_STATE_COMMON, nullptr,
-          IID_PPV_ARGS(&color_resource_)))) {
-    XELOGE("SyntheticNgxSession: Failed to create Color contract texture");
-    return false;
-  }
-
-  // 2. Output resource (requires UAV)
+  // Output resource for the synthetic 1:1 contract (UAV capable)
   desc.Format = format;
   desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
   if (FAILED(device_->CreateCommittedResource(
@@ -464,29 +463,7 @@ bool SyntheticNgxSession::CreateContractTextures(uint32_t width, uint32_t height
     return false;
   }
 
-  // 3. Depth resource (R32_FLOAT)
-  desc.Format = DXGI_FORMAT_R32_FLOAT;
-  desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-  if (FAILED(device_->CreateCommittedResource(
-          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE, &desc,
-          D3D12_RESOURCE_STATE_COMMON, nullptr,
-          IID_PPV_ARGS(&depth_resource_)))) {
-    XELOGE("SyntheticNgxSession: Failed to create Depth contract texture");
-    return false;
-  }
-
-  // 4. Motion vectors resource (R16G16_FLOAT)
-  desc.Format = DXGI_FORMAT_R16G16_FLOAT;
-  desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-  if (FAILED(device_->CreateCommittedResource(
-          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE, &desc,
-          D3D12_RESOURCE_STATE_COMMON, nullptr,
-          IID_PPV_ARGS(&motion_vectors_resource_)))) {
-    XELOGE(
-        "SyntheticNgxSession: Failed to create MotionVectors contract texture");
-    return false;
-  }
-
+  output_resource_state_ = D3D12_RESOURCE_STATE_COMMON;
   return true;
 }
 
@@ -506,38 +483,40 @@ void SyntheticNgxSession::Invalidate() {
     }
   }
 
-  color_resource_.Reset();
   output_resource_.Reset();
-  depth_resource_.Reset();
-  motion_vectors_resource_.Reset();
+  output_resource_state_ = D3D12_RESOURCE_STATE_COMMON;
 
   width_ = 0;
   height_ = 0;
   format_ = DXGI_FORMAT_UNKNOWN;
+  depth_inverted_ = false;
 
-  if (state_ == SessionState::kReady) {
+  if (state_ == SessionState::kReady || state_ == SessionState::kSyntheticReady) {
     state_ = SessionState::kUninitialized;
   }
 }
 
 bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
                                        uint32_t width, uint32_t height,
-                                       DXGI_FORMAT format) {
+                                       DXGI_FORMAT format,
+                                       bool depth_inverted) {
   if (state_ == SessionState::kUnavailable || state_ == SessionState::kFailed) {
     return false;
   }
 
-  if (feature_handle_ && width_ == width && height_ == height &&
-      format_ == format) {
+  if (IsReady() && width_ == width && height_ == height &&
+      format_ == format && depth_inverted_ == depth_inverted) {
     PollDfcState(command_list);
     return true;
   }
 
-  if (feature_handle_) {
+  if (IsReady()) {
     XELOGI(
-        "SyntheticNgxSession: Output resolution/format changed ({}x{} fmt {} "
-        "-> {}x{} fmt {}), recreating synthetic NGX contract",
-        width_, height_, uint32_t(format_), width, height, uint32_t(format));
+        "SyntheticNgxSession: Output resolution/format/inversion changed ({}x{} "
+        "fmt {} inv {} -> {}x{} fmt {} inv {}), recreating synthetic NGX "
+        "contract",
+        width_, height_, uint32_t(format_), depth_inverted_, width, height,
+        uint32_t(format), depth_inverted);
     Invalidate();
   }
 
@@ -554,11 +533,15 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   params_->Set("OutWidth", width);
   params_->Set("OutHeight", height);
 
-  unsigned int create_flags = 0;
-  if (FormatCanExceedOne(format)) {
-    create_flags |= 0x01;  // IsHDR
+  // Flags matching DLSS 5 Feeder reference:
+  // MVLowRes (0x02): Motion vectors are at input/render resolution
+  // AutoExposure (0x40): NGX internally evaluates exposure
+  // DepthInverted (0x08): If inverted Z (near=1, far=0)
+  // IsHDR (0x01): false for Xbox 360 SDR UNORM framebuffer
+  unsigned int create_flags = 0x02 /* MVLowRes */ | 0x40 /* AutoExposure */;
+  if (depth_inverted) {
+    create_flags |= 0x08;  // DepthInverted
   }
-  // DepthInverted: 0x08 if reversed depth. Standard-Z is 0x00.
   params_->Set("DLSS.Feature.Create.Flags", create_flags);
 
   params_->Set("DLSS.Enable.Output.Subrects", 0u);
@@ -576,13 +559,11 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   params_->Set("CreationNodeMask", 1u);
   params_->Set("VisibilityNodeMask", 1u);
 
-  params_->Set("Color", color_resource_.Get());
+  // Output resource is initialized to our owned UAV texture
   params_->Set("Output", output_resource_.Get());
-  params_->Set("Depth", depth_resource_.Get());
-  params_->Set("MotionVectors", motion_vectors_resource_.Get());
 
-  params_->Set("MV.Scale.X", static_cast<float>(width));
-  params_->Set("MV.Scale.Y", static_cast<float>(height));
+  params_->Set("MV.Scale.X", 1.0f);
+  params_->Set("MV.Scale.Y", 1.0f);
   params_->Set("Jitter.Offset.X", 0.0f);
   params_->Set("Jitter.Offset.Y", 0.0f);
   params_->Set("Sharpness", 0.0f);
@@ -638,17 +619,21 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
 
   if (create_result != 1 || !feature_handle_) {
     XELOGW(
-        "SyntheticNgxSession: Failed to create synthetic NGX feature (code "
-        "{:#x})",
+        "SyntheticNgxSession: Native NGX CreateFeature returned code {:#x}, "
+        "enabling synthetic contract fallback",
         create_result);
-    state_ = SessionState::kFailed;
-    Invalidate();
-    return false;
+    width_ = width;
+    height_ = height;
+    format_ = format;
+    depth_inverted_ = depth_inverted;
+    state_ = SessionState::kSyntheticReady;
+    return true;
   }
 
   width_ = width;
   height_ = height;
   format_ = format;
+  depth_inverted_ = depth_inverted;
   state_ = SessionState::kReady;
 
   XELOGI(
@@ -712,61 +697,147 @@ void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) 
     uint32_t w = width_;
     uint32_t h = height_;
     DXGI_FORMAT fmt = format_;
+    bool inv = depth_inverted_;
     AwaitGpuIdle();
     Invalidate();
     dfc_created_unarmed_ = false;
-    EnsureFeature(command_list, w, h, fmt);
+    EnsureFeature(command_list, w, h, fmt, inv);
     XELOGI(
         "SyntheticNgxSession: Synthetic NGX feature recreated for DFC "
         "interception");
   }
 }
 
-bool SyntheticNgxSession::EvaluateDiagnostic(
-    ID3D12GraphicsCommandList* command_list) {
-  if (state_ != SessionState::kReady || !feature_handle_ || !command_list) {
+bool SyntheticNgxSession::Evaluate(ID3D12GraphicsCommandList* command_list,
+                                  const NeuralFrameContract& contract) {
+  if (!IsReady() || !command_list || !contract.valid) {
+    return false;
+  }
+  if (!contract.color || !contract.depth || !contract.motion_vectors ||
+      !output_resource_) {
     return false;
   }
 
-  // Pre-evaluate barriers for contract resources
-  D3D12_RESOURCE_BARRIER barriers[4] = {};
-  barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-  barriers[0].Transition.pResource = color_resource_.Get();
-  barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-  barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-  barriers[0].Transition.StateAfter =
+  evaluate_count_++;
+  if (contract.reset_history) {
+    reset_count_++;
+  }
+
+  uint64_t t_start = xe::Clock::QueryHostTickCount();
+  uint64_t freq = xe::Clock::QueryHostTickFrequency();
+
+  if (state_ == SessionState::kSyntheticReady) {
+    // Synthetic pass-through: Copy contract.color to output_resource_
+    D3D12_RESOURCE_BARRIER pre_barriers[2] = {};
+    pre_barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    pre_barriers[0].Transition.pResource = contract.color;
+    pre_barriers[0].Transition.Subresource =
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    pre_barriers[0].Transition.StateBefore =
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    pre_barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+    pre_barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    pre_barriers[1].Transition.pResource = output_resource_.Get();
+    pre_barriers[1].Transition.Subresource =
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    pre_barriers[1].Transition.StateBefore = output_resource_state_;
+    pre_barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+
+    command_list->ResourceBarrier(2, pre_barriers);
+
+    command_list->CopyResource(output_resource_.Get(), contract.color);
+
+    D3D12_RESOURCE_BARRIER post_barriers[2] = {};
+    post_barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    post_barriers[0].Transition.pResource = contract.color;
+    post_barriers[0].Transition.Subresource =
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    post_barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+    post_barriers[0].Transition.StateAfter =
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+    post_barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    post_barriers[1].Transition.pResource = output_resource_.Get();
+    post_barriers[1].Transition.Subresource =
+        D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    post_barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+    post_barriers[1].Transition.StateAfter =
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+    command_list->ResourceBarrier(2, post_barriers);
+    output_resource_state_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+    uint64_t t_end = xe::Clock::QueryHostTickCount();
+    last_eval_time_ms_ = (t_end - t_start) * 1000.0 / freq;
+    total_eval_time_ms_ += last_eval_time_ms_;
+    evaluate_success_count_++;
+
+    if (evaluate_count_ == 1 || (evaluate_count_ % 120 == 1)) {
+      XELOGI(
+          "SyntheticNgxSession: Synthetic pass-through evaluate #{} completed "
+          "({:.3f}ms)",
+          evaluate_count_, last_eval_time_ms_);
+    }
+    return true;
+  }
+
+  // Native NGX evaluate (kReady with feature_handle_)
+  if (!feature_handle_) {
+    return false;
+  }
+
+  // Pre-evaluate transition barriers:
+  // Color from PIXEL_SHADER_RESOURCE to NON_PIXEL_SHADER_RESOURCE
+  // Output to UNORDERED_ACCESS
+  D3D12_RESOURCE_BARRIER pre_barriers[2] = {};
+  pre_barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  pre_barriers[0].Transition.pResource = contract.color;
+  pre_barriers[0].Transition.Subresource =
+      D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  pre_barriers[0].Transition.StateBefore =
+      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+  pre_barriers[0].Transition.StateAfter =
       D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-  barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-  barriers[1].Transition.pResource = output_resource_.Get();
-  barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-  barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-  barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+  pre_barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  pre_barriers[1].Transition.pResource = output_resource_.Get();
+  pre_barriers[1].Transition.Subresource =
+      D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  pre_barriers[1].Transition.StateBefore = output_resource_state_;
+  pre_barriers[1].Transition.StateAfter =
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
-  barriers[2].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-  barriers[2].Transition.pResource = depth_resource_.Get();
-  barriers[2].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-  barriers[2].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-  barriers[2].Transition.StateAfter =
-      D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-
-  barriers[3].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-  barriers[3].Transition.pResource = motion_vectors_resource_.Get();
-  barriers[3].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-  barriers[3].Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-  barriers[3].Transition.StateAfter =
-      D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-
-  command_list->ResourceBarrier(4, barriers);
+  command_list->ResourceBarrier(2, pre_barriers);
+  output_resource_state_ = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
   // Publish Deep Fried Chicken interop keys immediately before evaluate.
   PublishDfcInterop(params_);
 
-  params_->Set("Color", color_resource_.Get());
+  params_->Set("Color", contract.color);
   params_->Set("Output", output_resource_.Get());
-  params_->Set("Depth", depth_resource_.Get());
-  params_->Set("MotionVectors", motion_vectors_resource_.Get());
-  params_->Set("Reset", 0);
+  params_->Set("Depth", contract.depth);
+  params_->Set("MotionVectors", contract.motion_vectors);
+
+  params_->Set("DLSS.Render.Subrect.Dimensions.Width", contract.width);
+  params_->Set("DLSS.Render.Subrect.Dimensions.Height", contract.height);
+  params_->Set("DLSS.Input.Color.Subrect.Base.X", 0u);
+  params_->Set("DLSS.Input.Color.Subrect.Base.Y", 0u);
+  params_->Set("DLSS.Input.Depth.Subrect.Base.X", 0u);
+  params_->Set("DLSS.Input.Depth.Subrect.Base.Y", 0u);
+  params_->Set("DLSS.Input.MV.Subrect.Base.X", 0u);
+  params_->Set("DLSS.Input.MV.Subrect.Base.Y", 0u);
+  params_->Set("DLSS.Output.Subrect.Base.X", 0u);
+  params_->Set("DLSS.Output.Subrect.Base.Y", 0u);
+
+  params_->Set("MV.Scale.X", 1.0f);
+  params_->Set("MV.Scale.Y", 1.0f);
+  params_->Set("Jitter.Offset.X", 0.0f);
+  params_->Set("Jitter.Offset.Y", 0.0f);
+  params_->Set("Sharpness", 0.0f);
+  params_->Set("DLSS.Pre.Exposure", 1.0f);
+  params_->Set("DLSS.Exposure.Scale", 1.0f);
+  params_->Set("Reset", contract.reset_history ? 1 : 0);
 
   DWORD exception_code = 0;
   int eval_result = GuardedEvaluateFeature(
@@ -774,6 +845,7 @@ bool SyntheticNgxSession::EvaluateDiagnostic(
       &exception_code);
 
   if (exception_code != 0) {
+    evaluate_exception_count_++;
     XELOGW(
         "SyntheticNgxSession: EvaluateFeature raised exception {:#x} (caught "
         "safely)",
@@ -781,16 +853,79 @@ bool SyntheticNgxSession::EvaluateDiagnostic(
     eval_result = 0;
   }
 
-  // Transition back output to COMMON
-  D3D12_RESOURCE_BARRIER back_barrier = {};
-  back_barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-  back_barrier.Transition.pResource = output_resource_.Get();
-  back_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-  back_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-  back_barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-  command_list->ResourceBarrier(1, &back_barrier);
+  if (eval_result != 1) {
+    evaluate_failure_count_++;
+    if (evaluate_failure_count_ <= 5 || (evaluate_failure_count_ % 120 == 0)) {
+      XELOGW(
+          "SyntheticNgxSession: EvaluateFeature failed with code {:#x} (fail "
+          "#{})",
+          eval_result, evaluate_failure_count_);
+    }
+  } else {
+    evaluate_success_count_++;
+  }
+
+  // Restore barriers:
+  // Color from NON_PIXEL_SHADER_RESOURCE back to PIXEL_SHADER_RESOURCE
+  // Output from UNORDERED_ACCESS to PIXEL_SHADER_RESOURCE (for presenter sampling)
+  D3D12_RESOURCE_BARRIER post_barriers[2] = {};
+  post_barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  post_barriers[0].Transition.pResource = contract.color;
+  post_barriers[0].Transition.Subresource =
+      D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  post_barriers[0].Transition.StateBefore =
+      D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+  post_barriers[0].Transition.StateAfter =
+      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+  post_barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  post_barriers[1].Transition.pResource = output_resource_.Get();
+  post_barriers[1].Transition.Subresource =
+      D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  post_barriers[1].Transition.StateBefore =
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+  post_barriers[1].Transition.StateAfter =
+      D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+  command_list->ResourceBarrier(2, post_barriers);
+  output_resource_state_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+  uint64_t t_end = xe::Clock::QueryHostTickCount();
+  last_eval_time_ms_ = (t_end - t_start) * 1000.0 / freq;
+  total_eval_time_ms_ += last_eval_time_ms_;
+
+  if (evaluate_count_ == 1 || (evaluate_count_ % 120 == 1)) {
+    XELOGI(
+        "SyntheticNgxSession: Native EvaluateFeature #{} completed: "
+        "result={:#x} ({:.3f}ms)",
+        evaluate_count_, eval_result, last_eval_time_ms_);
+  }
 
   return eval_result == 1;
+}
+
+bool SyntheticNgxSession::EvaluateDiagnostic(
+    ID3D12GraphicsCommandList* command_list) {
+  if (state_ != SessionState::kReady || !feature_handle_ || !command_list ||
+      !output_resource_) {
+    return false;
+  }
+
+  // Diagnostic evaluate using output texture as placeholder
+  NeuralFrameContract contract;
+  contract.color = output_resource_.Get();
+  contract.depth = output_resource_.Get();
+  contract.motion_vectors = output_resource_.Get();
+  contract.output = output_resource_.Get();
+  contract.width = width_;
+  contract.height = height_;
+  contract.depth_inverted = depth_inverted_;
+  contract.depth_trusted = true;
+  contract.motion_valid = true;
+  contract.reset_history = true;
+  contract.valid = true;
+
+  return Evaluate(command_list, contract);
 }
 
 }  // namespace neural

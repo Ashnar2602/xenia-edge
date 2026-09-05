@@ -60,7 +60,42 @@ class NeuralRenderingManager {
   MotionEstimator* motion_estimator() const { return motion_estimator_.get(); }
   DepthProvider* depth_provider() const { return depth_provider_.get(); }
 
+  uint64_t total_frames() const { return total_frames_; }
+  uint64_t evaluated_frames() const { return evaluated_frames_; }
+  uint64_t bypassed_frames() const { return bypassed_frames_; }
+  uint64_t reset_frames() const { return reset_frames_; }
+  uint64_t contract_failures() const { return contract_failures_; }
+  uint64_t split_blits() const { return split_blits_; }
+
+  double last_motion_time_ms() const { return last_motion_time_ms_; }
+  double last_depth_time_ms() const { return last_depth_time_ms_; }
+  double last_ngx_time_ms() const { return last_ngx_time_ms_; }
+  double last_blit_time_ms() const { return last_blit_time_ms_; }
+  double last_total_pipeline_time_ms() const { return last_total_pipeline_time_ms_; }
+
+  double avg_motion_time_ms() const {
+    return evaluated_frames_ > 0 ? (total_motion_time_ms_ / evaluated_frames_) : 0.0;
+  }
+  double avg_depth_time_ms() const {
+    return evaluated_frames_ > 0 ? (total_depth_time_ms_ / evaluated_frames_) : 0.0;
+  }
+  double avg_ngx_time_ms() const {
+    return evaluated_frames_ > 0 ? (total_ngx_time_ms_ / evaluated_frames_) : 0.0;
+  }
+  double avg_blit_time_ms() const {
+    return split_blits_ > 0 ? (total_blit_time_ms_ / split_blits_) : 0.0;
+  }
+  double avg_total_pipeline_time_ms() const {
+    return evaluated_frames_ > 0 ? (total_pipeline_time_ms_ / evaluated_frames_) : 0.0;
+  }
+
  private:
+  bool EnsureSplitResource(uint32_t width, uint32_t height, DXGI_FORMAT format);
+  ID3D12Resource* BlitSplitOutput(ID3D12GraphicsCommandList* command_list,
+                                  ID3D12Resource* original,
+                                  ID3D12Resource* neural, uint32_t width,
+                                  uint32_t height);
+
   ID3D12Device* device_ = nullptr;
   ID3D12CommandQueue* direct_queue_ = nullptr;
   std::unique_ptr<SyntheticNgxSession> ngx_session_;
@@ -72,6 +107,36 @@ class NeuralRenderingManager {
   DXGI_FORMAT current_format_ = DXGI_FORMAT_UNKNOWN;
   uint64_t frame_index_ = 0;
   uint64_t last_guest_generation_ = 0;
+
+  Microsoft::WRL::ComPtr<ID3D12Resource> split_output_resource_;
+  D3D12_RESOURCE_STATES split_resource_state_ = D3D12_RESOURCE_STATE_COMMON;
+  uint32_t split_width_ = 0;
+  uint32_t split_height_ = 0;
+  DXGI_FORMAT split_format_ = DXGI_FORMAT_UNKNOWN;
+
+  bool need_history_reset_ = true;
+  uint64_t last_depth_candidate_resource_ = 0;
+  int last_dfc_state_ = -2;
+  int last_trust_state_ = 0;
+
+  uint64_t total_frames_ = 0;
+  uint64_t evaluated_frames_ = 0;
+  uint64_t bypassed_frames_ = 0;
+  uint64_t reset_frames_ = 0;
+  uint64_t contract_failures_ = 0;
+  uint64_t split_blits_ = 0;
+
+  double last_motion_time_ms_ = 0.0;
+  double last_depth_time_ms_ = 0.0;
+  double last_ngx_time_ms_ = 0.0;
+  double last_blit_time_ms_ = 0.0;
+  double last_total_pipeline_time_ms_ = 0.0;
+
+  double total_motion_time_ms_ = 0.0;
+  double total_depth_time_ms_ = 0.0;
+  double total_ngx_time_ms_ = 0.0;
+  double total_blit_time_ms_ = 0.0;
+  double total_pipeline_time_ms_ = 0.0;
 
   bool logged_first_frame_ = false;
 };

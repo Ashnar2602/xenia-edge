@@ -21,11 +21,24 @@
 
 DECLARE_string(d3d12_neural_depth_mode);
 DECLARE_bool(d3d12_neural_depth_debug_view);
+DECLARE_bool(d3d12_neural_allow_heuristic_msaa_depth);
 
 namespace xe {
 namespace ui {
 namespace d3d12 {
 namespace neural {
+
+enum class CandidateTrustState {
+  kUntrusted,
+  kValidating,
+  kTrusted,
+};
+
+enum class DepthMsaaPolicy {
+  kExact,        // guest copy_sample_select known and replicated
+  kHeuristic,    // closest-to-camera reconstruction (min/max samples)
+  kUnsupported,  // indeterminate / disabled
+};
 
 struct DepthFrame {
   ID3D12Resource* resource = nullptr;
@@ -33,6 +46,7 @@ struct DepthFrame {
   uint32_t height = 0;
   bool inverted = false;
   bool valid = false;
+  bool trusted = false;
   uint64_t guest_generation = 0;
   bool depth_history_discontinuity = false;
   float depth_near = 0.0f;
@@ -40,6 +54,7 @@ struct DepthFrame {
   uint32_t confidence = 0;
   float score = 0.0f;
   float score_margin = 0.0f;
+  DepthMsaaPolicy msaa_policy = DepthMsaaPolicy::kExact;
 };
 
 class DepthProvider {
@@ -59,6 +74,25 @@ class DepthProvider {
   const DepthFrame& GetCurrentDepthFrame() const { return current_frame_; }
 
   bool IsGenerationValidated(uint64_t guest_generation) const;
+
+  CandidateTrustState candidate_trust_state() const {
+    return candidate_trust_state_;
+  }
+  bool is_depth_trusted() const {
+    return candidate_trust_state_ == CandidateTrustState::kTrusted;
+  }
+
+  uint64_t new_guest_frames() const { return new_guest_frames_; }
+  uint64_t frames_depth_candidate_trusted() const {
+    return frames_depth_candidate_trusted_;
+  }
+  uint64_t frames_bypassed_awaiting_validation() const {
+    return frames_bypassed_awaiting_validation_;
+  }
+  uint64_t validation_failures() const { return validation_failures_; }
+  uint64_t candidate_trust_transitions() const {
+    return candidate_trust_transitions_;
+  }
 
   uint32_t candidate_switch_count() const { return candidate_switch_count_; }
   float candidate_switches_per_minute() const {
@@ -116,6 +150,28 @@ class DepthProvider {
   uint32_t candidate_switch_count_ = 0;
   uint64_t start_time_ticks_ = 0;
   float candidate_switches_per_minute_ = 0.0f;
+
+  // Candidate health / trust state machine (Commit 5 FASE A)
+  CandidateTrustState candidate_trust_state_ = CandidateTrustState::kUntrusted;
+  uint32_t consecutive_validations_ = 0;
+
+  ID3D12Resource* current_cand_res_ = nullptr;
+  DXGI_FORMAT current_cand_fmt_ = DXGI_FORMAT_UNKNOWN;
+  uint32_t current_cand_w_ = 0;
+  uint32_t current_cand_h_ = 0;
+  uint32_t current_vp_x_ = 0;
+  uint32_t current_vp_y_ = 0;
+  uint32_t current_vp_w_ = 0;
+  uint32_t current_vp_h_ = 0;
+  bool current_cand_inverted_ = false;
+  DepthMsaaPolicy current_msaa_policy_ = DepthMsaaPolicy::kExact;
+
+  // Diagnostic counters
+  uint64_t new_guest_frames_ = 0;
+  uint64_t frames_depth_candidate_trusted_ = 0;
+  uint64_t frames_bypassed_awaiting_validation_ = 0;
+  uint64_t validation_failures_ = 0;
+  uint64_t candidate_trust_transitions_ = 0;
 };
 
 }  // namespace neural

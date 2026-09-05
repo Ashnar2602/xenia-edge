@@ -407,6 +407,10 @@ void GetHostViewportInfo(GetViewportInfoArgs* XE_RESTRICT args,
   float ndc_scale[3];
   float ndc_offset[3];
 
+  float depth_near_raw = 0.0f;
+  float depth_far_raw = 1.0f;
+  bool depth_inverted = false;
+
   if (pa_cl_clip_cntl.clip_disable) {
     // Clipping is disabled - use a huge host viewport, perform pixel and depth
     // offsetting in the vertex shader.
@@ -434,6 +438,9 @@ void GetHostViewportInfo(GetViewportInfoArgs* XE_RESTRICT args,
     z_max = 1.0f;
     ndc_scale[2] = scale_z;
     ndc_offset[2] = offset_z;
+    depth_near_raw = offset_z;
+    depth_far_raw = offset_z + scale_z;
+    depth_inverted = (scale_z < 0.0f);
   } else {
     // Clipping is enabled - perform pixel and depth offsetting via the host
     // viewport.
@@ -548,6 +555,10 @@ void GetHostViewportInfo(GetViewportInfoArgs* XE_RESTRICT args,
       ndc_scale[2] = 0.5f;
       ndc_offset[2] = 0.5f;
     }
+    depth_near_raw = host_clip_offset_z;
+    depth_far_raw = host_clip_offset_z + host_clip_scale_z;
+    depth_inverted = (host_clip_offset_z > (host_clip_offset_z + host_clip_scale_z));
+
     if (args->pixel_shader_writes_depth) {
       // Allow the pixel shader to write any depth value since
       // PA_SC_VPORT_ZMIN/ZMAX isn't present on the Adreno 200; guest pixel
@@ -597,6 +608,9 @@ void GetHostViewportInfo(GetViewportInfoArgs* XE_RESTRICT args,
   }
   viewport_info_out.z_min = z_min;
   viewport_info_out.z_max = z_max;
+  viewport_info_out.depth_inverted = depth_inverted;
+  viewport_info_out.depth_near = depth_near_raw;
+  viewport_info_out.depth_far = depth_far_raw;
 
   if (args->origin_bottom_left) {
     ndc_scale[1] = -ndc_scale[1];

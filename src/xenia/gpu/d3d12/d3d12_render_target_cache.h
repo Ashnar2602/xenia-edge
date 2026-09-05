@@ -698,6 +698,7 @@ class D3D12RenderTargetCache final : public RenderTargetCache {
     uint32_t vp_height = 0;
     float depth_near = 0.0f;
     float depth_far = 1.0f;
+    bool depth_inverted = false;
     bool z_params_valid = false;
     uint32_t explicit_sample = 0xFFFFFFFF;
   };

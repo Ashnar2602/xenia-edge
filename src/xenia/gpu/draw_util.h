@@ -304,6 +304,9 @@ struct ViewportInfo {
   // The scale is applied before the offset (like using multiply-add).
   float ndc_scale[3];
   float ndc_offset[3];
+  bool depth_inverted;
+  float depth_near;
+  float depth_far;
 };
 static_assert(sizeof(xenos::DepthRenderTargetFormat) == sizeof(uint32_t),
               "Change in depthrendertargetformat throws off "

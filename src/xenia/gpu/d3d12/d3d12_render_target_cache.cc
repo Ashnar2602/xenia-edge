@@ -1097,49 +1097,29 @@ bool D3D12RenderTargetCache::Update(
           }
 
           const RegisterFile& regs = register_file();
-          auto pa_cl_vte_cntl = regs.Get<reg::PA_CL_VTE_CNTL>();
-          auto pa_cl_clip_cntl = regs.Get<reg::PA_CL_CLIP_CNTL>();
+          draw_util::GetViewportInfoArgs gviargs{};
+          uint32_t scale_x = GetDrawScaleX();
+          uint32_t scale_y = GetDrawScaleY();
+          gviargs.Setup(
+              scale_x, scale_y,
+              divisors::MagicDiv(scale_x),
+              divisors::MagicDiv(scale_y),
+              true, D3D12_VIEWPORT_BOUNDS_MAX, D3D12_VIEWPORT_BOUNDS_MAX, false,
+              normalized_depth_control,
+              depth_float24_convert_in_pixel_shader(), true, false);
+          gviargs.SetupRegisterValues(regs);
+          draw_util::ViewportInfo vi{};
+          draw_util::GetHostViewportInfo(&gviargs, vi);
 
-          float scale_z = pa_cl_vte_cntl.vport_z_scale_ena
-                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_ZSCALE)
-                              : 1.0f;
-          float offset_z = pa_cl_vte_cntl.vport_z_offset_ena
-                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_ZOFFSET)
-                               : 0.0f;
-
-          float host_clip_offset_z;
-          float host_clip_scale_z;
-          if (pa_cl_clip_cntl.dx_clip_space_def) {
-            host_clip_offset_z = offset_z;
-            host_clip_scale_z = scale_z;
-          } else {
-            host_clip_offset_z = offset_z - scale_z;
-            host_clip_scale_z = scale_z * 2.0f;
-          }
-
-          stats.depth_near = host_clip_offset_z;
-          stats.depth_far = host_clip_offset_z + host_clip_scale_z;
-          stats.z_params_valid = (std::abs(scale_z) > 1e-6f);
-
-          float scale_x = pa_cl_vte_cntl.vport_x_scale_ena
-                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_XSCALE)
-                              : 1.0f;
-          float scale_y = pa_cl_vte_cntl.vport_y_scale_ena
-                              ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_YSCALE)
-                              : 1.0f;
-          float offset_x = pa_cl_vte_cntl.vport_x_offset_ena
-                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_XOFFSET)
-                               : 0.0f;
-          float offset_y = pa_cl_vte_cntl.vport_y_offset_ena
-                               ? regs.Get<float>(XE_GPU_REG_PA_CL_VPORT_YOFFSET)
-                               : 0.0f;
-
-          float scale_x_abs = std::abs(scale_x);
-          float scale_y_abs = std::abs(scale_y);
-          stats.vp_x = uint32_t(std::max(0.0f, offset_x - scale_x_abs));
-          stats.vp_y = uint32_t(std::max(0.0f, offset_y - scale_y_abs));
-          stats.vp_width = uint32_t(scale_x_abs * 2.0f);
-          stats.vp_height = uint32_t(scale_y_abs * 2.0f);
+          stats.depth_near = vi.depth_near;
+          stats.depth_far = vi.depth_far;
+          stats.depth_inverted = vi.depth_inverted;
+          stats.z_params_valid =
+              (std::abs(vi.depth_far - vi.depth_near) > 1e-6f);
+          stats.vp_x = vi.xy_offset[0];
+          stats.vp_y = vi.xy_offset[1];
+          stats.vp_width = vi.xy_extent[0];
+          stats.vp_height = vi.xy_extent[1];
         }
       }
     } break;
@@ -4171,7 +4151,7 @@ D3D12RenderTargetCache::FindBestDepthCandidate(uint32_t guest_width,
       if (stats->z_params_valid) {
         d_near = stats->depth_near;
         d_far = stats->depth_far;
-        inverted = (d_near > d_far);
+        inverted = stats->depth_inverted;
 
         // Consistency verification against zfunc
         if (stats->last_zfunc == xenos::CompareFunction::kGreater ||

@@ -30,10 +30,11 @@ namespace neural {
 
 // Represents the lifecycle state of the synthetic NGX session.
 enum class SessionState {
-  kUnavailable,    // NGX runtime / NVIDIA hardware not available on system
-  kUninitialized,  // Runtime loaded, awaiting feature creation
-  kReady,          // Feature and contract resources created and valid
-  kFailed,         // Initialization or feature creation failed irreversibly
+  kUnavailable,     // NGX runtime / NVIDIA hardware not available on system
+  kUninitialized,   // Runtime loaded, awaiting feature creation
+  kReady,           // Feature and contract resources created and valid (native NGX)
+  kSyntheticReady,  // Module absent / fallback, synthetic contract & textures active
+  kFailed,          // Initialization or feature creation failed irreversibly
 };
 
 // Represents the interception state of Deep Fried Chicken (Alexander, 1.4.0+ ABI 1)
@@ -74,6 +75,23 @@ struct NVSDK_NGX_Handle {
   unsigned int Id;
 };
 
+// Explicit neural rendering frame contract (Commit 5 FASE H)
+struct NeuralFrameContract {
+  uint64_t guest_generation = 0;
+  ID3D12Resource* color = nullptr;
+  ID3D12Resource* depth = nullptr;
+  ID3D12Resource* motion_vectors = nullptr;
+  ID3D12Resource* output = nullptr;
+  uint32_t width = 0;
+  uint32_t height = 0;
+  bool depth_inverted = false;
+  bool depth_trusted = false;
+  bool motion_valid = false;
+  bool reset_history = false;
+  bool valid = false;
+  const char* bypass_reason = nullptr;
+};
+
 class SyntheticNgxSession {
  public:
   static std::unique_ptr<SyntheticNgxSession> Create(
@@ -84,36 +102,53 @@ class SyntheticNgxSession {
   ~SyntheticNgxSession();
 
   SessionState state() const { return state_; }
-  bool IsReady() const { return state_ == SessionState::kReady; }
+  bool IsReady() const {
+    return state_ == SessionState::kReady ||
+           state_ == SessionState::kSyntheticReady;
+  }
+  bool IsNativeActive() const {
+    return state_ == SessionState::kReady && feature_handle_ != nullptr;
+  }
   bool IsUnavailable() const { return state_ == SessionState::kUnavailable; }
 
   DfcState dfc_state() const { return dfc_state_; }
   bool IsInterceptionConfirmed() const;
 
-  // Ensures synthetic NGX feature and backing textures are initialized for (width, height, format).
-  // Re-creates the feature if dimensions or format changed, or if DFC becomes ARMED.
+  // Ensures synthetic NGX feature and backing output texture are initialized.
+  // Re-creates the feature if dimensions, format, or depth inversion changed, or if DFC becomes ARMED.
   bool EnsureFeature(ID3D12GraphicsCommandList* command_list, uint32_t width,
-                     uint32_t height, DXGI_FORMAT format);
+                     uint32_t height, DXGI_FORMAT format,
+                     bool depth_inverted = false);
 
   // Polls Deep Fried Chicken exports and handles warm-up feature recreation when it arms.
   void PollDfcState(ID3D12GraphicsCommandList* command_list);
 
-  // Invalidates the current feature handle and textures upon resolution change or shutdown.
+  // Invalidates the current feature handle and output texture upon resolution change or shutdown.
   void Invalidate();
+
+  // Evaluates the synthetic DLAA feature with the supplied frame contract.
+  bool Evaluate(ID3D12GraphicsCommandList* command_list,
+                const NeuralFrameContract& contract);
 
   // Controlled diagnostic evaluate test (for verification only; not used in normal presentation).
   bool EvaluateDiagnostic(ID3D12GraphicsCommandList* command_list);
 
-  ID3D12Resource* color_resource() const { return color_resource_.Get(); }
   ID3D12Resource* output_resource() const { return output_resource_.Get(); }
-  ID3D12Resource* depth_resource() const { return depth_resource_.Get(); }
-  ID3D12Resource* mv_resource() const {
-    return motion_vectors_resource_.Get();
-  }
 
   uint32_t width() const { return width_; }
   uint32_t height() const { return height_; }
   DXGI_FORMAT format() const { return format_; }
+  bool depth_inverted() const { return depth_inverted_; }
+
+  uint64_t evaluate_count() const { return evaluate_count_; }
+  uint64_t evaluate_success_count() const { return evaluate_success_count_; }
+  uint64_t evaluate_failure_count() const { return evaluate_failure_count_; }
+  uint64_t evaluate_exception_count() const { return evaluate_exception_count_; }
+  uint64_t reset_count() const { return reset_count_; }
+  double last_eval_time_ms() const { return last_eval_time_ms_; }
+  double average_eval_time_ms() const {
+    return evaluate_count_ > 0 ? (total_eval_time_ms_ / evaluate_count_) : 0.0;
+  }
 
  private:
   bool LoadNgxModule();
@@ -161,12 +196,11 @@ class SyntheticNgxSession {
   uint32_t width_ = 0;
   uint32_t height_ = 0;
   DXGI_FORMAT format_ = DXGI_FORMAT_UNKNOWN;
+  bool depth_inverted_ = false;
 
-  // Backing textures for the synthetic 1:1 contract
-  Microsoft::WRL::ComPtr<ID3D12Resource> color_resource_;
+  // Output texture for the synthetic 1:1 contract (UAV capable)
   Microsoft::WRL::ComPtr<ID3D12Resource> output_resource_;
-  Microsoft::WRL::ComPtr<ID3D12Resource> depth_resource_;
-  Microsoft::WRL::ComPtr<ID3D12Resource> motion_vectors_resource_;
+  D3D12_RESOURCE_STATES output_resource_state_ = D3D12_RESOURCE_STATE_COMMON;
 
   void AwaitGpuIdle();
 
@@ -178,6 +212,14 @@ class SyntheticNgxSession {
   bool dfc_logged_abi_ = false;
   bool dfc_created_unarmed_ = false;
   DfcState dfc_state_ = DfcState::kModuleAbsent;
+
+  uint64_t evaluate_count_ = 0;
+  uint64_t evaluate_success_count_ = 0;
+  uint64_t evaluate_failure_count_ = 0;
+  uint64_t evaluate_exception_count_ = 0;
+  uint64_t reset_count_ = 0;
+  double last_eval_time_ms_ = 0.0;
+  double total_eval_time_ms_ = 0.0;
 };
 
 }  // namespace neural
