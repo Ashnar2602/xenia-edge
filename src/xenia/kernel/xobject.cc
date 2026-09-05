@@ -221,8 +221,10 @@ void WaitExit(X_KTHREAD* kthread, X_STATUS result) {
   // Runs on every cooperative wait exit, so it is also where the diagnostic
   // wait shape is dropped. Unconditional: a thread that never waits again must
   // not keep reporting a stale handle set.
-  if (auto* self = XThread::GetCurrentThread()) {
-    self->clear_cooperative_wait_shape();
+  if (XThread::IsInThread()) {
+    if (auto* self = XThread::GetCurrentThread()) {
+      self->clear_cooperative_wait_shape();
+    }
   }
   if (!kthread) {
     return;
@@ -357,7 +359,8 @@ void XObject::RecordCooperativeSignal(XObject* object) {
   rec.handle = object->handle();
   rec.type = static_cast<uint8_t>(object->type());
   rec.uptime_ms = uint32_t(Clock::QueryGuestUptimeMillis());
-  if (auto* thread = XThread::GetCurrentThread()) {
+  if (XThread::IsInThread()) {
+    auto* thread = XThread::GetCurrentThread();
     rec.signaler_thread = thread->handle();
     if (auto* state = thread->thread_state()) {
       rec.signaler_lr = uint32_t(state->context()->lr);
