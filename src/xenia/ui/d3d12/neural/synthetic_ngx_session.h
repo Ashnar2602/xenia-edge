@@ -252,6 +252,10 @@ class SyntheticNgxSession {
   std::string competing_consumer_name_;
   bool dfc_rebuilt_for_armed_ = false;
 
+  HMODULE dfc_module_ = nullptr;
+  const unsigned int* dfc_abi_ptr_ = nullptr;
+  const volatile LONG* dfc_state_ptr_ = nullptr;
+
   bool logged_addon_status_ = false;
   bool dfc_logged_abi_ = false;
   bool dfc_created_unarmed_ = false;

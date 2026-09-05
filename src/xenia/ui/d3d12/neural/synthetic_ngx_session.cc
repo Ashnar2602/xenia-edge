@@ -232,24 +232,33 @@ const char* DfcStateToString(DfcState state) {
   }
 }
 
-DfcState ReadDfcExports(unsigned int* out_abi) {
-  HMODULE s_mod = GetModuleHandleA("deep-fried-chicken.addon64");
-  if (!s_mod) {
-    if (out_abi) *out_abi = 0;
-    return DfcState::kModuleAbsent;
+DfcState ReadDfcExports(HMODULE& inout_mod, const unsigned int*& inout_abi_p,
+                        const volatile LONG*& inout_state_p,
+                        unsigned int* out_abi) {
+  if (!inout_mod) {
+    inout_mod = GetModuleHandleA("deep-fried-chicken.addon64");
+    if (!inout_mod) {
+      inout_mod = GetModuleHandleA("deep-fried-chicken-nvngx.dll");
+    }
+    if (inout_mod) {
+      inout_abi_p = reinterpret_cast<const unsigned int*>(
+          GetProcAddress(inout_mod, "DFC_FeederInteropAbi"));
+      inout_state_p = reinterpret_cast<const volatile LONG*>(
+          GetProcAddress(inout_mod, "DFC_Feature1InterceptionState"));
+    } else {
+      if (out_abi) *out_abi = 0;
+      return DfcState::kModuleAbsent;
+    }
   }
-  const unsigned int* s_abi_p = reinterpret_cast<const unsigned int*>(
-      GetProcAddress(s_mod, "DFC_FeederInteropAbi"));
-  const volatile LONG* s_state_p = reinterpret_cast<const volatile LONG*>(
-      GetProcAddress(s_mod, "DFC_Feature1InterceptionState"));
-  if (!s_abi_p || !s_state_p) {
+
+  if (!inout_abi_p || !inout_state_p) {
     if (out_abi) *out_abi = 0;
     return DfcState::kAbiUnavailable;
   }
   if (out_abi) {
-    *out_abi = *s_abi_p;
+    *out_abi = *inout_abi_p;
   }
-  return static_cast<DfcState>(*s_state_p);
+  return static_cast<DfcState>(*inout_state_p);
 }
 
 }  // namespace
@@ -487,7 +496,8 @@ bool SyntheticNgxSession::InitializeNgx() {
     }
 
     unsigned int dfc_abi = 0;
-    dfc_state_ = ReadDfcExports(&dfc_abi);
+    dfc_state_ =
+        ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
     dfc_abi_ = dfc_abi;
     if (dfc_state_ != DfcState::kModuleAbsent) {
       if (dfc_state_ != DfcState::kAbiUnavailable) {
@@ -720,7 +730,8 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
 
   // Determine if DFC was armed at feature creation time
   unsigned int dfc_abi = 0;
-  DfcState dfc_curr = ReadDfcExports(&dfc_abi);
+  DfcState dfc_curr =
+      ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
   dfc_abi_ = dfc_abi;
   if (dfc_curr != DfcState::kModuleAbsent &&
       dfc_curr != DfcState::kAbiUnavailable) {
@@ -871,10 +882,15 @@ bool SyntheticNgxSession::IsInterceptionConfirmed() const {
 
 void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) {
   unsigned int abi = 0;
-  DfcState current_state = ReadDfcExports(&abi);
+  bool was_mod_present = (dfc_module_ != nullptr);
+  DfcState current_state =
+      ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &abi);
   dfc_abi_ = abi;
 
-  InspectLoadedModules();
+  // Only re-inspect modules once upon discovery of a new DFC module
+  if (!was_mod_present && dfc_module_ != nullptr) {
+    InspectLoadedModules();
+  }
 
   if (has_competing_consumer_) {
     XELOGW(
