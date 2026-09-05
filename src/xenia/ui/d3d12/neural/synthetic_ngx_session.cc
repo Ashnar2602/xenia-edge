@@ -18,7 +18,12 @@
 #include "xenia/ui/d3d12/d3d12_util.h"
 
 #include <windows.h>
+#include <wincrypt.h>
 #include <excpt.h>
+#include <vector>
+
+#pragma comment(lib, "version.lib")
+#pragma comment(lib, "advapi32.lib")
 
 namespace xe {
 namespace ui {
@@ -26,6 +31,72 @@ namespace d3d12 {
 namespace neural {
 
 namespace {
+
+std::string ComputeSha256(const wchar_t* path) {
+  HANDLE file = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr,
+                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (file == INVALID_HANDLE_VALUE) {
+    return "FILE_NOT_FOUND";
+  }
+  HCRYPTPROV prov = 0;
+  HCRYPTHASH hash = 0;
+  std::string result = "HASH_ERROR";
+  if (CryptAcquireContextW(&prov, nullptr, nullptr, PROV_RSA_AES,
+                           CRYPT_VERIFYCONTEXT)) {
+    if (CryptCreateHash(prov, CALG_SHA_256, 0, 0, &hash)) {
+      constexpr DWORD kBufSize = 64 * 1024;
+      std::vector<BYTE> buffer(kBufSize);
+      DWORD bytes_read = 0;
+      bool read_ok = true;
+      while (ReadFile(file, buffer.data(), kBufSize, &bytes_read, nullptr) &&
+             bytes_read > 0) {
+        if (!CryptHashData(hash, buffer.data(), bytes_read, 0)) {
+          read_ok = false;
+          break;
+        }
+      }
+      if (read_ok) {
+        BYTE hash_bytes[32];
+        DWORD hash_len = sizeof(hash_bytes);
+        if (CryptGetHashParam(hash, HP_HASHVAL, hash_bytes, &hash_len, 0)) {
+          char hex[65] = {};
+          for (DWORD i = 0; i < hash_len; ++i) {
+            snprintf(hex + (i * 2), 3, "%02x", hash_bytes[i]);
+          }
+          result = hex;
+        }
+      }
+      CryptDestroyHash(hash);
+    }
+    CryptReleaseContext(prov, 0);
+  }
+  CloseHandle(file);
+  return result;
+}
+
+std::string GetModuleVersionString(const wchar_t* path) {
+  DWORD dummy = 0;
+  DWORD size = GetFileVersionInfoSizeW(path, &dummy);
+  if (size == 0) {
+    return "UNKNOWN";
+  }
+  std::vector<BYTE> data(size);
+  if (!GetFileVersionInfoW(path, 0, size, data.data())) {
+    return "UNKNOWN";
+  }
+  VS_FIXEDFILEINFO* ffi = nullptr;
+  UINT ffi_len = 0;
+  if (VerQueryValueW(data.data(), L"\\", reinterpret_cast<void**>(&ffi),
+                     &ffi_len) &&
+      ffi && ffi_len >= sizeof(VS_FIXEDFILEINFO)) {
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%u.%u.%u.%u", HIWORD(ffi->dwFileVersionMS),
+             LOWORD(ffi->dwFileVersionMS), HIWORD(ffi->dwFileVersionLS),
+             LOWORD(ffi->dwFileVersionLS));
+    return buf;
+  }
+  return "UNKNOWN";
+}
 
 constexpr int kFeatureSuperSampling = 1;
 constexpr unsigned int kPqQuality = 2;
@@ -162,23 +233,18 @@ const char* DfcStateToString(DfcState state) {
 }
 
 DfcState ReadDfcExports(unsigned int* out_abi) {
-  static HMODULE s_mod = nullptr;
-  static const unsigned int* s_abi_p = nullptr;
-  static const volatile LONG* s_state_p = nullptr;
+  HMODULE s_mod = GetModuleHandleA("deep-fried-chicken.addon64");
+  if (!s_mod) {
+    if (out_abi) *out_abi = 0;
+    return DfcState::kModuleAbsent;
+  }
+  const unsigned int* s_abi_p = reinterpret_cast<const unsigned int*>(
+      GetProcAddress(s_mod, "DFC_FeederInteropAbi"));
+  const volatile LONG* s_state_p = reinterpret_cast<const volatile LONG*>(
+      GetProcAddress(s_mod, "DFC_Feature1InterceptionState"));
   if (!s_abi_p || !s_state_p) {
-    s_mod = GetModuleHandleA("deep-fried-chicken.addon64");
-    if (!s_mod) {
-      return DfcState::kModuleAbsent;
-    }
-    s_abi_p = reinterpret_cast<const unsigned int*>(
-        GetProcAddress(s_mod, "DFC_FeederInteropAbi"));
-    s_state_p = reinterpret_cast<const volatile LONG*>(
-        GetProcAddress(s_mod, "DFC_Feature1InterceptionState"));
-    if (!s_abi_p || !s_state_p) {
-      s_abi_p = nullptr;
-      s_state_p = nullptr;
-      return DfcState::kAbiUnavailable;
-    }
+    if (out_abi) *out_abi = 0;
+    return DfcState::kAbiUnavailable;
   }
   if (out_abi) {
     *out_abi = *s_abi_p;
@@ -394,20 +460,35 @@ bool SyntheticNgxSession::InitializeNgx() {
     return false;
   }
 
-  // Check if Neural Rendering add-on / hook is present.
+  // Module inspection audit and provider discovery
   if (!logged_addon_status_) {
     logged_addon_status_ = true;
-    HMODULE addon_reno1 = GetModuleHandleA("renodx-dlss5.addon64");
-    HMODULE addon_reno2 = GetModuleHandleA("renodx-dlss.addon64");
+    InspectLoadedModules();
 
-    const uint8_t* code_bytes =
-        reinterpret_cast<const uint8_t*>(pfn_create_feature_);
-    bool is_detoured =
-        code_bytes && (code_bytes[0] == 0xE9 ||
-                       (code_bytes[0] == 0xFF && code_bytes[1] == 0x25));
+    XELOGI("SyntheticNgxSession: === MODULE INSPECTION AUDIT ===");
+    XELOGI("  nvngx_dlss.dll:     loaded={}, path={}, ver={}, sha256={}, size={}",
+           dlss_info_.loaded, dlss_info_.full_path, dlss_info_.version,
+           dlss_info_.sha256, dlss_info_.file_size);
+    XELOGI("  nvngx_dlssnr.dll:   loaded={}, path={}, ver={}, sha256={}, size={}",
+           dlssnr_info_.loaded, dlssnr_info_.full_path, dlssnr_info_.version,
+           dlssnr_info_.sha256, dlssnr_info_.file_size);
+    XELOGI("  deep-fried-chicken: loaded={}, path={}, ver={}, sha256={}, size={}",
+           dfc_addon_info_.loaded, dfc_addon_info_.full_path,
+           dfc_addon_info_.version, dfc_addon_info_.sha256,
+           dfc_addon_info_.file_size);
+    XELOGI("  dfc-nvngx:          loaded={}, path={}, ver={}, sha256={}, size={}",
+           dfc_nvngx_info_.loaded, dfc_nvngx_info_.full_path,
+           dfc_nvngx_info_.version, dfc_nvngx_info_.sha256,
+           dfc_nvngx_info_.file_size);
+
+    if (has_competing_consumer_) {
+      XELOGW("SyntheticNgxSession: NEURAL CONSUMER CONFLICT detected: {} -> bypass",
+             competing_consumer_name_);
+    }
 
     unsigned int dfc_abi = 0;
     dfc_state_ = ReadDfcExports(&dfc_abi);
+    dfc_abi_ = dfc_abi;
     if (dfc_state_ != DfcState::kModuleAbsent) {
       if (dfc_state_ != DfcState::kAbiUnavailable) {
         XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI {}", dfc_abi);
@@ -416,16 +497,12 @@ bool SyntheticNgxSession::InitializeNgx() {
         XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI unavailable");
       }
       XELOGI("SyntheticNgxSession: DFC state: {}", DfcStateToString(dfc_state_));
-    } else if (addon_reno1 || addon_reno2 || is_detoured) {
-      XELOGI(
-          "SyntheticNgxSession: Neural Rendering add-on / hook detected: RenoDX "
-          "(addon module: {}, detoured: {})",
-          (addon_reno1 != nullptr || addon_reno2 != nullptr), is_detoured);
     } else {
       XELOGI(
-          "SyntheticNgxSession: Synthetic NGX contract initialized. Neural "
-          "Rendering interception not independently verifiable.");
+          "SyntheticNgxSession: Deep Fried Chicken not detected in process");
     }
+
+    XELOGI("SyntheticNgxSession: Initial state: {}", GetLevelString());
   }
 
   return true;
@@ -644,17 +721,20 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   // Determine if DFC was armed at feature creation time
   unsigned int dfc_abi = 0;
   DfcState dfc_curr = ReadDfcExports(&dfc_abi);
+  dfc_abi_ = dfc_abi;
   if (dfc_curr != DfcState::kModuleAbsent &&
       dfc_curr != DfcState::kAbiUnavailable) {
     dfc_state_ = dfc_curr;
     if (dfc_state_ != DfcState::kArmed) {
       dfc_created_unarmed_ = true;
+      dfc_rebuilt_for_armed_ = false;
       XELOGI(
           "SyntheticNgxSession: Feature created while DFC state was {}, will "
           "rebuild when ARMED",
           DfcStateToString(dfc_state_));
     } else {
       dfc_created_unarmed_ = false;
+      dfc_rebuilt_for_armed_ = true;
       XELOGI("SyntheticNgxSession: Feature created with DFC ARMED");
     }
   }
@@ -662,23 +742,146 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   return true;
 }
 
-bool SyntheticNgxSession::IsInterceptionConfirmed() const {
-  if (dfc_state_ == DfcState::kArmed) {
-    return true;
+ModuleInspectionInfo SyntheticNgxSession::InspectModule(
+    const char* module_name) {
+  ModuleInspectionInfo info = {};
+  HMODULE h = GetModuleHandleA(module_name);
+  if (h) {
+    info.loaded = true;
+    info.handle = h;
+    wchar_t path_buf[MAX_PATH] = {};
+    if (GetModuleFileNameW(h, path_buf, MAX_PATH)) {
+      info.full_path = xe::path_to_utf8(path_buf);
+      info.version = GetModuleVersionString(path_buf);
+      info.sha256 = ComputeSha256(path_buf);
+      WIN32_FILE_ATTRIBUTE_DATA attr = {};
+      if (GetFileAttributesExW(path_buf, GetFileExInfoStandard, &attr)) {
+        info.file_size =
+            (static_cast<uint64_t>(attr.nFileSizeHigh) << 32) | attr.nFileSizeLow;
+      }
+    }
+  } else {
+    info.loaded = false;
+    wchar_t exe_dir[MAX_PATH] = {};
+    GetModuleFileNameW(nullptr, exe_dir, MAX_PATH);
+    if (wchar_t* last_slash = wcsrchr(exe_dir, L'\\')) {
+      *(last_slash + 1) = L'\0';
+    }
+    wchar_t file_path[MAX_PATH] = {};
+    _snwprintf_s(file_path, _TRUNCATE, L"%ls%hs", exe_dir, module_name);
+    DWORD attr = GetFileAttributesW(file_path);
+    if (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY)) {
+      info.full_path = xe::path_to_utf8(file_path);
+      info.version = GetModuleVersionString(file_path);
+      info.sha256 = ComputeSha256(file_path);
+      WIN32_FILE_ATTRIBUTE_DATA fad = {};
+      if (GetFileAttributesExW(file_path, GetFileExInfoStandard, &fad)) {
+        info.file_size =
+            (static_cast<uint64_t>(fad.nFileSizeHigh) << 32) | fad.nFileSizeLow;
+      }
+    } else {
+      info.full_path = "NOT_FOUND";
+      info.version = "N/A";
+      info.sha256 = "N/A";
+      info.file_size = 0;
+    }
   }
-  HMODULE addon_reno1 = GetModuleHandleA("renodx-dlss5.addon64");
-  HMODULE addon_reno2 = GetModuleHandleA("renodx-dlss.addon64");
-  const uint8_t* code_bytes =
-      reinterpret_cast<const uint8_t*>(pfn_create_feature_);
-  bool is_detoured =
-      code_bytes && (code_bytes[0] == 0xE9 ||
-                     (code_bytes[0] == 0xFF && code_bytes[1] == 0x25));
-  return (addon_reno1 != nullptr || addon_reno2 != nullptr || is_detoured);
+  return info;
+}
+
+void SyntheticNgxSession::InspectLoadedModules() {
+  dlss_info_ = InspectModule("nvngx_dlss.dll");
+  dlssnr_info_ = InspectModule("nvngx_dlssnr.dll");
+  dfc_addon_info_ = InspectModule("deep-fried-chicken.addon64");
+  dfc_nvngx_info_ = InspectModule("deep-fried-chicken-nvngx.dll");
+
+  const char* competing[] = {
+      "renodx-dlss5.addon64",
+      "renodx-dlss.addon64",
+      "alexs-toolkit.addon64",
+      "dlss5-dx11-bridge.addon64",
+  };
+  has_competing_consumer_ = false;
+  competing_consumer_name_.clear();
+
+  int consumer_count = 0;
+  if (dfc_addon_info_.loaded) {
+    consumer_count++;
+  }
+
+  for (const char* comp : competing) {
+    HMODULE hc = GetModuleHandleA(comp);
+    if (hc) {
+      consumer_count++;
+      if (!competing_consumer_name_.empty()) {
+        competing_consumer_name_ += ", ";
+      }
+      competing_consumer_name_ += comp;
+    }
+  }
+
+  if (consumer_count > 1) {
+    has_competing_consumer_ = true;
+  }
+}
+
+NeuralLevel SyntheticNgxSession::neural_level() const {
+  if (state_ == SessionState::kUnavailable || state_ == SessionState::kFailed) {
+    return NeuralLevel::kLevel0_Inactive;
+  }
+  // Level 3: requires DFC ARMED, ABI 1, dlssnr loaded, no competing consumer
+  if (dfc_state_ == DfcState::kArmed && dfc_abi_ == 1 && dlssnr_info_.loaded &&
+      !has_competing_consumer_) {
+    if (evaluate_success_count_ > 0 && dfc_rebuilt_for_armed_) {
+      return NeuralLevel::kLevel3_Confirmed;
+    }
+    return NeuralLevel::kLevel3_ConsumerArmed;
+  }
+  // Level 2: Feature 1 SuperSampling created & evaluating via native NGX
+  if (state_ == SessionState::kReady && evaluate_success_count_ > 0) {
+    return NeuralLevel::kLevel2_SyntheticDlaaReady;
+  }
+  // Level 1: NGX runtime initialized
+  if (ngx_module_ != nullptr) {
+    return NeuralLevel::kLevel1_NgxReady;
+  }
+  return NeuralLevel::kLevel0_Inactive;
+}
+
+const char* SyntheticNgxSession::GetLevelString() const {
+  switch (neural_level()) {
+    case NeuralLevel::kLevel0_Inactive:
+      return "INACTIVE";
+    case NeuralLevel::kLevel1_NgxReady:
+      return "LEVEL 1: NGX READY";
+    case NeuralLevel::kLevel2_SyntheticDlaaReady:
+      return "LEVEL 2: SYNTHETIC DLAA READY";
+    case NeuralLevel::kLevel3_ConsumerArmed:
+      return "LEVEL 3: NEURAL CONSUMER ARMED";
+    case NeuralLevel::kLevel3_Confirmed:
+      return "LEVEL 3: NEURAL RENDERING CONFIRMED";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+bool SyntheticNgxSession::IsInterceptionConfirmed() const {
+  return (neural_level() == NeuralLevel::kLevel3_Confirmed);
 }
 
 void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) {
   unsigned int abi = 0;
   DfcState current_state = ReadDfcExports(&abi);
+  dfc_abi_ = abi;
+
+  InspectLoadedModules();
+
+  if (has_competing_consumer_) {
+    XELOGW(
+        "SyntheticNgxSession: NEURAL CONSUMER CONFLICT detected ({}) -> bypass",
+        competing_consumer_name_);
+  }
+
   if (current_state == DfcState::kModuleAbsent) {
     return;
   }
@@ -687,24 +890,34 @@ void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) 
     XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI {}", abi);
   }
   if (current_state != dfc_state_) {
-    XELOGI("SyntheticNgxSession: DFC state: {}", DfcStateToString(current_state));
+    XELOGI("SyntheticNgxSession: DFC state transition: {} -> {}",
+           DfcStateToString(dfc_state_), DfcStateToString(current_state));
     dfc_state_ = current_state;
   }
-  if (dfc_created_unarmed_ && dfc_state_ == DfcState::kArmed && command_list) {
+  if (dfc_state_ == DfcState::kArmed && !dfc_rebuilt_for_armed_ && command_list) {
+    void* old_handle = feature_handle_;
+    uint64_t now_ticks = xe::Clock::QueryHostTickCount();
     XELOGI(
-        "SyntheticNgxSession: DFC became ARMED: rebuilding synthetic NGX "
-        "feature");
+        "SyntheticNgxSession: [ARMED TRANSITION] DFC became ARMED: rebuilding "
+        "synthetic NGX feature: old_handle={:#x}, state={}, time_ticks={}",
+        reinterpret_cast<uintptr_t>(old_handle), DfcStateToString(dfc_state_),
+        now_ticks);
     uint32_t w = width_;
     uint32_t h = height_;
     DXGI_FORMAT fmt = format_;
     bool inv = depth_inverted_;
     AwaitGpuIdle();
     Invalidate();
+    dfc_rebuilt_for_armed_ = true;
     dfc_created_unarmed_ = false;
     EnsureFeature(command_list, w, h, fmt, inv);
+    void* new_handle = feature_handle_;
     XELOGI(
-        "SyntheticNgxSession: Synthetic NGX feature recreated for DFC "
-        "interception");
+        "SyntheticNgxSession: [ARMED TRANSITION] Synthetic NGX feature recreated "
+        "for DFC interception: old_handle={:#x} -> new_handle={:#x}, "
+        "reset_history=1",
+        reinterpret_cast<uintptr_t>(old_handle),
+        reinterpret_cast<uintptr_t>(new_handle));
   }
 }
 
@@ -896,9 +1109,9 @@ bool SyntheticNgxSession::Evaluate(ID3D12GraphicsCommandList* command_list,
 
   if (evaluate_count_ == 1 || (evaluate_count_ % 120 == 1)) {
     XELOGI(
-        "SyntheticNgxSession: Native EvaluateFeature #{} completed: "
+        "SyntheticNgxSession: Native EvaluateFeature #{} completed [{}]: "
         "result={:#x} ({:.3f}ms)",
-        evaluate_count_, eval_result, last_eval_time_ms_);
+        evaluate_count_, GetLevelString(), eval_result, last_eval_time_ms_);
   }
 
   return eval_result == 1;

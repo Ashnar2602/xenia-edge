@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 struct ID3D11Resource;
 
@@ -92,6 +93,23 @@ struct NeuralFrameContract {
   const char* bypass_reason = nullptr;
 };
 
+enum class NeuralLevel {
+  kLevel0_Inactive = 0,
+  kLevel1_NgxReady = 1,           // _nvngx.dll initialized
+  kLevel2_SyntheticDlaaReady = 2, // Feature 1 SuperSampling created & evaluating
+  kLevel3_ConsumerArmed = 3,      // DFC ARMED, nvngx_dlssnr.dll loaded
+  kLevel3_Confirmed = 4,          // Interception + neural evaluations observed
+};
+
+struct ModuleInspectionInfo {
+  bool loaded = false;
+  std::string full_path;
+  std::string version;
+  std::string sha256;
+  uint64_t file_size = 0;
+  HMODULE handle = nullptr;
+};
+
 class SyntheticNgxSession {
  public:
   static std::unique_ptr<SyntheticNgxSession> Create(
@@ -111,8 +129,22 @@ class SyntheticNgxSession {
   }
   bool IsUnavailable() const { return state_ == SessionState::kUnavailable; }
 
+  NeuralLevel neural_level() const;
+  const char* GetLevelString() const;
+
   DfcState dfc_state() const { return dfc_state_; }
+  unsigned int dfc_abi() const { return dfc_abi_; }
   bool IsInterceptionConfirmed() const;
+
+  const ModuleInspectionInfo& dlss_info() const { return dlss_info_; }
+  const ModuleInspectionInfo& dlssnr_info() const { return dlssnr_info_; }
+  const ModuleInspectionInfo& dfc_addon_info() const { return dfc_addon_info_; }
+  const ModuleInspectionInfo& dfc_nvngx_info() const { return dfc_nvngx_info_; }
+
+  bool has_competing_consumer() const { return has_competing_consumer_; }
+  const std::string& competing_consumer_name() const {
+    return competing_consumer_name_;
+  }
 
   // Ensures synthetic NGX feature and backing output texture are initialized.
   // Re-creates the feature if dimensions, format, or depth inversion changed, or if DFC becomes ARMED.
@@ -208,10 +240,23 @@ class SyntheticNgxSession {
   Microsoft::WRL::ComPtr<ID3D12Fence> sync_fence_;
   uint64_t sync_fence_val_ = 0;
 
+  void InspectLoadedModules();
+  static ModuleInspectionInfo InspectModule(const char* module_name);
+
+  ModuleInspectionInfo dlss_info_;
+  ModuleInspectionInfo dlssnr_info_;
+  ModuleInspectionInfo dfc_addon_info_;
+  ModuleInspectionInfo dfc_nvngx_info_;
+
+  bool has_competing_consumer_ = false;
+  std::string competing_consumer_name_;
+  bool dfc_rebuilt_for_armed_ = false;
+
   bool logged_addon_status_ = false;
   bool dfc_logged_abi_ = false;
   bool dfc_created_unarmed_ = false;
   DfcState dfc_state_ = DfcState::kModuleAbsent;
+  unsigned int dfc_abi_ = 0;
 
   uint64_t evaluate_count_ = 0;
   uint64_t evaluate_success_count_ = 0;

@@ -31,6 +31,17 @@ class SyntheticNgxSession;
 class MotionEstimator;
 class DepthProvider;
 
+struct PixelDiffMetrics {
+  bool measured = false;
+  uint64_t evaluated_frame = 0;
+  double rms = 0.0;
+  double mad = 0.0;
+  double max_diff = 0.0;
+  double pct_changed = 0.0;
+  uint64_t total_pixels = 0;
+  uint64_t changed_pixels = 0;
+};
+
 class NeuralRenderingManager {
  public:
   static std::unique_ptr<NeuralRenderingManager> Create(
@@ -66,6 +77,10 @@ class NeuralRenderingManager {
   uint64_t reset_frames() const { return reset_frames_; }
   uint64_t contract_failures() const { return contract_failures_; }
   uint64_t split_blits() const { return split_blits_; }
+
+  const PixelDiffMetrics& pixel_diff_metrics() const {
+    return pixel_diff_metrics_;
+  }
 
   double last_motion_time_ms() const { return last_motion_time_ms_; }
   double last_depth_time_ms() const { return last_depth_time_ms_; }
@@ -139,6 +154,24 @@ class NeuralRenderingManager {
   double total_pipeline_time_ms_ = 0.0;
 
   bool logged_first_frame_ = false;
+
+  void ScheduleDiagnosticReadback(ID3D12GraphicsCommandList* command_list,
+                                  ID3D12Resource* original,
+                                  ID3D12Resource* processed, uint32_t width,
+                                  uint32_t height, DXGI_FORMAT format);
+  void ProcessDiagnosticReadback();
+
+  PixelDiffMetrics pixel_diff_metrics_;
+  bool readback_scheduled_ = false;
+  bool readback_completed_ = false;
+  Microsoft::WRL::ComPtr<ID3D12Resource> readback_original_buffer_;
+  Microsoft::WRL::ComPtr<ID3D12Resource> readback_processed_buffer_;
+  uint32_t readback_width_ = 0;
+  uint32_t readback_height_ = 0;
+  DXGI_FORMAT readback_format_ = DXGI_FORMAT_UNKNOWN;
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT readback_footprint_ = {};
+  Microsoft::WRL::ComPtr<ID3D12Fence> readback_fence_;
+  uint64_t readback_fence_value_ = 0;
 };
 
 }  // namespace neural

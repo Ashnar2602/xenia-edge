@@ -19,6 +19,8 @@
 #include "xenia/ui/d3d12/neural/motion_estimator.h"
 #include "xenia/ui/d3d12/neural/nvidia_optical_flow_estimator.h"
 #include "xenia/ui/d3d12/neural/synthetic_ngx_session.h"
+#include <algorithm>
+#include <cmath>
 
 DEFINE_string(d3d12_neural_output_mode, "passthrough",
               "Neural rendering presentation mode: passthrough | "
@@ -71,6 +73,16 @@ NeuralRenderingManager::NeuralRenderingManager(ID3D12Device* device,
 
 NeuralRenderingManager::~NeuralRenderingManager() {
   XELOGI("NeuralRenderingManager: === SHUTDOWN TELEMETRY REPORT ===");
+  if (ngx_session_) {
+    XELOGI("  Pipeline Operating Level:    {}", ngx_session_->GetLevelString());
+    XELOGI("  Interception Confirmed:      {}",
+           ngx_session_->IsInterceptionConfirmed() ? "YES (Level 3)" : "NO");
+    XELOGI("  Deep Fried Chicken state:    {}",
+           uint32_t(ngx_session_->dfc_state()));
+    XELOGI("  Deep Fried Chicken ABI:      {}", ngx_session_->dfc_abi());
+    XELOGI("  nvngx_dlssnr.dll loaded:     {}",
+           ngx_session_->dlssnr_info().loaded ? "YES" : "NO");
+  }
   XELOGI("  Total guest frames:          {}", total_frames_);
   XELOGI("  Evaluated neural frames:     {}", evaluated_frames_);
   XELOGI("  Bypassed frames:             {}", bypassed_frames_);
@@ -80,11 +92,25 @@ NeuralRenderingManager::~NeuralRenderingManager() {
   if (evaluated_frames_ > 0) {
     XELOGI("  Average Optical Flow time:   {:.3f} ms", avg_motion_time_ms());
     XELOGI("  Average Depth process time:  {:.3f} ms", avg_depth_time_ms());
-    XELOGI("  Average NGX evaluate time:   {:.3f} ms", avg_ngx_time_ms());
+    if (ngx_session_ &&
+        ngx_session_->neural_level() >= NeuralLevel::kLevel3_ConsumerArmed) {
+      XELOGI("  Average Neural evaluate time:{:.3f} ms", avg_ngx_time_ms());
+    } else {
+      XELOGI("  Average Native DLAA dispatch:{:.3f} ms", avg_ngx_time_ms());
+    }
     if (split_blits_ > 0) {
       XELOGI("  Average Split blit time:     {:.3f} ms", avg_blit_time_ms());
     }
     XELOGI("  Average Total pipeline time: {:.3f} ms", avg_total_pipeline_time_ms());
+  }
+  if (pixel_diff_metrics_.measured) {
+    XELOGI("  Output Pixel Diff (RMS):     {:.6f}", pixel_diff_metrics_.rms);
+    XELOGI("  Output Pixel Diff (MAD):     {:.6f}", pixel_diff_metrics_.mad);
+    XELOGI("  Output Pixel Diff (Max):     {:.6f}", pixel_diff_metrics_.max_diff);
+    XELOGI("  Output Pixels Changed:       {:.2f}% ({}/{} px)",
+           pixel_diff_metrics_.pct_changed,
+           pixel_diff_metrics_.changed_pixels,
+           pixel_diff_metrics_.total_pixels);
   }
   if (ngx_session_) {
     XELOGI("  NGX total evaluations:       {}", ngx_session_->evaluate_count());
@@ -93,6 +119,10 @@ NeuralRenderingManager::~NeuralRenderingManager() {
     XELOGI("  NGX exceptions caught:       {}", ngx_session_->evaluate_exception_count());
   }
   XELOGI("NeuralRenderingManager: ================================");
+
+  readback_original_buffer_.Reset();
+  readback_processed_buffer_.Reset();
+  readback_fence_.Reset();
 
   split_output_resource_.Reset();
   depth_provider_.reset();
@@ -247,6 +277,218 @@ ID3D12Resource* NeuralRenderingManager::BlitSplitOutput(
   split_resource_state_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
   return split_output_resource_.Get();
+}
+
+void NeuralRenderingManager::ScheduleDiagnosticReadback(
+    ID3D12GraphicsCommandList* command_list, ID3D12Resource* original,
+    ID3D12Resource* processed, uint32_t width, uint32_t height,
+    DXGI_FORMAT format) {
+  if (readback_scheduled_ || !device_ || !command_list || !original ||
+      !processed) {
+    return;
+  }
+
+  D3D12_RESOURCE_DESC desc = original->GetDesc();
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint = {};
+  UINT num_rows = 0;
+  UINT64 row_size = 0;
+  UINT64 total_bytes = 0;
+  device_->GetCopyableFootprints(&desc, 0, 1, 0, &footprint, &num_rows,
+                                &row_size, &total_bytes);
+
+  if (total_bytes == 0) {
+    return;
+  }
+
+  D3D12_RESOURCE_DESC buf_desc = {};
+  buf_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+  buf_desc.Width = total_bytes;
+  buf_desc.Height = 1;
+  buf_desc.DepthOrArraySize = 1;
+  buf_desc.MipLevels = 1;
+  buf_desc.Format = DXGI_FORMAT_UNKNOWN;
+  buf_desc.SampleDesc.Count = 1;
+  buf_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+  buf_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+  HRESULT hr1 = device_->CreateCommittedResource(
+      &ui::d3d12::util::kHeapPropertiesReadback, D3D12_HEAP_FLAG_NONE,
+      &buf_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+      IID_PPV_ARGS(&readback_original_buffer_));
+  HRESULT hr2 = device_->CreateCommittedResource(
+      &ui::d3d12::util::kHeapPropertiesReadback, D3D12_HEAP_FLAG_NONE,
+      &buf_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+      IID_PPV_ARGS(&readback_processed_buffer_));
+
+  if (FAILED(hr1) || FAILED(hr2)) {
+    XELOGW("NeuralRenderingManager: Failed to create readback buffers");
+    readback_original_buffer_.Reset();
+    readback_processed_buffer_.Reset();
+    return;
+  }
+
+  if (!readback_fence_) {
+    device_->CreateFence(0, D3D12_FENCE_FLAG_NONE,
+                         IID_PPV_ARGS(&readback_fence_));
+  }
+
+  D3D12_RESOURCE_BARRIER pre[2] = {};
+  pre[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  pre[0].Transition.pResource = original;
+  pre[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  pre[0].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+  pre[0].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+  pre[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  pre[1].Transition.pResource = processed;
+  pre[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  pre[1].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+  pre[1].Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+  command_list->ResourceBarrier(2, pre);
+
+  D3D12_TEXTURE_COPY_LOCATION dst_orig = {};
+  dst_orig.pResource = readback_original_buffer_.Get();
+  dst_orig.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  dst_orig.PlacedFootprint = footprint;
+
+  D3D12_TEXTURE_COPY_LOCATION src_orig = {};
+  src_orig.pResource = original;
+  src_orig.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  src_orig.SubresourceIndex = 0;
+
+  command_list->CopyTextureRegion(&dst_orig, 0, 0, 0, &src_orig, nullptr);
+
+  D3D12_TEXTURE_COPY_LOCATION dst_proc = {};
+  dst_proc.pResource = readback_processed_buffer_.Get();
+  dst_proc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  dst_proc.PlacedFootprint = footprint;
+
+  D3D12_TEXTURE_COPY_LOCATION src_proc = {};
+  src_proc.pResource = processed;
+  src_proc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  src_proc.SubresourceIndex = 0;
+
+  command_list->CopyTextureRegion(&dst_proc, 0, 0, 0, &src_proc, nullptr);
+
+  D3D12_RESOURCE_BARRIER post[2] = {};
+  post[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  post[0].Transition.pResource = original;
+  post[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  post[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+  post[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+  post[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  post[1].Transition.pResource = processed;
+  post[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  post[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+  post[1].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+  command_list->ResourceBarrier(2, post);
+
+  readback_width_ = width;
+  readback_height_ = height;
+  readback_format_ = format;
+  readback_footprint_ = footprint;
+  readback_scheduled_ = true;
+}
+
+void NeuralRenderingManager::ProcessDiagnosticReadback() {
+  if (!readback_scheduled_ || readback_completed_ || !readback_fence_ ||
+      !readback_original_buffer_ || !readback_processed_buffer_) {
+    return;
+  }
+
+  if (readback_fence_->GetCompletedValue() < readback_fence_value_) {
+    return;
+  }
+
+  void* ptr_orig = nullptr;
+  void* ptr_proc = nullptr;
+  D3D12_RANGE read_range = {0, static_cast<SIZE_T>(readback_footprint_.Footprint.RowPitch * readback_height_)};
+  if (FAILED(readback_original_buffer_->Map(0, &read_range, &ptr_orig)) ||
+      FAILED(readback_processed_buffer_->Map(0, &read_range, &ptr_proc))) {
+    XELOGW("NeuralRenderingManager: Failed to map diagnostic readback buffers");
+    return;
+  }
+
+  const uint8_t* p_orig = reinterpret_cast<const uint8_t*>(ptr_orig);
+  const uint8_t* p_proc = reinterpret_cast<const uint8_t*>(ptr_proc);
+  const uint32_t row_pitch = readback_footprint_.Footprint.RowPitch;
+
+  double sum_sq = 0.0;
+  double sum_abs = 0.0;
+  double max_diff = 0.0;
+  uint64_t changed_px = 0;
+  const uint64_t total_px = uint64_t(readback_width_) * readback_height_;
+
+  bool is_bgra = (readback_format_ == DXGI_FORMAT_B8G8R8A8_UNORM ||
+                  readback_format_ == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
+
+  for (uint32_t y = 0; y < readback_height_; ++y) {
+    const uint8_t* row_o = p_orig + y * row_pitch;
+    const uint8_t* row_p = p_proc + y * row_pitch;
+
+    for (uint32_t x = 0; x < readback_width_; ++x) {
+      float ro, go, bo, rp, gp, bp;
+      if (is_bgra) {
+        bo = row_o[x * 4 + 0] / 255.0f;
+        go = row_o[x * 4 + 1] / 255.0f;
+        ro = row_o[x * 4 + 2] / 255.0f;
+        bp = row_p[x * 4 + 0] / 255.0f;
+        gp = row_p[x * 4 + 1] / 255.0f;
+        rp = row_p[x * 4 + 2] / 255.0f;
+      } else {
+        ro = row_o[x * 4 + 0] / 255.0f;
+        go = row_o[x * 4 + 1] / 255.0f;
+        bo = row_o[x * 4 + 2] / 255.0f;
+        rp = row_p[x * 4 + 0] / 255.0f;
+        gp = row_p[x * 4 + 1] / 255.0f;
+        bp = row_p[x * 4 + 2] / 255.0f;
+      }
+
+      double dr = std::abs(ro - rp);
+      double dg = std::abs(go - gp);
+      double db = std::abs(bo - bp);
+
+      sum_sq += (dr * dr + dg * dg + db * db);
+      sum_abs += (dr + dg + db);
+
+      double px_max = std::max(dr, std::max(dg, db));
+      if (px_max > max_diff) {
+        max_diff = px_max;
+      }
+      if (px_max > 0.0039 /* 1/255 */) {
+        changed_px++;
+      }
+    }
+  }
+
+  D3D12_RANGE write_range = {0, 0};
+  readback_original_buffer_->Unmap(0, &write_range);
+  readback_processed_buffer_->Unmap(0, &write_range);
+
+  readback_original_buffer_.Reset();
+  readback_processed_buffer_.Reset();
+
+  pixel_diff_metrics_.measured = true;
+  pixel_diff_metrics_.evaluated_frame = evaluated_frames_;
+  pixel_diff_metrics_.total_pixels = total_px;
+  pixel_diff_metrics_.changed_pixels = changed_px;
+  pixel_diff_metrics_.rms = std::sqrt(sum_sq / (total_px * 3.0));
+  pixel_diff_metrics_.mad = sum_abs / (total_px * 3.0);
+  pixel_diff_metrics_.max_diff = max_diff;
+  pixel_diff_metrics_.pct_changed = (total_px > 0) ? (double(changed_px) * 100.0 / total_px) : 0.0;
+  readback_completed_ = true;
+
+  const char* level_name = ngx_session_ ? ngx_session_->GetLevelString() : "SYNTHETIC DLAA";
+  XELOGI(
+      "NeuralRenderingManager: [DIAGNOSTIC READBACK] Frame {} Pixel Difference "
+      "(Original vs {}): RMS={:.6f}, MAD={:.6f}, MaxDiff={:.6f}, PixelsChanged={:.2f}% ({}/{} px)",
+      evaluated_frames_, level_name, pixel_diff_metrics_.rms,
+      pixel_diff_metrics_.mad, pixel_diff_metrics_.max_diff,
+      pixel_diff_metrics_.pct_changed, pixel_diff_metrics_.changed_pixels,
+      pixel_diff_metrics_.total_pixels);
 }
 
 ID3D12Resource* NeuralRenderingManager::Process(
@@ -480,11 +722,17 @@ ID3D12Resource* NeuralRenderingManager::Process(
         reset_frames_++;
         need_history_reset_ = false;
       }
+      if (!readback_scheduled_ && evaluated_frames_ >= 30) {
+        ScheduleDiagnosticReadback(command_list, input_guest_output,
+                                   ngx_session_->output_resource(), width,
+                                   height, current_format_);
+      }
       if (is_new_guest_frame && (total_frames_ % 60 == 1)) {
         XELOGI(
-            "NeuralRenderingManager: [FULL] frame={}, gen={}, "
+            "NeuralRenderingManager: [FULL] [{}] frame={}, gen={}, "
             "timings: OF={:.3f}ms, Depth={:.3f}ms, NGX={:.3f}ms, Total={:.3f}ms "
             "(eval={}, bypassed={}, fails={})",
+            ngx_session_ ? ngx_session_->GetLevelString() : "UNKNOWN",
             total_frames_, guest_generation, time_motion_ms, time_depth_ms,
             time_ngx_ms, time_total_ms, evaluated_frames_, bypassed_frames_,
             contract_failures_);
@@ -528,6 +776,11 @@ ID3D12Resource* NeuralRenderingManager::Process(
         reset_frames_++;
         need_history_reset_ = false;
       }
+      if (!readback_scheduled_ && evaluated_frames_ >= 30) {
+        ScheduleDiagnosticReadback(command_list, input_guest_output,
+                                   ngx_session_->output_resource(), width,
+                                   height, current_format_);
+      }
       uint64_t t_blit0 = xe::Clock::QueryHostTickCount();
       ID3D12Resource* split_res =
           BlitSplitOutput(command_list, input_guest_output,
@@ -545,9 +798,10 @@ ID3D12Resource* NeuralRenderingManager::Process(
 
       if (is_new_guest_frame && (total_frames_ % 60 == 1)) {
         XELOGI(
-            "NeuralRenderingManager: [SPLIT] frame={}, gen={}, "
+            "NeuralRenderingManager: [SPLIT] [{}] frame={}, gen={}, "
             "timings: OF={:.3f}ms, Depth={:.3f}ms, NGX={:.3f}ms, Blit={:.3f}ms, Total={:.3f}ms "
             "(eval={}, bypassed={}, split={}, fails={})",
+            ngx_session_ ? ngx_session_->GetLevelString() : "UNKNOWN",
             total_frames_, guest_generation, time_motion_ms, time_depth_ms,
             time_ngx_ms, time_blit_ms, time_total_ms, evaluated_frames_,
             bypassed_frames_, split_blits_, contract_failures_);
@@ -570,6 +824,20 @@ ID3D12Resource* NeuralRenderingManager::Process(
 }
 
 void NeuralRenderingManager::OnFrameSubmitted(ID3D12CommandQueue* direct_queue) {
+  if (readback_scheduled_ && !readback_completed_ && direct_queue &&
+      readback_fence_) {
+    readback_fence_value_++;
+    direct_queue->Signal(readback_fence_.Get(), readback_fence_value_);
+    HANDLE evt = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (evt) {
+      if (SUCCEEDED(readback_fence_->SetEventOnCompletion(readback_fence_value_,
+                                                          evt))) {
+        WaitForSingleObject(evt, 2000);
+      }
+      CloseHandle(evt);
+    }
+    ProcessDiagnosticReadback();
+  }
   if (depth_provider_) {
     depth_provider_->OnFrameSubmitted(direct_queue);
   }
