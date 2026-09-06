@@ -203,12 +203,14 @@ int GuardedReleaseFeature(PFN_ReleaseFeature fn, NVSDK_NGX_Handle* h,
   }
 }
 
-void PublishDfcInterop(NVSDK_NGX_Parameter* params) {
+void PublishConsumerInterop(NVSDK_NGX_Parameter* params, NeuralConsumer consumer) {
   if (!params) return;
-  params->Set(kDfcKeyContractVersion, kDfcContractVersion);
-  params->Set(kDfcKeyProviderId, kDfcProviderIdDl5f);
-  params->Set(kDfcKeyHostMode, kDfcHostModeInProcess);
-  params->Set(kDfcKeyEvaluateCadence, kDfcEvaluateCadence);
+  if (consumer == NeuralConsumer::kDeepFriedChicken) {
+    params->Set(kDfcKeyContractVersion, kDfcContractVersion);
+    params->Set(kDfcKeyProviderId, kDfcProviderIdDl5f);
+    params->Set(kDfcKeyHostMode, kDfcHostModeInProcess);
+    params->Set(kDfcKeyEvaluateCadence, kDfcEvaluateCadence);
+  }
 }
 
 const char* DfcStateToString(DfcState state) {
@@ -481,6 +483,10 @@ bool SyntheticNgxSession::InitializeNgx() {
     XELOGI("  nvngx_dlssnr.dll:   loaded={}, path={}, ver={}, sha256={}, size={}",
            dlssnr_info_.loaded, dlssnr_info_.full_path, dlssnr_info_.version,
            dlssnr_info_.sha256, dlssnr_info_.file_size);
+    XELOGI("  renodx-dlss5:       loaded={}, path={}, ver={}, sha256={}, size={}",
+           renodx_addon_info_.loaded, renodx_addon_info_.full_path,
+           renodx_addon_info_.version, renodx_addon_info_.sha256,
+           renodx_addon_info_.file_size);
     XELOGI("  deep-fried-chicken: loaded={}, path={}, ver={}, sha256={}, size={}",
            dfc_addon_info_.loaded, dfc_addon_info_.full_path,
            dfc_addon_info_.version, dfc_addon_info_.sha256,
@@ -489,27 +495,31 @@ bool SyntheticNgxSession::InitializeNgx() {
            dfc_nvngx_info_.loaded, dfc_nvngx_info_.full_path,
            dfc_nvngx_info_.version, dfc_nvngx_info_.sha256,
            dfc_nvngx_info_.file_size);
+    XELOGI("  Active consumer:    {}", GetConsumerString());
 
     if (has_competing_consumer_) {
       XELOGW("SyntheticNgxSession: NEURAL CONSUMER CONFLICT detected: {} -> bypass",
              competing_consumer_name_);
     }
 
-    unsigned int dfc_abi = 0;
-    dfc_state_ =
-        ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
-    dfc_abi_ = dfc_abi;
-    if (dfc_state_ != DfcState::kModuleAbsent) {
-      if (dfc_state_ != DfcState::kAbiUnavailable) {
-        XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI {}", dfc_abi);
-        dfc_logged_abi_ = true;
-      } else {
-        XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI unavailable");
+    if (active_consumer_ == NeuralConsumer::kDeepFriedChicken) {
+      unsigned int dfc_abi = 0;
+      dfc_state_ =
+          ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
+      dfc_abi_ = dfc_abi;
+      if (dfc_state_ != DfcState::kModuleAbsent) {
+        if (dfc_state_ != DfcState::kAbiUnavailable) {
+          XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI {}", dfc_abi);
+          dfc_logged_abi_ = true;
+        } else {
+          XELOGI("SyntheticNgxSession: Deep Fried Chicken detected, ABI unavailable");
+        }
+        XELOGI("SyntheticNgxSession: DFC state: {}", DfcStateToString(dfc_state_));
       }
-      XELOGI("SyntheticNgxSession: DFC state: {}", DfcStateToString(dfc_state_));
+    } else if (active_consumer_ == NeuralConsumer::kRenoDx) {
+      XELOGI("SyntheticNgxSession: RenoDX DLSS5 consumer detected and active");
     } else {
-      XELOGI(
-          "SyntheticNgxSession: Deep Fried Chicken not detected in process");
+      XELOGI("SyntheticNgxSession: No external neural consumer detected (Plain Synthetic DLAA)");
     }
 
     XELOGI("SyntheticNgxSession: Initial state: {}", GetLevelString());
@@ -662,13 +672,18 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   unsigned int perf_quality = kPqDlaa;
   params_->Set("PerfQualityValue", perf_quality);
 
-  // Publish Deep Fried Chicken interop keys immediately before feature creation.
-  PublishDfcInterop(params_);
+  // Re-inspect if consumer wasn't detected yet
+  if (active_consumer_ == NeuralConsumer::kNone) {
+    InspectLoadedModules();
+  }
+
+  // Publish consumer-specific negotiation keys immediately before feature creation.
+  PublishConsumerInterop(params_, active_consumer_);
 
   XELOGI(
       "SyntheticNgxSession: Creating synthetic NGX SuperSampling feature: "
-      "{}x{} format {} (flags {:#x})",
-      width, height, uint32_t(format), create_flags);
+      "{}x{} format {} (flags {:#x}) [Consumer: {}]",
+      width, height, uint32_t(format), create_flags, GetConsumerString());
 
   DWORD exception_code = 0;
   int create_result = GuardedCreateFeature(
@@ -728,25 +743,35 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
       "handle {:#x}",
       width_, height_, reinterpret_cast<uintptr_t>(feature_handle_));
 
-  // Determine if DFC was armed at feature creation time
-  unsigned int dfc_abi = 0;
-  DfcState dfc_curr =
-      ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
-  dfc_abi_ = dfc_abi;
-  if (dfc_curr != DfcState::kModuleAbsent &&
-      dfc_curr != DfcState::kAbiUnavailable) {
-    dfc_state_ = dfc_curr;
-    if (dfc_state_ != DfcState::kArmed) {
-      dfc_created_unarmed_ = true;
-      dfc_rebuilt_for_armed_ = false;
-      XELOGI(
-          "SyntheticNgxSession: Feature created while DFC state was {}, will "
-          "rebuild when ARMED",
-          DfcStateToString(dfc_state_));
-    } else {
-      dfc_created_unarmed_ = false;
-      dfc_rebuilt_for_armed_ = true;
-      XELOGI("SyntheticNgxSession: Feature created with DFC ARMED");
+  if (active_consumer_ == NeuralConsumer::kNone) {
+    feature_created_without_consumer_ = true;
+    XELOGI("SyntheticNgxSession: Feature created with no active consumer (Plain DLAA)");
+  } else if (active_consumer_ == NeuralConsumer::kRenoDx) {
+    renodx_rebuilt_for_consumer_ = true;
+    feature_created_without_consumer_ = false;
+    XELOGI("SyntheticNgxSession: Feature created with RenoDX DLSS5 active");
+  } else if (active_consumer_ == NeuralConsumer::kDeepFriedChicken) {
+    feature_created_without_consumer_ = false;
+    // Determine if DFC was armed at feature creation time
+    unsigned int dfc_abi = 0;
+    DfcState dfc_curr =
+        ReadDfcExports(dfc_module_, dfc_abi_ptr_, dfc_state_ptr_, &dfc_abi);
+    dfc_abi_ = dfc_abi;
+    if (dfc_curr != DfcState::kModuleAbsent &&
+        dfc_curr != DfcState::kAbiUnavailable) {
+      dfc_state_ = dfc_curr;
+      if (dfc_state_ != DfcState::kArmed) {
+        dfc_created_unarmed_ = true;
+        dfc_rebuilt_for_armed_ = false;
+        XELOGI(
+            "SyntheticNgxSession: Feature created while DFC state was {}, will "
+            "rebuild when ARMED",
+            DfcStateToString(dfc_state_));
+      } else {
+        dfc_created_unarmed_ = false;
+        dfc_rebuilt_for_armed_ = true;
+        XELOGI("SyntheticNgxSession: Feature created with DFC ARMED");
+      }
     }
   }
 
@@ -805,22 +830,31 @@ void SyntheticNgxSession::InspectLoadedModules() {
   dlssnr_info_ = InspectModule("nvngx_dlssnr.dll");
   dfc_addon_info_ = InspectModule("deep-fried-chicken.addon64");
   dfc_nvngx_info_ = InspectModule("deep-fried-chicken-nvngx.dll");
+  renodx_addon_info_ = InspectModule("renodx-dlss5.addon64");
+  if (!renodx_addon_info_.loaded) {
+    renodx_addon_info_ = InspectModule("renodx-dlss.addon64");
+  }
 
-  const char* competing[] = {
-      "renodx-dlss5.addon64",
-      "renodx-dlss.addon64",
+  const char* other_competing[] = {
       "alexs-toolkit.addon64",
       "dlss5-dx11-bridge.addon64",
+      "dlss5-feed.addon64",
   };
   has_competing_consumer_ = false;
   competing_consumer_name_.clear();
 
   int consumer_count = 0;
-  if (dfc_addon_info_.loaded) {
+  bool has_dfc = (dfc_addon_info_.loaded || dfc_nvngx_info_.loaded);
+  bool has_renodx = renodx_addon_info_.loaded;
+
+  if (has_dfc) {
+    consumer_count++;
+  }
+  if (has_renodx) {
     consumer_count++;
   }
 
-  for (const char* comp : competing) {
+  for (const char* comp : other_competing) {
     HMODULE hc = GetModuleHandleA(comp);
     if (hc) {
       consumer_count++;
@@ -833,6 +867,19 @@ void SyntheticNgxSession::InspectLoadedModules() {
 
   if (consumer_count > 1) {
     has_competing_consumer_ = true;
+    if (has_dfc && has_renodx) {
+      if (!competing_consumer_name_.empty()) {
+        competing_consumer_name_ += ", ";
+      }
+      competing_consumer_name_ += "DFC + RenoDX conflict";
+    }
+    active_consumer_ = NeuralConsumer::kNone;
+  } else if (has_renodx) {
+    active_consumer_ = NeuralConsumer::kRenoDx;
+  } else if (has_dfc) {
+    active_consumer_ = NeuralConsumer::kDeepFriedChicken;
+  } else {
+    active_consumer_ = NeuralConsumer::kNone;
   }
 }
 
@@ -840,14 +887,32 @@ NeuralLevel SyntheticNgxSession::neural_level() const {
   if (state_ == SessionState::kUnavailable || state_ == SessionState::kFailed) {
     return NeuralLevel::kLevel0_Inactive;
   }
-  // Level 3: requires DFC ARMED, ABI 1, dlssnr loaded, no competing consumer
-  if (dfc_state_ == DfcState::kArmed && dfc_abi_ == 1 && dlssnr_info_.loaded &&
-      !has_competing_consumer_) {
+  if (has_competing_consumer_) {
+    // Conflict -> bypass to synthetic dlaa
+    if (state_ == SessionState::kReady && evaluate_success_count_ > 0) {
+      return NeuralLevel::kLevel2_SyntheticDlaaReady;
+    }
+    return NeuralLevel::kLevel1_NgxReady;
+  }
+
+  // Level 3 RenoDX: RenoDX loaded, nvngx_dlssnr loaded, evaluates succeeding
+  if (active_consumer_ == NeuralConsumer::kRenoDx && renodx_addon_info_.loaded &&
+      dlssnr_info_.loaded) {
+    if (evaluate_success_count_ > 0) {
+      return NeuralLevel::kLevel3_Confirmed;
+    }
+    return NeuralLevel::kLevel3_ConsumerArmed;
+  }
+
+  // Level 3 DFC: requires DFC ARMED, ABI 1, dlssnr loaded, no competing consumer
+  if (active_consumer_ == NeuralConsumer::kDeepFriedChicken &&
+      dfc_state_ == DfcState::kArmed && dfc_abi_ == 1 && dlssnr_info_.loaded) {
     if (evaluate_success_count_ > 0 && dfc_rebuilt_for_armed_) {
       return NeuralLevel::kLevel3_Confirmed;
     }
     return NeuralLevel::kLevel3_ConsumerArmed;
   }
+
   // Level 2: Feature 1 SuperSampling created & evaluating via native NGX
   if (state_ == SessionState::kReady && evaluate_success_count_ > 0) {
     return NeuralLevel::kLevel2_SyntheticDlaaReady;
@@ -859,10 +924,25 @@ NeuralLevel SyntheticNgxSession::neural_level() const {
   return NeuralLevel::kLevel0_Inactive;
 }
 
+const char* SyntheticNgxSession::GetConsumerString() const {
+  if (has_competing_consumer_) {
+    return "CONFLICT";
+  }
+  switch (active_consumer_) {
+    case NeuralConsumer::kRenoDx:
+      return "RenoDX DLSS5";
+    case NeuralConsumer::kDeepFriedChicken:
+      return "Deep Fried Chicken";
+    case NeuralConsumer::kNone:
+    default:
+      return "None";
+  }
+}
+
 const char* SyntheticNgxSession::GetLevelString() const {
   switch (neural_level()) {
     case NeuralLevel::kLevel0_Inactive:
-      return "INACTIVE";
+      return "LEVEL 0: INACTIVE";
     case NeuralLevel::kLevel1_NgxReady:
       return "LEVEL 1: NGX READY";
     case NeuralLevel::kLevel2_SyntheticDlaaReady:
@@ -870,7 +950,9 @@ const char* SyntheticNgxSession::GetLevelString() const {
     case NeuralLevel::kLevel3_ConsumerArmed:
       return "LEVEL 3: NEURAL CONSUMER ARMED";
     case NeuralLevel::kLevel3_Confirmed:
-      return "LEVEL 3: NEURAL RENDERING CONFIRMED";
+      return (active_consumer_ == NeuralConsumer::kRenoDx)
+                 ? "LEVEL 3: DLSS 5 NEURAL RENDERING CONFIRMED (RENODX)"
+                 : "LEVEL 3: DLSS 5 NEURAL RENDERING CONFIRMED (DFC)";
     default:
       return "UNKNOWN";
   }
@@ -881,6 +963,52 @@ bool SyntheticNgxSession::IsInterceptionConfirmed() const {
 }
 
 void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) {
+  // Check if dlssnr loaded dynamically
+  if (!dlssnr_info_.loaded) {
+    HMODULE h_nr = GetModuleHandleA("nvngx_dlssnr.dll");
+    if (h_nr) {
+      dlssnr_info_ = InspectModule("nvngx_dlssnr.dll");
+      XELOGI(
+          "SyntheticNgxSession: nvngx_dlssnr.dll loaded dynamically: path={}, "
+          "version={}, sha256={}",
+          dlssnr_info_.full_path, dlssnr_info_.version, dlssnr_info_.sha256);
+    }
+  }
+
+  // Check late consumer load
+  if (active_consumer_ == NeuralConsumer::kNone) {
+    InspectLoadedModules();
+    if (active_consumer_ == NeuralConsumer::kRenoDx &&
+        feature_created_without_consumer_ && command_list) {
+      void* old_handle = feature_handle_;
+      XELOGI(
+          "SyntheticNgxSession: [RENODX TRANSITION] RenoDX DLSS5 detected after "
+          "initial creation: rebuilding synthetic NGX feature: old_handle={:#x}",
+          reinterpret_cast<uintptr_t>(old_handle));
+      uint32_t w = width_;
+      uint32_t h = height_;
+      DXGI_FORMAT fmt = format_;
+      bool inv = depth_inverted_;
+      AwaitGpuIdle();
+      Invalidate();
+      renodx_rebuilt_for_consumer_ = true;
+      feature_created_without_consumer_ = false;
+      EnsureFeature(command_list, w, h, fmt, inv);
+      void* new_handle = feature_handle_;
+      XELOGI(
+          "SyntheticNgxSession: [RENODX TRANSITION] Synthetic NGX feature "
+          "recreated for RenoDX interception: old_handle={:#x} -> "
+          "new_handle={:#x}, reset_history=1",
+          reinterpret_cast<uintptr_t>(old_handle),
+          reinterpret_cast<uintptr_t>(new_handle));
+      return;
+    }
+  }
+
+  if (active_consumer_ != NeuralConsumer::kDeepFriedChicken) {
+    return;
+  }
+
   unsigned int abi = 0;
   bool was_mod_present = (dfc_module_ != nullptr);
   DfcState current_state =
@@ -1040,8 +1168,20 @@ bool SyntheticNgxSession::Evaluate(ID3D12GraphicsCommandList* command_list,
   command_list->ResourceBarrier(2, pre_barriers);
   output_resource_state_ = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 
-  // Publish Deep Fried Chicken interop keys immediately before evaluate.
-  PublishDfcInterop(params_);
+  // Check if dlssnr loaded dynamically
+  if (!dlssnr_info_.loaded) {
+    HMODULE h_nr = GetModuleHandleA("nvngx_dlssnr.dll");
+    if (h_nr) {
+      dlssnr_info_ = InspectModule("nvngx_dlssnr.dll");
+      XELOGI(
+          "SyntheticNgxSession: nvngx_dlssnr.dll loaded dynamically: path={}, "
+          "version={}, sha256={}",
+          dlssnr_info_.full_path, dlssnr_info_.version, dlssnr_info_.sha256);
+    }
+  }
+
+  // Publish consumer-specific negotiation keys immediately before evaluate.
+  PublishConsumerInterop(params_, active_consumer_);
 
   params_->Set("Color", contract.color);
   params_->Set("Output", output_resource_.Get());

@@ -93,11 +93,17 @@ struct NeuralFrameContract {
   const char* bypass_reason = nullptr;
 };
 
+enum class NeuralConsumer {
+  kNone = 0,
+  kRenoDx = 1,
+  kDeepFriedChicken = 2,
+};
+
 enum class NeuralLevel {
   kLevel0_Inactive = 0,
   kLevel1_NgxReady = 1,           // _nvngx.dll initialized
   kLevel2_SyntheticDlaaReady = 2, // Feature 1 SuperSampling created & evaluating
-  kLevel3_ConsumerArmed = 3,      // DFC ARMED, nvngx_dlssnr.dll loaded
+  kLevel3_ConsumerArmed = 3,      // Consumer ready (RenoDX loaded or DFC ARMED), nvngx_dlssnr.dll loaded
   kLevel3_Confirmed = 4,          // Interception + neural evaluations observed
 };
 
@@ -131,6 +137,8 @@ class SyntheticNgxSession {
 
   NeuralLevel neural_level() const;
   const char* GetLevelString() const;
+  NeuralConsumer active_consumer() const { return active_consumer_; }
+  const char* GetConsumerString() const;
 
   DfcState dfc_state() const { return dfc_state_; }
   unsigned int dfc_abi() const { return dfc_abi_; }
@@ -140,6 +148,7 @@ class SyntheticNgxSession {
   const ModuleInspectionInfo& dlssnr_info() const { return dlssnr_info_; }
   const ModuleInspectionInfo& dfc_addon_info() const { return dfc_addon_info_; }
   const ModuleInspectionInfo& dfc_nvngx_info() const { return dfc_nvngx_info_; }
+  const ModuleInspectionInfo& renodx_info() const { return renodx_addon_info_; }
 
   bool has_competing_consumer() const { return has_competing_consumer_; }
   const std::string& competing_consumer_name() const {
@@ -247,10 +256,14 @@ class SyntheticNgxSession {
   ModuleInspectionInfo dlssnr_info_;
   ModuleInspectionInfo dfc_addon_info_;
   ModuleInspectionInfo dfc_nvngx_info_;
+  ModuleInspectionInfo renodx_addon_info_;
 
+  NeuralConsumer active_consumer_ = NeuralConsumer::kNone;
   bool has_competing_consumer_ = false;
   std::string competing_consumer_name_;
   bool dfc_rebuilt_for_armed_ = false;
+  bool renodx_rebuilt_for_consumer_ = false;
+  bool feature_created_without_consumer_ = false;
 
   HMODULE dfc_module_ = nullptr;
   const unsigned int* dfc_abi_ptr_ = nullptr;

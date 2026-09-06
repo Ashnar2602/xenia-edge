@@ -77,9 +77,15 @@ NeuralRenderingManager::~NeuralRenderingManager() {
     XELOGI("  Pipeline Operating Level:    {}", ngx_session_->GetLevelString());
     XELOGI("  Interception Confirmed:      {}",
            ngx_session_->IsInterceptionConfirmed() ? "YES (Level 3)" : "NO");
-    XELOGI("  Deep Fried Chicken state:    {}",
-           uint32_t(ngx_session_->dfc_state()));
-    XELOGI("  Deep Fried Chicken ABI:      {}", ngx_session_->dfc_abi());
+    XELOGI("  Active Consumer:             {}", ngx_session_->GetConsumerString());
+    if (ngx_session_->active_consumer() == NeuralConsumer::kDeepFriedChicken) {
+      XELOGI("  Deep Fried Chicken state:    {}",
+             uint32_t(ngx_session_->dfc_state()));
+      XELOGI("  Deep Fried Chicken ABI:      {}", ngx_session_->dfc_abi());
+    } else if (ngx_session_->active_consumer() == NeuralConsumer::kRenoDx) {
+      XELOGI("  RenoDX DLSS5 addon loaded:   {}",
+             ngx_session_->renodx_info().loaded ? "YES" : "NO");
+    }
     XELOGI("  nvngx_dlssnr.dll loaded:     {}",
            ngx_session_->dlssnr_info().loaded ? "YES" : "NO");
   }
@@ -464,6 +470,29 @@ void NeuralRenderingManager::ProcessDiagnosticReadback() {
     }
   }
 
+  // Dump raw readback frames for offline mathematical comparison (Plain DLAA vs Neural)
+  const char* proc_dump_name =
+      (ngx_session_ &&
+       ngx_session_->active_consumer() == NeuralConsumer::kRenoDx)
+          ? "readback_proc_neural.raw"
+          : "readback_proc_dlaa.raw";
+  FILE* fp_p = nullptr;
+  if (fopen_s(&fp_p, proc_dump_name, "wb") == 0 && fp_p) {
+    for (uint32_t y = 0; y < readback_height_; ++y) {
+      fwrite(p_proc + y * row_pitch, 1, readback_width_ * 4, fp_p);
+    }
+    fclose(fp_p);
+    XELOGI("NeuralRenderingManager: Dumped processed frame to {}",
+           proc_dump_name);
+  }
+  FILE* fp_o = nullptr;
+  if (fopen_s(&fp_o, "readback_orig.raw", "wb") == 0 && fp_o) {
+    for (uint32_t y = 0; y < readback_height_; ++y) {
+      fwrite(p_orig + y * row_pitch, 1, readback_width_ * 4, fp_o);
+    }
+    fclose(fp_o);
+  }
+
   D3D12_RANGE write_range = {0, 0};
   readback_original_buffer_->Unmap(0, &write_range);
   readback_processed_buffer_->Unmap(0, &write_range);
@@ -604,11 +633,13 @@ ID3D12Resource* NeuralRenderingManager::Process(
   if (ngx_session_ && !ngx_session_->IsUnavailable() && command_list) {
     ngx_session_->EnsureFeature(command_list, current_width_, current_height_,
                                 current_format_, depth_inverted);
-    DfcState dfc_state = ngx_session_->dfc_state();
-    int dfc_int = static_cast<int>(dfc_state);
-    if (dfc_int != last_dfc_state_) {
-      last_dfc_state_ = dfc_int;
-      need_history_reset_ = true;
+    if (ngx_session_->active_consumer() == NeuralConsumer::kDeepFriedChicken) {
+      DfcState dfc_state = ngx_session_->dfc_state();
+      int dfc_int = static_cast<int>(dfc_state);
+      if (dfc_int != last_dfc_state_) {
+        last_dfc_state_ = dfc_int;
+        need_history_reset_ = true;
+      }
     }
   }
 
@@ -658,7 +689,11 @@ ID3D12Resource* NeuralRenderingManager::Process(
   } else if (!ngx_session_ || !ngx_session_->IsReady()) {
     contract_valid = false;
     bypass_reason = "NGX session not ready";
-  } else if (ngx_session_->dfc_state() != DfcState::kArmed &&
+  } else if (ngx_session_->has_competing_consumer()) {
+    contract_valid = false;
+    bypass_reason = "Multiple competing neural consumers detected (conflict)";
+  } else if (ngx_session_->active_consumer() == NeuralConsumer::kDeepFriedChicken &&
+             ngx_session_->dfc_state() != DfcState::kArmed &&
              ngx_session_->dfc_state() != DfcState::kModuleAbsent) {
     contract_valid = false;
     bypass_reason = "Deep Fried Chicken present but not ARMED";
@@ -683,9 +718,9 @@ ID3D12Resource* NeuralRenderingManager::Process(
     if (is_new_guest_frame && (total_frames_ % 60 == 1)) {
       XELOGI(
           "NeuralRenderingManager: [CONTRACT_ONLY] frame={}, gen={}, valid={}, "
-          "depth_trusted={}, DFC={}, reason={}, timings: OF={:.3f}ms, Depth={:.3f}ms",
+          "depth_trusted={}, consumer={}, reason={}, timings: OF={:.3f}ms, Depth={:.3f}ms",
           total_frames_, guest_generation, contract.valid, contract.depth_trusted,
-          ngx_session_ ? uint32_t(ngx_session_->dfc_state()) : 0,
+          ngx_session_ ? ngx_session_->GetConsumerString() : "None",
           contract.valid ? "CONTRACT_OK" : contract.bypass_reason,
           time_motion_ms, time_depth_ms);
     }
