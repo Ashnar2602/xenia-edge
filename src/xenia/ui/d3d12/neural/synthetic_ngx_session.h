@@ -18,9 +18,14 @@
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 
+#include "xenia/base/cvar.h"
 #include <cstdint>
 #include <memory>
 #include <string>
+
+DECLARE_bool(d3d12_neural_auto_exposure);
+DECLARE_double(d3d12_neural_pre_exposure);
+DECLARE_double(d3d12_neural_exposure_scale);
 
 struct ID3D11Resource;
 
@@ -100,11 +105,10 @@ enum class NeuralConsumer {
 };
 
 enum class NeuralLevel {
-  kLevel0_Inactive = 0,
-  kLevel1_NgxReady = 1,           // _nvngx.dll initialized
-  kLevel2_SyntheticDlaaReady = 2, // Feature 1 SuperSampling created & evaluating
-  kLevel3_ConsumerArmed = 3,      // Consumer ready (RenoDX loaded or DFC ARMED), nvngx_dlssnr.dll loaded
-  kLevel3_Confirmed = 4,          // Interception + neural evaluations observed
+  kLevel0_NativePassthrough = 0,
+  kLevel1_NgxContractReady = 1,
+  kLevel2_SyntheticDlaaReady = 2,
+  kLevel3_NeuralRenderingConfirmed = 3,
 };
 
 struct ModuleInspectionInfo {
@@ -186,6 +190,10 @@ class SyntheticNgxSession {
   uint64_t evaluate_failure_count() const { return evaluate_failure_count_; }
   uint64_t evaluate_exception_count() const { return evaluate_exception_count_; }
   uint64_t reset_count() const { return reset_count_; }
+  uint32_t feature_create_count() const { return feature_create_count_; }
+  uint32_t feature_release_count() const { return feature_release_count_; }
+  uint32_t GetResourceCount() const;
+  uint32_t GetDescriptorCount() const { return 0; }
   double last_eval_time_ms() const { return last_eval_time_ms_; }
   double average_eval_time_ms() const {
     return evaluate_count_ > 0 ? (total_eval_time_ms_ / evaluate_count_) : 0.0;
@@ -280,6 +288,8 @@ class SyntheticNgxSession {
   uint64_t evaluate_failure_count_ = 0;
   uint64_t evaluate_exception_count_ = 0;
   uint64_t reset_count_ = 0;
+  uint32_t feature_create_count_ = 0;
+  uint32_t feature_release_count_ = 0;
   double last_eval_time_ms_ = 0.0;
   double total_eval_time_ms_ = 0.0;
 };

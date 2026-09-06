@@ -25,6 +25,19 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "advapi32.lib")
 
+DEFINE_bool(
+    d3d12_neural_auto_exposure, true,
+    "Enable NGX AutoExposure feature creation flag (0x40) for synthetic DLSS/DLAA contract.",
+    "D3D12");
+DEFINE_double(
+    d3d12_neural_pre_exposure, 1.0,
+    "Pre-exposure multiplier passed to NGX DLSS contract.",
+    "D3D12");
+DEFINE_double(
+    d3d12_neural_exposure_scale, 1.0,
+    "Exposure scale passed to NGX DLSS contract.",
+    "D3D12");
+
 namespace xe {
 namespace ui {
 namespace d3d12 {
@@ -566,6 +579,7 @@ bool SyntheticNgxSession::CreateContractTextures(uint32_t width, uint32_t height
 
 void SyntheticNgxSession::Invalidate() {
   if (feature_handle_ && pfn_release_feature_) {
+    feature_release_count_++;
     DWORD exception_code = 0;
     GuardedReleaseFeature(pfn_release_feature_, feature_handle_,
                           &exception_code);
@@ -635,7 +649,10 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   // AutoExposure (0x40): NGX internally evaluates exposure
   // DepthInverted (0x08): If inverted Z (near=1, far=0)
   // IsHDR (0x01): false for Xbox 360 SDR UNORM framebuffer
-  unsigned int create_flags = 0x02 /* MVLowRes */ | 0x40 /* AutoExposure */;
+  unsigned int create_flags = 0x02 /* MVLowRes */;
+  if (cvars::d3d12_neural_auto_exposure) {
+    create_flags |= 0x40 /* AutoExposure */;
+  }
   if (depth_inverted) {
     create_flags |= 0x08;  // DepthInverted
   }
@@ -664,8 +681,8 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   params_->Set("Jitter.Offset.X", 0.0f);
   params_->Set("Jitter.Offset.Y", 0.0f);
   params_->Set("Sharpness", 0.0f);
-  params_->Set("DLSS.Pre.Exposure", 1.0f);
-  params_->Set("DLSS.Exposure.Scale", 1.0f);
+  params_->Set("DLSS.Pre.Exposure", float(cvars::d3d12_neural_pre_exposure));
+  params_->Set("DLSS.Exposure.Scale", float(cvars::d3d12_neural_exposure_scale));
   params_->Set("Reset", 1);
 
   // Attempt DLAA (5u), fallback to Quality (2u) if DLAA is unsupported.
@@ -737,6 +754,7 @@ bool SyntheticNgxSession::EnsureFeature(ID3D12GraphicsCommandList* command_list,
   format_ = format;
   depth_inverted_ = depth_inverted;
   state_ = SessionState::kReady;
+  feature_create_count_++;
 
   XELOGI(
       "SyntheticNgxSession: Synthetic NGX feature created successfully: {}x{} "
@@ -885,43 +903,44 @@ void SyntheticNgxSession::InspectLoadedModules() {
 
 NeuralLevel SyntheticNgxSession::neural_level() const {
   if (state_ == SessionState::kUnavailable || state_ == SessionState::kFailed) {
-    return NeuralLevel::kLevel0_Inactive;
+    return NeuralLevel::kLevel0_NativePassthrough;
   }
+  // Missing nvngx_dlss.dll or feature handle creation failure -> cannot be Level 2 or Level 3
+  if (state_ != SessionState::kReady || !feature_handle_) {
+    if (ngx_module_ != nullptr) {
+      return NeuralLevel::kLevel1_NgxContractReady;
+    }
+    return NeuralLevel::kLevel0_NativePassthrough;
+  }
+
   if (has_competing_consumer_) {
     // Conflict -> bypass to synthetic dlaa
-    if (state_ == SessionState::kReady && evaluate_success_count_ > 0) {
+    if (evaluate_success_count_ > 0) {
       return NeuralLevel::kLevel2_SyntheticDlaaReady;
     }
-    return NeuralLevel::kLevel1_NgxReady;
+    return NeuralLevel::kLevel1_NgxContractReady;
   }
 
   // Level 3 RenoDX: RenoDX loaded, nvngx_dlssnr loaded, evaluates succeeding
   if (active_consumer_ == NeuralConsumer::kRenoDx && renodx_addon_info_.loaded &&
-      dlssnr_info_.loaded) {
-    if (evaluate_success_count_ > 0) {
-      return NeuralLevel::kLevel3_Confirmed;
-    }
-    return NeuralLevel::kLevel3_ConsumerArmed;
+      dlssnr_info_.loaded && evaluate_success_count_ > 0) {
+    return NeuralLevel::kLevel3_NeuralRenderingConfirmed;
   }
 
-  // Level 3 DFC: requires DFC ARMED, ABI 1, dlssnr loaded, no competing consumer
+  // Level 3 DFC: requires DFC ARMED, ABI 1, dlssnr loaded, no competing consumer, evaluates succeeding
   if (active_consumer_ == NeuralConsumer::kDeepFriedChicken &&
-      dfc_state_ == DfcState::kArmed && dfc_abi_ == 1 && dlssnr_info_.loaded) {
-    if (evaluate_success_count_ > 0 && dfc_rebuilt_for_armed_) {
-      return NeuralLevel::kLevel3_Confirmed;
-    }
-    return NeuralLevel::kLevel3_ConsumerArmed;
+      dfc_state_ == DfcState::kArmed && dfc_abi_ == 1 && dlssnr_info_.loaded &&
+      evaluate_success_count_ > 0 && dfc_rebuilt_for_armed_) {
+    return NeuralLevel::kLevel3_NeuralRenderingConfirmed;
   }
 
   // Level 2: Feature 1 SuperSampling created & evaluating via native NGX
-  if (state_ == SessionState::kReady && evaluate_success_count_ > 0) {
+  if (evaluate_success_count_ > 0) {
     return NeuralLevel::kLevel2_SyntheticDlaaReady;
   }
-  // Level 1: NGX runtime initialized
-  if (ngx_module_ != nullptr) {
-    return NeuralLevel::kLevel1_NgxReady;
-  }
-  return NeuralLevel::kLevel0_Inactive;
+
+  // NGX runtime and feature initialized, but no successful evaluations yet
+  return NeuralLevel::kLevel1_NgxContractReady;
 }
 
 const char* SyntheticNgxSession::GetConsumerString() const {
@@ -941,15 +960,13 @@ const char* SyntheticNgxSession::GetConsumerString() const {
 
 const char* SyntheticNgxSession::GetLevelString() const {
   switch (neural_level()) {
-    case NeuralLevel::kLevel0_Inactive:
-      return "LEVEL 0: INACTIVE";
-    case NeuralLevel::kLevel1_NgxReady:
-      return "LEVEL 1: NGX READY";
+    case NeuralLevel::kLevel0_NativePassthrough:
+      return "LEVEL 0: NATIVE / PASSTHROUGH";
+    case NeuralLevel::kLevel1_NgxContractReady:
+      return "LEVEL 1: NGX CONTRACT INFRASTRUCTURE READY";
     case NeuralLevel::kLevel2_SyntheticDlaaReady:
       return "LEVEL 2: SYNTHETIC DLAA READY";
-    case NeuralLevel::kLevel3_ConsumerArmed:
-      return "LEVEL 3: NEURAL CONSUMER ARMED";
-    case NeuralLevel::kLevel3_Confirmed:
+    case NeuralLevel::kLevel3_NeuralRenderingConfirmed:
       return (active_consumer_ == NeuralConsumer::kRenoDx)
                  ? "LEVEL 3: DLSS 5 NEURAL RENDERING CONFIRMED (RENODX)"
                  : "LEVEL 3: DLSS 5 NEURAL RENDERING CONFIRMED (DFC)";
@@ -959,7 +976,13 @@ const char* SyntheticNgxSession::GetLevelString() const {
 }
 
 bool SyntheticNgxSession::IsInterceptionConfirmed() const {
-  return (neural_level() == NeuralLevel::kLevel3_Confirmed);
+  return (neural_level() == NeuralLevel::kLevel3_NeuralRenderingConfirmed);
+}
+
+uint32_t SyntheticNgxSession::GetResourceCount() const {
+  uint32_t count = 0;
+  if (output_resource_) count++;
+  return count;
 }
 
 void SyntheticNgxSession::PollDfcState(ID3D12GraphicsCommandList* command_list) {
@@ -1204,8 +1227,8 @@ bool SyntheticNgxSession::Evaluate(ID3D12GraphicsCommandList* command_list,
   params_->Set("Jitter.Offset.X", 0.0f);
   params_->Set("Jitter.Offset.Y", 0.0f);
   params_->Set("Sharpness", 0.0f);
-  params_->Set("DLSS.Pre.Exposure", 1.0f);
-  params_->Set("DLSS.Exposure.Scale", 1.0f);
+  params_->Set("DLSS.Pre.Exposure", float(cvars::d3d12_neural_pre_exposure));
+  params_->Set("DLSS.Exposure.Scale", float(cvars::d3d12_neural_exposure_scale));
   params_->Set("Reset", contract.reset_history ? 1 : 0);
 
   DWORD exception_code = 0;

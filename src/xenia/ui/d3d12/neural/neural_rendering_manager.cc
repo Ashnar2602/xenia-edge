@@ -14,18 +14,31 @@
 #include "xenia/base/clock.h"
 #include "xenia/base/cvar.h"
 #include "xenia/base/logging.h"
+#include "xenia/emulator.h"
+#include "xenia/kernel/kernel_state.h"
 #include "xenia/ui/d3d12/d3d12_util.h"
 #include "xenia/ui/d3d12/neural/depth_provider.h"
 #include "xenia/ui/d3d12/neural/motion_estimator.h"
 #include "xenia/ui/d3d12/neural/nvidia_optical_flow_estimator.h"
 #include "xenia/ui/d3d12/neural/synthetic_ngx_session.h"
+#include <dxgi1_6.h>
 #include <algorithm>
 #include <cmath>
+#include <psapi.h>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#pragma comment(lib, "psapi.lib")
 
 DEFINE_string(d3d12_neural_output_mode, "passthrough",
               "Neural rendering presentation mode: passthrough | "
               "contract_only | full | split.",
               "GPU");
+
+DEFINE_bool(
+    d3d12_neural_synthetic_color_test, false,
+    "Execute diagnostic non-gameplay synthetic color transfer test with solid patches and ramps.",
+    "D3D12");
 
 DECLARE_bool(d3d12_neural_rendering);
 DECLARE_bool(d3d12_neural_depth_debug_view);
@@ -73,6 +86,18 @@ NeuralRenderingManager::NeuralRenderingManager(ID3D12Device* device,
 
 NeuralRenderingManager::~NeuralRenderingManager() {
   XELOGI("NeuralRenderingManager: === SHUTDOWN TELEMETRY REPORT ===");
+  std::string g_title = "Unknown";
+  uint32_t g_title_id = 0;
+  xe::kernel::KernelState* ks = xe::kernel::KernelState::shared();
+  if (ks && ks->emulator()) {
+    g_title = ks->emulator()->title_name();
+    g_title_id = ks->emulator()->title_id();
+    if (g_title_id == 0) {
+      g_title_id = ks->title_id();
+    }
+  }
+  XELOGI("  Guest title:                 {}", g_title);
+  XELOGI("  Guest Title ID:              {:08X}", g_title_id);
   if (ngx_session_) {
     XELOGI("  Pipeline Operating Level:    {}", ngx_session_->GetLevelString());
     XELOGI("  Interception Confirmed:      {}",
@@ -88,7 +113,16 @@ NeuralRenderingManager::~NeuralRenderingManager() {
     }
     XELOGI("  nvngx_dlssnr.dll loaded:     {}",
            ngx_session_->dlssnr_info().loaded ? "YES" : "NO");
+    XELOGI("  NGX feature creates:         {}", ngx_session_->feature_create_count());
+    XELOGI("  NGX feature releases:        {}", ngx_session_->feature_release_count());
   }
+  if (depth_provider_) {
+    XELOGI("  DepthInverted transitions:   {}", depth_provider_->depth_inverted_transitions());
+    XELOGI("  Candidate switches:          {}", depth_provider_->candidate_switch_count());
+    XELOGI("  MSAA heuristic frames:       {}", depth_provider_->msaa_heuristic_frames());
+  }
+  XELOGI("  Neural D3D12 resources:      {}", GetNeuralOwnedResourceCount());
+  XELOGI("  Neural descriptor count:     {}", GetNeuralDescriptorCount());
   XELOGI("  Total guest frames:          {}", total_frames_);
   XELOGI("  Evaluated neural frames:     {}", evaluated_frames_);
   XELOGI("  Bypassed frames:             {}", bypassed_frames_);
@@ -99,10 +133,10 @@ NeuralRenderingManager::~NeuralRenderingManager() {
     XELOGI("  Average Optical Flow time:   {:.3f} ms", avg_motion_time_ms());
     XELOGI("  Average Depth process time:  {:.3f} ms", avg_depth_time_ms());
     if (ngx_session_ &&
-        ngx_session_->neural_level() >= NeuralLevel::kLevel3_ConsumerArmed) {
-      XELOGI("  Average Neural evaluate time:{:.3f} ms", avg_ngx_time_ms());
+        ngx_session_->neural_level() == NeuralLevel::kLevel3_NeuralRenderingConfirmed) {
+      XELOGI("  Neural-enabled NGX dependency interval: {:.3f} ms", avg_ngx_time_ms());
     } else {
-      XELOGI("  Average Native DLAA dispatch:{:.3f} ms", avg_ngx_time_ms());
+      XELOGI("  Plain DLAA NGX dependency interval:     {:.3f} ms", avg_ngx_time_ms());
     }
     if (split_blits_ > 0) {
       XELOGI("  Average Split blit time:     {:.3f} ms", avg_blit_time_ms());
@@ -520,6 +554,417 @@ void NeuralRenderingManager::ProcessDiagnosticReadback() {
       pixel_diff_metrics_.total_pixels);
 }
 
+void NeuralRenderingManager::RunSyntheticColorTransferTest(
+    ID3D12GraphicsCommandList* caller_command_list) {
+  if (!device_ || !direct_queue_ || !ngx_session_ || !ngx_session_->IsReady()) {
+    return;
+  }
+
+  XELOGI("================================================================================");
+  XELOGI("NeuralRenderingManager: [FASE H] RUNNING SYNTHETIC COLOR TRANSFER TEST");
+  XELOGI("  Active Consumer: {}", ngx_session_->GetConsumerString());
+  XELOGI("  AutoExposure:    {}", cvars::d3d12_neural_auto_exposure ? "ON (0x40)" : "OFF");
+  XELOGI("  Pre.Exposure:    {:.2f}", cvars::d3d12_neural_pre_exposure);
+  XELOGI("  Exposure.Scale:  {:.2f}", cvars::d3d12_neural_exposure_scale);
+  XELOGI("================================================================================");
+
+  const uint32_t width = 1280;
+  const uint32_t height = 720;
+  const uint32_t total_px = width * height;
+  const DXGI_FORMAT color_format = DXGI_FORMAT_R10G10B10A2_UNORM;
+
+  Microsoft::WRL::ComPtr<ID3D12CommandAllocator> test_allocator;
+  Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> test_cmd;
+  if (FAILED(device_->CreateCommandAllocator(
+          D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&test_allocator))) ||
+      FAILED(device_->CreateCommandList(
+          0, D3D12_COMMAND_LIST_TYPE_DIRECT, test_allocator.Get(), nullptr,
+          IID_PPV_ARGS(&test_cmd)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create test command list");
+    return;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D12Fence> test_fence;
+  if (FAILED(device_->CreateFence(0, D3D12_FENCE_FLAG_NONE,
+                                 IID_PPV_ARGS(&test_fence)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create test fence");
+    return;
+  }
+  uint64_t fence_val = 0;
+
+  auto ExecuteAndWait = [&]() -> bool {
+    if (FAILED(test_cmd->Close())) {
+      return false;
+    }
+    ID3D12CommandList* pp[] = {test_cmd.Get()};
+    direct_queue_->ExecuteCommandLists(1, pp);
+    fence_val++;
+    direct_queue_->Signal(test_fence.Get(), fence_val);
+    HANDLE evt = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (evt) {
+      if (SUCCEEDED(test_fence->SetEventOnCompletion(fence_val, evt))) {
+        WaitForSingleObject(evt, 5000);
+      }
+      CloseHandle(evt);
+    }
+    test_allocator->Reset();
+    test_cmd->Reset(test_allocator.Get(), nullptr);
+    return true;
+  };
+
+  D3D12_RESOURCE_DESC color_desc = {};
+  color_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+  color_desc.Width = width;
+  color_desc.Height = height;
+  color_desc.DepthOrArraySize = 1;
+  color_desc.MipLevels = 1;
+  color_desc.Format = color_format;
+  color_desc.SampleDesc.Count = 1;
+  color_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+  color_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+  Microsoft::WRL::ComPtr<ID3D12Resource> color_res;
+  if (FAILED(device_->CreateCommittedResource(
+          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE,
+          &color_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+          IID_PPV_ARGS(&color_res)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create color texture");
+    return;
+  }
+
+  D3D12_RESOURCE_DESC depth_desc = color_desc;
+  depth_desc.Format = DXGI_FORMAT_R32_FLOAT;
+  Microsoft::WRL::ComPtr<ID3D12Resource> depth_res;
+  if (FAILED(device_->CreateCommittedResource(
+          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE,
+          &depth_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+          IID_PPV_ARGS(&depth_res)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create depth texture");
+    return;
+  }
+
+  D3D12_RESOURCE_DESC mv_desc = color_desc;
+  mv_desc.Format = DXGI_FORMAT_R16G16_FLOAT;
+  Microsoft::WRL::ComPtr<ID3D12Resource> mv_res;
+  if (FAILED(device_->CreateCommittedResource(
+          &ui::d3d12::util::kHeapPropertiesDefault, D3D12_HEAP_FLAG_NONE,
+          &mv_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+          IID_PPV_ARGS(&mv_res)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create mv texture");
+    return;
+  }
+
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT color_fp = {};
+  UINT64 color_upload_size = 0;
+  device_->GetCopyableFootprints(&color_desc, 0, 1, 0, &color_fp, nullptr, nullptr,
+                                &color_upload_size);
+
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT depth_fp = {};
+  UINT64 depth_upload_size = 0;
+  device_->GetCopyableFootprints(&depth_desc, 0, 1, 0, &depth_fp, nullptr, nullptr,
+                                &depth_upload_size);
+
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT mv_fp = {};
+  UINT64 mv_upload_size = 0;
+  device_->GetCopyableFootprints(&mv_desc, 0, 1, 0, &mv_fp, nullptr, nullptr,
+                                &mv_upload_size);
+
+  UINT64 total_upload_size = color_upload_size + depth_upload_size + mv_upload_size;
+  D3D12_RESOURCE_DESC upload_desc = {};
+  ui::d3d12::util::FillBufferResourceDesc(upload_desc, total_upload_size,
+                                          D3D12_RESOURCE_FLAG_NONE);
+  Microsoft::WRL::ComPtr<ID3D12Resource> upload_buf;
+  if (FAILED(device_->CreateCommittedResource(
+          &ui::d3d12::util::kHeapPropertiesUpload, D3D12_HEAP_FLAG_NONE,
+          &upload_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+          IID_PPV_ARGS(&upload_buf)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create upload buffer");
+    return;
+  }
+
+  D3D12_RESOURCE_DESC rb_desc = {};
+  ui::d3d12::util::FillBufferResourceDesc(rb_desc, color_upload_size,
+                                          D3D12_RESOURCE_FLAG_NONE);
+  Microsoft::WRL::ComPtr<ID3D12Resource> rb_buf;
+  if (FAILED(device_->CreateCommittedResource(
+          &ui::d3d12::util::kHeapPropertiesReadback, D3D12_HEAP_FLAG_NONE,
+          &rb_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+          IID_PPV_ARGS(&rb_buf)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to create readback buffer");
+    return;
+  }
+
+  uint8_t* p_upload = nullptr;
+  D3D12_RANGE r_zero = {0, 0};
+  if (FAILED(upload_buf->Map(0, &r_zero, reinterpret_cast<void**>(&p_upload)))) {
+    XELOGE("NeuralRenderingManager: [FASE H] Failed to map upload buffer");
+    return;
+  }
+
+  // Populate static depth (0.5f)
+  uint8_t* p_depth = p_upload + color_upload_size;
+  for (uint32_t y = 0; y < height; ++y) {
+    float* row = reinterpret_cast<float*>(p_depth + y * depth_fp.Footprint.RowPitch);
+    for (uint32_t x = 0; x < width; ++x) {
+      row[x] = 0.5f;
+    }
+  }
+
+  // Populate zero motion vectors
+  uint8_t* p_mv = p_depth + depth_upload_size;
+  for (uint32_t y = 0; y < height; ++y) {
+    uint32_t* row = reinterpret_cast<uint32_t*>(p_mv + y * mv_fp.Footprint.RowPitch);
+    for (uint32_t x = 0; x < width; ++x) {
+      row[x] = 0; // 0.0f in FP16
+    }
+  }
+
+  // Upload depth and MV textures
+  D3D12_TEXTURE_COPY_LOCATION dst_depth = {};
+  dst_depth.pResource = depth_res.Get();
+  dst_depth.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  D3D12_TEXTURE_COPY_LOCATION src_depth = {};
+  src_depth.pResource = upload_buf.Get();
+  src_depth.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  src_depth.PlacedFootprint = depth_fp;
+  src_depth.PlacedFootprint.Offset = color_upload_size;
+  test_cmd->CopyTextureRegion(&dst_depth, 0, 0, 0, &src_depth, nullptr);
+
+  D3D12_TEXTURE_COPY_LOCATION dst_mv = {};
+  dst_mv.pResource = mv_res.Get();
+  dst_mv.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  D3D12_TEXTURE_COPY_LOCATION src_mv = {};
+  src_mv.pResource = upload_buf.Get();
+  src_mv.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  src_mv.PlacedFootprint = mv_fp;
+  src_mv.PlacedFootprint.Offset = color_upload_size + depth_upload_size;
+  test_cmd->CopyTextureRegion(&dst_mv, 0, 0, 0, &src_mv, nullptr);
+
+  D3D12_RESOURCE_BARRIER init_barriers[2] = {};
+  init_barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  init_barriers[0].Transition.pResource = depth_res.Get();
+  init_barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  init_barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+  init_barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+  init_barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+  init_barriers[1].Transition.pResource = mv_res.Get();
+  init_barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+  init_barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+  init_barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+  test_cmd->ResourceBarrier(2, init_barriers);
+
+  ExecuteAndWait();
+
+  struct TestPatch {
+    std::string name;
+    float r, g, b;
+    bool is_grayscale_ramp;
+    bool is_color_ramp;
+  };
+
+  std::vector<TestPatch> test_patches = {
+      {"Flat Black (0.0)", 0.0f, 0.0f, 0.0f, false, false},
+      {"Flat 18% Grey (0.18)", 0.18f, 0.18f, 0.18f, false, false},
+      {"Flat 50% Grey (0.50)", 0.50f, 0.50f, 0.50f, false, false},
+      {"Flat White (1.0)", 1.0f, 1.0f, 1.0f, false, false},
+      {"Primary Red (1,0,0)", 1.0f, 0.0f, 0.0f, false, false},
+      {"Primary Green (0,1,0)", 0.0f, 1.0f, 0.0f, false, false},
+      {"Primary Blue (0,0,1)", 0.0f, 0.0f, 1.0f, false, false},
+      {"Grayscale Ramp", 0.0f, 0.0f, 0.0f, true, false},
+      {"Color Ramp", 0.0f, 0.0f, 0.0f, false, true},
+  };
+
+  std::string report = "================================================================================\n";
+  report += "XENIA EDGE — COMMIT 6 SYNTHETIC COLOR TRANSFER TEST REPORT (FASE H)\n";
+  report += "================================================================================\n";
+  report += "Consumer:     " + std::string(ngx_session_->GetConsumerString()) + "\n";
+  report += "Level:        " + std::string(ngx_session_->GetLevelString()) + "\n";
+  report += "AutoExposure: " + std::string(cvars::d3d12_neural_auto_exposure ? "TRUE (0x40)" : "FALSE (0x02)") + "\n";
+  report += "Pre.Exposure: " + std::to_string(cvars::d3d12_neural_pre_exposure) + "\n";
+  report += "Exposure.Scale: " + std::to_string(cvars::d3d12_neural_exposure_scale) + "\n\n";
+
+  bool color_res_initialized = false;
+
+  for (const auto& patch : test_patches) {
+    for (uint32_t y = 0; y < height; ++y) {
+      uint32_t* row = reinterpret_cast<uint32_t*>(p_upload + y * color_fp.Footprint.RowPitch);
+      for (uint32_t x = 0; x < width; ++x) {
+        float pr = patch.r;
+        float pg = patch.g;
+        float pb = patch.b;
+        if (patch.is_grayscale_ramp) {
+          pr = pg = pb = float(x) / float(width - 1);
+        } else if (patch.is_color_ramp) {
+          pr = float(x) / float(width - 1);
+          pg = float(y) / float(height - 1);
+          pb = 0.5f;
+        }
+        uint32_t ur = std::min(1023u, uint32_t(pr * 1023.0f + 0.5f));
+        uint32_t ug = std::min(1023u, uint32_t(pg * 1023.0f + 0.5f));
+        uint32_t ub = std::min(1023u, uint32_t(pb * 1023.0f + 0.5f));
+        row[x] = (ur & 0x3FF) | ((ug & 0x3FF) << 10) | ((ub & 0x3FF) << 20) | (3u << 30);
+      }
+    }
+
+    if (color_res_initialized) {
+      D3D12_RESOURCE_BARRIER b = {};
+      b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+      b.Transition.pResource = color_res.Get();
+      b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+      b.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+      b.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+      test_cmd->ResourceBarrier(1, &b);
+    }
+
+    D3D12_TEXTURE_COPY_LOCATION dst_c = {};
+    dst_c.pResource = color_res.Get();
+    dst_c.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    D3D12_TEXTURE_COPY_LOCATION src_c = {};
+    src_c.pResource = upload_buf.Get();
+    src_c.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    src_c.PlacedFootprint = color_fp;
+    test_cmd->CopyTextureRegion(&dst_c, 0, 0, 0, &src_c, nullptr);
+
+    D3D12_RESOURCE_BARRIER b_post = {};
+    b_post.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    b_post.Transition.pResource = color_res.Get();
+    b_post.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    b_post.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+    b_post.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    test_cmd->ResourceBarrier(1, &b_post);
+    color_res_initialized = true;
+
+    NeuralFrameContract contract = {};
+    contract.color = color_res.Get();
+    contract.depth = depth_res.Get();
+    contract.motion_vectors = mv_res.Get();
+    contract.width = width;
+    contract.height = height;
+    contract.reset_history = true;
+    contract.valid = true;
+
+    ngx_session_->Evaluate(test_cmd.Get(), contract);
+
+    D3D12_RESOURCE_BARRIER b_rb = {};
+    b_rb.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    b_rb.Transition.pResource = ngx_session_->output_resource();
+    b_rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    b_rb.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    b_rb.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+    test_cmd->ResourceBarrier(1, &b_rb);
+
+    D3D12_TEXTURE_COPY_LOCATION dst_rb = {};
+    dst_rb.pResource = rb_buf.Get();
+    dst_rb.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    dst_rb.PlacedFootprint = color_fp;
+    D3D12_TEXTURE_COPY_LOCATION src_rb = {};
+    src_rb.pResource = ngx_session_->output_resource();
+    src_rb.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    test_cmd->CopyTextureRegion(&dst_rb, 0, 0, 0, &src_rb, nullptr);
+
+    D3D12_RESOURCE_BARRIER b_rb_post = {};
+    b_rb_post.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    b_rb_post.Transition.pResource = ngx_session_->output_resource();
+    b_rb_post.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    b_rb_post.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+    b_rb_post.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    test_cmd->ResourceBarrier(1, &b_rb_post);
+
+    ExecuteAndWait();
+
+    uint8_t* p_rb = nullptr;
+    D3D12_RANGE r_read = {0, static_cast<SIZE_T>(color_upload_size)};
+    if (SUCCEEDED(rb_buf->Map(0, &r_read, reinterpret_cast<void**>(&p_rb)))) {
+      double sum_r = 0.0, sum_g = 0.0, sum_b = 0.0, sum_y = 0.0;
+      float min_r = 1.0f, max_r = 0.0f;
+      float min_g = 1.0f, max_g = 0.0f;
+      float min_b = 1.0f, max_b = 0.0f;
+
+      for (uint32_t y = 0; y < height; ++y) {
+        const uint32_t* row = reinterpret_cast<const uint32_t*>(
+            p_rb + y * color_fp.Footprint.RowPitch);
+        for (uint32_t x = 0; x < width; ++x) {
+          uint32_t px = row[x];
+          float pr = (px & 0x3FF) / 1023.0f;
+          float pg = ((px >> 10) & 0x3FF) / 1023.0f;
+          float pb = ((px >> 20) & 0x3FF) / 1023.0f;
+          float py = 0.2126f * pr + 0.7152f * pg + 0.0722f * pb;
+
+          sum_r += pr; sum_g += pg; sum_b += pb; sum_y += py;
+          min_r = std::min(min_r, pr); max_r = std::max(max_r, pr);
+          min_g = std::min(min_g, pg); max_g = std::max(max_g, pg);
+          min_b = std::min(min_b, pb); max_b = std::max(max_b, pb);
+        }
+      }
+
+      float mean_r = float(sum_r / total_px);
+      float mean_g = float(sum_g / total_px);
+      float mean_b = float(sum_b / total_px);
+      float mean_y = float(sum_y / total_px);
+
+      char line[512] = {};
+      if (!patch.is_grayscale_ramp && !patch.is_color_ramp) {
+        float in_luma = 0.2126f * patch.r + 0.7152f * patch.g + 0.0722f * patch.b;
+        float gain = (in_luma > 0.001f) ? (mean_y / in_luma) : 0.0f;
+        sprintf_s(line,
+                  "  %-24s: In(R=%.2f,G=%.2f,B=%.2f,Y=%.2f) -> "
+                  "Out(R=%.4f,G=%.4f,B=%.4f,Y=%.4f) | Gain=%.4f\n",
+                  patch.name.c_str(), patch.r, patch.g, patch.b, in_luma,
+                  mean_r, mean_g, mean_b, mean_y, gain);
+        XELOGI("{}", line);
+        report += line;
+      } else if (patch.is_grayscale_ramp) {
+        sprintf_s(line, "  %-24s: Mean Y=%.4f (Min=%.4f, Max=%.4f)\n",
+                  patch.name.c_str(), mean_y, min_r, max_r);
+        XELOGI("{}", line);
+        report += line;
+
+        report += "    [Ramp Decile Samples (Input -> Output)]:\n";
+        const uint32_t* mid_row = reinterpret_cast<const uint32_t*>(
+            p_rb + (height / 2) * color_fp.Footprint.RowPitch);
+        for (int d = 0; d <= 10; ++d) {
+          uint32_t sample_x = (d == 10) ? (width - 1) : (d * (width - 1) / 10);
+          float in_v = float(sample_x) / float(width - 1);
+          uint32_t px = mid_row[sample_x];
+          float out_r = (px & 0x3FF) / 1023.0f;
+          float out_g = ((px >> 10) & 0x3FF) / 1023.0f;
+          float out_b = ((px >> 20) & 0x3FF) / 1023.0f;
+          float out_y = 0.2126f * out_r + 0.7152f * out_g + 0.0722f * out_b;
+          char sample_str[256] = {};
+          sprintf_s(sample_str, "      Step %2d%%: In=%.2f -> Out=%.4f (R=%.4f, G=%.4f, B=%.4f) | Ratio=%.4f\n",
+                    d * 10, in_v, out_y, out_r, out_g, out_b, (in_v > 0.01f ? (out_y / in_v) : 0.0f));
+          report += sample_str;
+          XELOGI("{}", sample_str);
+        }
+      } else if (patch.is_color_ramp) {
+        sprintf_s(line, "  %-24s: Mean RGB=(%.4f, %.4f, %.4f), Mean Y=%.4f\n",
+                  patch.name.c_str(), mean_r, mean_g, mean_b, mean_y);
+        XELOGI("{}", line);
+        report += line;
+      }
+
+      D3D12_RANGE r_none = {0, 0};
+      rb_buf->Unmap(0, &r_none);
+    }
+  }
+
+  upload_buf->Unmap(0, &r_zero);
+  test_cmd->Close();
+
+  FILE* fp = nullptr;
+  if (fopen_s(&fp, "scratch/synthetic_color_transfer_report.txt", "w") == 0 && fp) {
+    fputs(report.c_str(), fp);
+    fclose(fp);
+    XELOGI("NeuralRenderingManager: [FASE H] Saved synthetic color report to "
+           "scratch/synthetic_color_transfer_report.txt");
+  }
+
+  XELOGI("================================================================================");
+  XELOGI("NeuralRenderingManager: [FASE H] SYNTHETIC COLOR TRANSFER TEST COMPLETE");
+  XELOGI("================================================================================");
+}
+
 ID3D12Resource* NeuralRenderingManager::Process(
     ID3D12GraphicsCommandList* command_list,
     ID3D12Resource* input_guest_output,
@@ -569,9 +1014,21 @@ ID3D12Resource* NeuralRenderingManager::Process(
 
   if (!logged_first_frame_) {
     logged_first_frame_ = true;
+    std::string g_title = "Unknown";
+    uint32_t g_title_id = 0;
+    xe::kernel::KernelState* ks = xe::kernel::KernelState::shared();
+    if (ks && ks->emulator()) {
+      g_title = ks->emulator()->title_name();
+      g_title_id = ks->emulator()->title_id();
+      if (g_title_id == 0) {
+        g_title_id = ks->title_id();
+      }
+    }
     XELOGI(
-        "NeuralRenderingManager: First frame captured: {}x{} format {}",
-        current_width_, current_height_, uint32_t(current_format_));
+        "NeuralRenderingManager: First frame captured: {}x{} format {} | "
+        "Guest title: {} | Guest Title ID: {:08X}",
+        current_width_, current_height_, uint32_t(current_format_),
+        g_title, g_title_id);
   }
 
   // Check guest frame cadence:
@@ -640,6 +1097,11 @@ ID3D12Resource* NeuralRenderingManager::Process(
         last_dfc_state_ = dfc_int;
         need_history_reset_ = true;
       }
+    }
+    if (cvars::d3d12_neural_synthetic_color_test && !synthetic_color_test_executed_ &&
+        ngx_session_->IsReady()) {
+      synthetic_color_test_executed_ = true;
+      RunSyntheticColorTransferTest(command_list);
     }
   }
 
@@ -765,12 +1227,84 @@ ID3D12Resource* NeuralRenderingManager::Process(
       if (is_new_guest_frame && (total_frames_ % 60 == 1)) {
         XELOGI(
             "NeuralRenderingManager: [FULL] [{}] frame={}, gen={}, "
-            "timings: OF={:.3f}ms, Depth={:.3f}ms, NGX={:.3f}ms, Total={:.3f}ms "
+            "timings: OF={:.3f}ms, Depth={:.3f}ms, NGX_dep={:.3f}ms, Total={:.3f}ms "
             "(eval={}, bypassed={}, fails={})",
             ngx_session_ ? ngx_session_->GetLevelString() : "UNKNOWN",
             total_frames_, guest_generation, time_motion_ms, time_depth_ms,
             time_ngx_ms, time_total_ms, evaluated_frames_, bypassed_frames_,
             contract_failures_);
+      }
+      if (is_new_guest_frame && (guest_generation % 500 == 0 || guest_generation % 1000 == 0)) {
+        double ws_mb = 0.0, private_mb = 0.0, commit_mb = 0.0;
+        PROCESS_MEMORY_COUNTERS_EX pmc_ex = {};
+        if (GetProcessMemoryInfo(
+                GetCurrentProcess(),
+                reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc_ex),
+                sizeof(pmc_ex))) {
+          ws_mb = double(pmc_ex.WorkingSetSize) / (1024.0 * 1024.0);
+          private_mb = double(pmc_ex.PagefileUsage) / (1024.0 * 1024.0);
+          commit_mb = double(pmc_ex.PrivateUsage) / (1024.0 * 1024.0);
+        }
+
+        double dedicated_vram_mb = 0.0, budget_vram_mb = 0.0, shared_vram_mb = 0.0;
+        if (device_) {
+          Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+          if (SUCCEEDED(device_->QueryInterface(IID_PPV_ARGS(&dxgi_device)))) {
+            Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+            if (SUCCEEDED(dxgi_device->GetAdapter(&adapter))) {
+              Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter3;
+              if (SUCCEEDED(adapter->QueryInterface(IID_PPV_ARGS(&adapter3)))) {
+                DXGI_QUERY_VIDEO_MEMORY_INFO local_info = {};
+                if (SUCCEEDED(adapter3->QueryVideoMemoryInfo(
+                        0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local_info))) {
+                  dedicated_vram_mb = double(local_info.CurrentUsage) / (1024.0 * 1024.0);
+                  budget_vram_mb = double(local_info.Budget) / (1024.0 * 1024.0);
+                }
+                DXGI_QUERY_VIDEO_MEMORY_INFO non_local_info = {};
+                if (SUCCEEDED(adapter3->QueryVideoMemoryInfo(
+                        0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local_info))) {
+                  shared_vram_mb = double(non_local_info.CurrentUsage) / (1024.0 * 1024.0);
+                }
+              }
+            }
+          }
+        }
+
+        std::string g_title = "Unknown";
+        uint32_t g_title_id = 0;
+        xe::kernel::KernelState* ks = xe::kernel::KernelState::shared();
+        if (ks && ks->emulator()) {
+          g_title = ks->emulator()->title_name();
+          g_title_id = ks->emulator()->title_id();
+          if (g_title_id == 0) {
+            g_title_id = ks->title_id();
+          }
+        }
+
+        uint32_t inv_transitions = depth_provider_ ? depth_provider_->depth_inverted_transitions() : 0;
+        uint32_t cand_switches = depth_provider_ ? depth_provider_->candidate_switch_count() : 0;
+        uint64_t msaa_heurs = depth_provider_ ? depth_provider_->msaa_heuristic_frames() : 0;
+        uint32_t feat_creates = ngx_session_ ? ngx_session_->feature_create_count() : 0;
+        uint32_t feat_releases = ngx_session_ ? ngx_session_->feature_release_count() : 0;
+        uint32_t res_count = GetNeuralOwnedResourceCount();
+        uint32_t desc_count = GetNeuralDescriptorCount();
+
+        XELOGI(
+            "NeuralRenderingManager: [PERIODIC TELEMETRY] Title: '{}' (ID: {:08X}) | "
+            "gen={}, frames={}, eval={}, bypassed={}, fails={}, resets={}, recreations={}, "
+            "depth_fmt={}, inverted={}, score={:.2f}, cand_switches={}, inv_trans={}, msaa_heur={}, "
+            "WS={:.1f}MB, Private={:.1f}MB, Commit={:.1f}MB, DedicatedVRAM={:.1f}MB, BudgetVRAM={:.1f}MB, SharedVRAM={:.1f}MB, "
+            "NeuralResCount={}, NeuralDescCount={}, FeatureCreates={}, FeatureReleases={}, "
+            "OF={:.3f}ms, Depth={:.3f}ms, NGX_dep={:.3f}ms",
+            g_title, g_title_id,
+            guest_generation, total_frames_, evaluated_frames_, bypassed_frames_,
+            contract_failures_, reset_frames_,
+            feat_creates > 1 ? (feat_creates - 1) : 0,
+            uint32_t(depth_candidate.dxgi_format), depth_candidate.inverted,
+            depth_candidate.score, cand_switches, inv_transitions, msaa_heurs,
+            ws_mb, private_mb, commit_mb, dedicated_vram_mb, budget_vram_mb, shared_vram_mb,
+            res_count, desc_count, feat_creates, feat_releases,
+            time_motion_ms, time_depth_ms, time_ngx_ms);
       }
       return ngx_session_->output_resource();
     } else {
@@ -876,6 +1410,37 @@ void NeuralRenderingManager::OnFrameSubmitted(ID3D12CommandQueue* direct_queue) 
   if (depth_provider_) {
     depth_provider_->OnFrameSubmitted(direct_queue);
   }
+}
+
+uint32_t NeuralRenderingManager::GetNeuralOwnedResourceCount() const {
+  uint32_t count = 0;
+  if (motion_estimator_) {
+    count += motion_estimator_->GetResourceCount();
+  }
+  if (depth_provider_) {
+    count += depth_provider_->GetResourceCount();
+  }
+  if (ngx_session_) {
+    count += ngx_session_->GetResourceCount();
+  }
+  if (split_output_resource_) count++;
+  if (readback_original_buffer_) count++;
+  if (readback_processed_buffer_) count++;
+  return count;
+}
+
+uint32_t NeuralRenderingManager::GetNeuralDescriptorCount() const {
+  uint32_t count = 0;
+  if (motion_estimator_) {
+    count += motion_estimator_->GetDescriptorCount();
+  }
+  if (depth_provider_) {
+    count += depth_provider_->GetDescriptorCount();
+  }
+  if (ngx_session_) {
+    count += ngx_session_->GetDescriptorCount();
+  }
+  return count;
 }
 
 }  // namespace neural

@@ -172,6 +172,12 @@ class NeuralRenderingManager {
   D3D12_PLACED_SUBRESOURCE_FOOTPRINT readback_footprint_ = {};
   Microsoft::WRL::ComPtr<ID3D12Fence> readback_fence_;
   uint64_t readback_fence_value_ = 0;
+
+  bool synthetic_color_test_executed_ = false;
+  void RunSyntheticColorTransferTest(ID3D12GraphicsCommandList* command_list);
+
+  uint32_t GetNeuralOwnedResourceCount() const;
+  uint32_t GetNeuralDescriptorCount() const;
 };
 
 }  // namespace neural

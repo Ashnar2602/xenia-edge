@@ -70,6 +70,18 @@ class NvidiaOpticalFlowEstimator final : public MotionEstimator {
   uint32_t width() const { return width_; }
   uint32_t height() const { return height_; }
 
+  uint32_t GetResourceCount() const override {
+    uint32_t count = 0;
+    if (input_buffers_[0]) count++;
+    if (input_buffers_[1]) count++;
+    if (raw_flow_buffer_) count++;
+    if (full_flow_buffer_) count++;
+    return count;
+  }
+  uint32_t GetDescriptorCount() const override {
+    return descriptor_heap_ ? 4 : 0;
+  }
+
  private:
   bool LoadNvOfApi();
   bool CreatePipelines();

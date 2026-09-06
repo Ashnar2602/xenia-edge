@@ -67,6 +67,9 @@ class MotionEstimator {
     out_scale_x = 1.0f;
     out_scale_y = 1.0f;
   }
+
+  virtual uint32_t GetResourceCount() const { return 0; }
+  virtual uint32_t GetDescriptorCount() const { return 0; }
 };
 
 }  // namespace neural

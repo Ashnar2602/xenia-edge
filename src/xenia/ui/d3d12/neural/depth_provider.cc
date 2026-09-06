@@ -461,6 +461,9 @@ void DepthProvider::ProcessFrame(
   }
 
   new_guest_frames_++;
+  if (msaa_policy == DepthMsaaPolicy::kHeuristic) {
+    msaa_heuristic_frames_++;
+  }
   bool is_trusted = (candidate_trust_state_ == CandidateTrustState::kTrusted);
   if (is_trusted) {
     frames_depth_candidate_trusted_++;
@@ -497,7 +500,18 @@ void DepthProvider::ProcessFrame(
     discontinuity = true;
   }
   if (candidate.inverted != last_inverted_) {
+    depth_inverted_transitions_++;
     discontinuity = true;
+    XELOGI(
+        "DepthProvider: [DEPTH_INVERTED TRANSITION #{}] gen={}, res={:#x}, "
+        "inverted {} -> {}, score={:.2f}, near={:.4f}, far={:.4f}, "
+        "fmt={:X}, vp=[{},{},{},{}], reason='{}'",
+        depth_inverted_transitions_, guest_generation,
+        reinterpret_cast<uintptr_t>(candidate.resource),
+        last_inverted_, candidate.inverted, candidate.score,
+        candidate.depth_near, candidate.depth_far,
+        uint32_t(candidate.dxgi_format), candidate.vp_x, candidate.vp_y,
+        candidate.vp_width, candidate.vp_height, candidate.reason);
     last_inverted_ = candidate.inverted;
   }
   if (candidate.width != last_cand_width_ ||

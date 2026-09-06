@@ -98,6 +98,23 @@ class DepthProvider {
   float candidate_switches_per_minute() const {
     return candidate_switches_per_minute_;
   }
+  uint32_t depth_inverted_transitions() const {
+    return depth_inverted_transitions_;
+  }
+  uint64_t msaa_heuristic_frames() const { return msaa_heuristic_frames_; }
+
+  uint32_t GetResourceCount() const {
+    uint32_t count = 0;
+    if (output_depth_resource_) count++;
+    if (range_buffer_) count++;
+    for (const auto& slot : async_slots_) {
+      if (slot.readback_buffer) count++;
+    }
+    return count;
+  }
+  uint32_t GetDescriptorCount() const {
+    return descriptor_heap_ ? 4 : 0;
+  }
 
   void Invalidate();
 
@@ -172,6 +189,8 @@ class DepthProvider {
   uint64_t frames_bypassed_awaiting_validation_ = 0;
   uint64_t validation_failures_ = 0;
   uint64_t candidate_trust_transitions_ = 0;
+  uint32_t depth_inverted_transitions_ = 0;
+  uint64_t msaa_heuristic_frames_ = 0;
 };
 
 }  // namespace neural
