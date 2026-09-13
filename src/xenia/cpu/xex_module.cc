@@ -9,7 +9,11 @@
 
 #include "xenia/cpu/xex_module.h"
 
+#include <algorithm>
+#include <array>
+#include <chrono>
 #include <cstring>
+#include <unordered_set>
 
 #include "third_party/fmt/include/fmt/format.h"
 
@@ -1501,6 +1505,159 @@ static uint32_t GetBLCalledFunction(XexModule* xexmod, uint32_t current_base,
 }
 static bool IsOpcodeBL(unsigned w) {
   return (w >> (32 - 6)) == 18 && ppc::PPCOpcodeBits{w}.I.LK;
+}
+
+constexpr uint32_t kScanDepth = 3;
+constexpr uint32_t kMaxScannedFunctions = 128;
+constexpr uint32_t kMaxScannedInstructions = 2048;
+constexpr uint32_t kMaxTableBytes = 0x40000;
+
+std::vector<uint32_t> XexModule::FindStaticInitializers() const {
+  std::vector<uint32_t> initializers;
+  uint32_t entry_point = 0;
+  if (!GetOptHeader(XEX_HEADER_ENTRY_POINT, &entry_point) ||
+      !IsCodeAddress(entry_point)) {
+    return initializers;
+  }
+
+  auto read = [this](uint32_t address) -> uint32_t {
+    return *memory()->TranslateVirtualBE<uint32_t>(address);
+  };
+  // A table holds code addresses and 0 or -1 padding between NULL sentinels.
+  auto add_tables = [&](std::vector<uint32_t>& constants) {
+    std::sort(constants.begin(), constants.end());
+    constants.erase(std::unique(constants.begin(), constants.end()),
+                    constants.end());
+    for (auto begin_it = constants.begin(); begin_it != constants.end();
+         ++begin_it) {
+      uint32_t begin = *begin_it;
+      const PESection* section = nullptr;
+      for (auto& candidate : pe_sections_) {
+        if (!(candidate.flags & kXEPESectionContainsCode) &&
+            begin >= candidate.address &&
+            begin - candidate.address < candidate.raw_size) {
+          section = &candidate;
+          break;
+        }
+      }
+      if (!section || (begin & 3) || read(begin)) {
+        continue;
+      }
+      uint32_t section_end =
+          section->address + std::min(section->size, section->raw_size);
+      uint32_t limit = std::min(section_end - 4, begin + kMaxTableBytes);
+      uint32_t valid_end = begin;
+      while (valid_end < limit) {
+        uint32_t value = read(valid_end);
+        if (value && value != UINT32_MAX && !IsCodeAddress(value)) {
+          break;
+        }
+        valid_end += 4;
+      }
+      uint32_t table_end = begin;
+      for (auto end_it = begin_it + 1;
+           end_it != constants.end() && *end_it <= valid_end; ++end_it) {
+        if (!(*end_it & 3) && !read(*end_it)) {
+          table_end = *end_it;
+        }
+      }
+      for (uint32_t address = begin; address < table_end; address += 4) {
+        uint32_t value = read(address);
+        if (value && value != UINT32_MAX) {
+          initializers.push_back(value);
+        }
+      }
+    }
+  };
+
+  // _cinit hands _initterm its [begin, end) bounds as lis/addi constants.
+  std::vector<uint32_t> functions = {entry_point};
+  std::unordered_set<uint32_t> queued = {entry_point};
+  for (uint32_t depth = 0; depth < kScanDepth; ++depth) {
+    std::vector<uint32_t> next_depth;
+    for (uint32_t function : functions) {
+      std::array<uint32_t, 32> registers = {};
+      std::vector<uint32_t> constants;
+      for (uint32_t i = 0, address = function;
+           i < kMaxScannedInstructions && address < high_address_;
+           ++i, address += 4) {
+        uint32_t code = read(address);
+        ppc::PPCOpcodeBits bits{code};
+        uint32_t opcode = code >> 26;
+        if (code == 0x4E800020) {
+          break;
+        } else if (IsOpcodeBL(code)) {
+          uint32_t callee = GetBLCalledFunction(nullptr, address, bits);
+          if (depth + 1 < kScanDepth && IsCodeAddress(callee) &&
+              next_depth.size() < kMaxScannedFunctions &&
+              queued.insert(callee).second) {
+            next_depth.push_back(callee);
+          }
+        } else if (opcode == 15 && !bits.D.RA) {
+          registers[bits.D.RT] = static_cast<uint32_t>(bits.D.DS) << 16;
+        } else if (opcode == 14 && bits.D.RA) {
+          registers[bits.D.RT] =
+              registers[bits.D.RA] +
+              static_cast<uint32_t>(ppc::XEEXTS16(bits.D.DS));
+          constants.push_back(registers[bits.D.RT]);
+        } else if (opcode == 24) {
+          registers[bits.D.RA] = registers[bits.D.RT] | bits.D.DS;
+          constants.push_back(registers[bits.D.RA]);
+        }
+      }
+      add_tables(constants);
+    }
+    functions.swap(next_depth);
+  }
+
+  std::sort(initializers.begin(), initializers.end());
+  initializers.erase(std::unique(initializers.begin(), initializers.end()),
+                     initializers.end());
+  return initializers;
+}
+
+void XexModule::PrecompileStaticInitializers() {
+  auto start_time = std::chrono::steady_clock::now();
+  std::vector<uint32_t> pending = FindStaticInitializers();
+  if (pending.empty()) {
+    return;
+  }
+  size_t initializer_count = pending.size();
+
+  // Lazy compiles during static init can reorder the threads it starts.
+  std::unordered_set<uint32_t> visited(pending.begin(), pending.end());
+  size_t compiled = 0;
+  while (!pending.empty()) {
+    uint32_t address = pending.back();
+    pending.pop_back();
+    auto function = processor_->ResolveFunction(address);
+    if (!function || !function->has_end_address()) {
+      continue;
+    }
+    ++compiled;
+    // The scanner's end address is the last instruction, not one past it.
+    uint32_t start = function->address();
+    uint32_t last = function->end_address();
+    for (uint32_t instr = start; instr <= last; instr += 4) {
+      uint32_t code = *memory()->TranslateVirtualBE<uint32_t>(instr);
+      if ((code >> 26) != 18) {
+        continue;
+      }
+      uint32_t target =
+          GetBLCalledFunction(this, instr, ppc::PPCOpcodeBits{code});
+      bool is_tail_call = target < start || target > last;
+      if ((IsOpcodeBL(code) || is_tail_call) && IsCodeAddress(target) &&
+          visited.insert(target).second) {
+        pending.push_back(target);
+      }
+    }
+  }
+
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start_time);
+  XELOGI(
+      "Precompiled {} static initializers and callees ({} functions) in {} ms",
+      initializer_count, compiled, elapsed.count());
 }
 
 std::vector<uint32_t> XexModule::PreanalyzeCode() {

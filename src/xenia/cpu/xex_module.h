@@ -253,6 +253,9 @@ class XexModule : public xe::cpu::Module {
   InfoCacheFlags* GetInstructionAddressFlags(uint32_t guest_addr);
 
   virtual void Precompile() override;
+  // Compiles the CRT static initializers and their callees. Call after all
+  // code patching and before the entry point runs.
+  void PrecompileStaticInitializers();
 
  protected:
   std::unique_ptr<Function> CreateFunction(uint32_t address) override;
@@ -260,6 +263,10 @@ class XexModule : public xe::cpu::Module {
  private:
   void PrecompileKnownFunctions();
   void PrecompileDiscoveredFunctions();
+  std::vector<uint32_t> FindStaticInitializers() const;
+  bool IsCodeAddress(uint32_t address) const {
+    return !(address & 3) && address >= low_address_ && address < high_address_;
+  }
   std::vector<uint32_t> PreanalyzeCode();
   friend struct XexInfoCache;
   void ReadSecurityInfo();

@@ -2275,6 +2275,11 @@ X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
     }
   }
 
+  // After plugins, which patch code in place.
+  if (module->xex_module()) {
+    module->xex_module()->PrecompileStaticInitializers();
+  }
+
   // Resume the main thread now.
   // If the debugger has requested a suspend this will just decrement the
   // suspend count without resuming it until the debugger wants.
