@@ -278,6 +278,9 @@ class CodeCacheBase : public CodeCache {
                                  xe::memory::AllocationType::kReserveCommit,
                                  xe::memory::PageAccess::kExecuteReadWrite));
       generated_code_write_base_ = generated_code_execute_base_;
+      // mmap maps the whole region RWX already. EnsureCommitted's mprotect
+      // would fail with EACCES, macOS refuses it on MAP_JIT pages.
+      generated_code_commit_mark_ = kGeneratedCodeSize;
 #else
       generated_code_execute_base_ =
           reinterpret_cast<uint8_t*>(xe::memory::MapFileView(
