@@ -119,6 +119,10 @@ struct CombinedStruct<> {};
 template <typename T, typename... Ts>
 struct CombinedStruct<T, Ts...> : T, CombinedStruct<Ts...> {};
 
+// Set by reg() on a constant operand. SelectSequence reports it, since only it
+// knows the function and instruction being emitted.
+inline thread_local bool constant_read_as_reg = false;
+
 struct OpBase {};
 
 template <typename T, KeyType KEY_TYPE>
@@ -176,8 +180,7 @@ struct ValueOp : Op<ValueOp<T, KEY_TYPE, REG_TYPE, CONST_TYPE>, KEY_TYPE> {
   const REG_TYPE& reg() const {
     assert_true(!is_constant);
     if (is_constant) {
-      XELOGE("{} - Invalid handling of constant! Report this to developers!",
-             __FUNCTION__);
+      constant_read_as_reg = true;
     }
     return reg_;
   }

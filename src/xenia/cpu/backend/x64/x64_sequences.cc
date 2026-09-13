@@ -3734,6 +3734,36 @@ std::string FormatSequenceKey(uint64_t key) {
   return result;
 }
 
+// The emitted code reads a stale register in place of the constant.
+static void ReportConstantReadAsReg(const X64Emitter& e, const Instr* i,
+                                    const InstrKey& key) {
+  // The nearest SOURCE_OFFSET before it names the guest instruction.
+  uint32_t guest_address = 0;
+  for (const Instr* p = i; p;) {
+    if (p->GetOpcodeNum() == OPCODE_SOURCE_OFFSET) {
+      guest_address = static_cast<uint32_t>(p->src1.offset);
+      break;
+    }
+    p = p->prev ? p->prev
+                : (p->block->prev ? p->block->prev->instr_tail : nullptr);
+  }
+  static constexpr const char* kTypeNames[] = {"i8",  "i16", "i32", "i64",
+                                               "f32", "f64", "v128"};
+  auto describe = [](uint32_t key_type, const Value* value) -> std::string {
+    if (key_type < OPCODE_SIG_TYPE_V) {
+      return "-";
+    }
+    return fmt::format("{}{}", kTypeNames[key_type - OPCODE_SIG_TYPE_V],
+                       value->IsConstant() ? " const" : "");
+  };
+  XELOGE(
+      "x64: {} read a constant operand as a register in function {:08X} at "
+      "guest {:08X} (flags {:X}, src1 {}, src2 {}, src3 {})",
+      GetOpcodeName(i->opcode), e.current_guest_function(), guest_address,
+      i->flags, describe(key.src1, i->src1.value),
+      describe(key.src2, i->src2.value), describe(key.src3, i->src3.value));
+}
+
 bool SelectSequence(X64Emitter* e, const Instr* i, const Instr** new_tail) {
   if ((i->backend_flags & INSTR_X64_FLAGS_ELIMINATED) != 0) {
     // skip
@@ -3746,7 +3776,12 @@ bool SelectSequence(X64Emitter* e, const Instr* i, const Instr** new_tail) {
     auto it = table.find(key);
     if (it != table.end()) {
       const size_t size_before = e->getSize();
-      if (it->second(*e, i, key)) {
+      constant_read_as_reg = false;
+      const bool emitted = it->second(*e, i, key);
+      if (constant_read_as_reg) {
+        ReportConstantReadAsReg(*e, i, key);
+      }
+      if (emitted) {
         // Skip the bookkeeping opcodes: they carry no guest work, and
         // SOURCE_OFFSET would otherwise charge the coverage counter's own
         // code to the instruction it is counting.

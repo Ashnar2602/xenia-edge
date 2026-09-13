@@ -223,6 +223,7 @@ class X64Emitter : public Xbyak::CodeGenerator {
 
   Processor* processor() const { return processor_; }
   X64Backend* backend() const { return backend_; }
+  uint32_t current_guest_function() const { return current_guest_function_; }
 
   static uintptr_t PlaceConstData();
   static void FreeConstData(uintptr_t data);
