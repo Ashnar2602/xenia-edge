@@ -182,3 +182,44 @@ TEST_CASE("PACK_ULONG_4202020", "[instr]") {
         REQUIRE(ctx->v[3].u32[3] == 0x032FFF9C);
       });
 }
+
+// The two-operand packs, with lanes on both sides of each saturation bound.
+TEST_CASE("PACK_8_IN_16_CONSTANT_OPERANDS_MATCH_REGISTERS", "[instr]") {
+  const vec128_t a =
+      vec128s(0x0000, 0x007F, 0x0080, 0x00FF, 0x0100, 0x7FFF, 0x8000, 0xFFFF);
+  const vec128_t c =
+      vec128s(0x0001, 0xFF80, 0xFF7F, 0x1234, 0x00AB, 0x7F00, 0x0042, 0xFFFE);
+  for (uint32_t mode :
+       {uint32_t(PACK_TYPE_IN_SIGNED | PACK_TYPE_OUT_SIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_SIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_UNSIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_UNSIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_UNSATURATE)}) {
+    RequireConstantOperandsMatchRegisters(
+        a, c, [mode](HIRBuilder& b, Value* x, Value* y) {
+          return b.Pack(x, y, PACK_TYPE_8_IN_16 | mode);
+        });
+  }
+}
+
+TEST_CASE("PACK_16_IN_32_CONSTANT_OPERANDS_MATCH_REGISTERS", "[instr]") {
+  const vec128_t a = vec128i(0x00000000, 0x00007FFF, 0x00008000, 0x0000FFFF);
+  const vec128_t c = vec128i(0x00010000, 0x7FFFFFFF, 0x80000000, 0xFFFF8000);
+  for (uint32_t mode :
+       {uint32_t(PACK_TYPE_IN_SIGNED | PACK_TYPE_OUT_SIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_SIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_UNSIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_SATURATE),
+        uint32_t(PACK_TYPE_IN_UNSIGNED | PACK_TYPE_OUT_UNSIGNED |
+                 PACK_TYPE_OUT_UNSATURATE)}) {
+    RequireConstantOperandsMatchRegisters(
+        a, c, [mode](HIRBuilder& b, Value* x, Value* y) {
+          return b.Pack(x, y, PACK_TYPE_16_IN_32 | mode);
+        });
+  }
+}

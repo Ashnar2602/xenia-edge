@@ -228,3 +228,21 @@ TEST_CASE("VECTOR_SHR_FOLD_MATCHES_BACKEND", "[instr]") {
         });
   }
 }
+
+TEST_CASE("VECTOR_SHR_CONSTANT_OPERANDS_MATCH_REGISTERS", "[instr]") {
+  const vec128_t value =
+      vec128b(0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA,
+              0x98, 0x76, 0x54, 0x32, 0x10);
+  // Mixed counts take the per-lane paths, uniform ones the equal-count paths.
+  const vec128_t mixed =
+      vec128b(0, 1, 2, 3, 7, 8, 15, 16, 17, 31, 32, 33, 63, 64, 127, 255);
+  const vec128_t uniform = vec128b(5);
+  for (TypeName part : {INT8_TYPE, INT16_TYPE, INT32_TYPE}) {
+    for (const vec128_t& counts : {mixed, uniform}) {
+      RequireConstantOperandsMatchRegisters(
+          value, counts, [part](HIRBuilder& b, Value* v, Value* n) {
+            return b.VectorShr(v, n, part);
+          });
+    }
+  }
+}

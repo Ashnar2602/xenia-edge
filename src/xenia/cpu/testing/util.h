@@ -132,10 +132,12 @@ inline void StoreVR(hir::HIRBuilder& b, int reg, hir::Value* value) {
 // stay opaque and the backend emits it. Operands as HIR constants reach
 // the folder. When another operand keeps the op unfolded they instead
 // reach the emitter's constant path. Give inputs distinct lanes or a
-// wrong-lane fold will not show. gprs seed r5 upward for both runs.
+// wrong-lane fold will not show. gprs seed r5 upward and vrs seed v16 upward
+// for both runs.
 template <typename T>
 inline void RequireFoldMatchesBackend(
     const std::vector<vec128_t>& inputs, const std::vector<uint64_t>& gprs,
+    const std::vector<vec128_t>& vrs,
     std::function<hir::Value*(hir::HIRBuilder&,
                               const std::vector<hir::Value*>&)>
         build,
@@ -158,6 +160,9 @@ inline void RequireFoldMatchesBackend(
             for (size_t n = 0; n < gprs.size(); ++n) {
               ctx->r[5 + n] = gprs[n];
             }
+            for (size_t n = 0; n < vrs.size(); ++n) {
+              ctx->v[16 + n] = vrs[n];
+            }
           },
           [&](PPCContext* ctx) { from_backend = read(ctx); });
 
@@ -175,6 +180,9 @@ inline void RequireFoldMatchesBackend(
             for (size_t n = 0; n < gprs.size(); ++n) {
               ctx->r[5 + n] = gprs[n];
             }
+            for (size_t n = 0; n < vrs.size(); ++n) {
+              ctx->v[16 + n] = vrs[n];
+            }
           },
           [&](PPCContext* ctx) { from_fold = read(ctx); });
 
@@ -187,11 +195,38 @@ inline void RequireVectorFoldMatchesBackend(
     std::function<hir::Value*(hir::HIRBuilder&,
                               const std::vector<hir::Value*>&)>
         build,
-    const std::vector<uint64_t>& gprs = {}) {
+    const std::vector<uint64_t>& gprs = {},
+    const std::vector<vec128_t>& vrs = {}) {
   RequireFoldMatchesBackend<vec128_t>(
-      inputs, gprs, build,
+      inputs, gprs, vrs, build,
       [](hir::HIRBuilder& b, hir::Value* v) { StoreVR(b, 3, v); },
       [](PPCContext* ctx) { return ctx->v[3]; });
+}
+
+// Requires a two-operand vector op to match its all-register result with
+// both operands constant, then with each one alone. An op with no fold
+// reaches every emitter constant path this way.
+inline void RequireConstantOperandsMatchRegisters(
+    const vec128_t& a, const vec128_t& b,
+    std::function<hir::Value*(hir::HIRBuilder&, hir::Value*, hir::Value*)>
+        build) {
+  using Ops = std::vector<hir::Value*>;
+  RequireVectorFoldMatchesBackend(
+      {a, b}, [&build](hir::HIRBuilder& hb, const Ops& ops) {
+        return build(hb, ops[0], ops[1]);
+      });
+  RequireVectorFoldMatchesBackend(
+      {a},
+      [&build](hir::HIRBuilder& hb, const Ops& ops) {
+        return build(hb, ops[0], LoadVR(hb, 16));
+      },
+      {}, {b});
+  RequireVectorFoldMatchesBackend(
+      {b},
+      [&build](hir::HIRBuilder& hb, const Ops& ops) {
+        return build(hb, LoadVR(hb, 16), ops[0]);
+      },
+      {}, {a});
 }
 
 // Result is zero extended into GPR3.
@@ -202,7 +237,7 @@ inline void RequireScalarFoldMatchesBackend(
         build,
     const std::vector<uint64_t>& gprs = {}) {
   RequireFoldMatchesBackend<uint64_t>(
-      inputs, gprs, build,
+      inputs, gprs, {}, build,
       [](hir::HIRBuilder& b, hir::Value* v) {
         StoreGPR(b, 3, b.ZeroExtend(v, hir::INT64_TYPE));
       },

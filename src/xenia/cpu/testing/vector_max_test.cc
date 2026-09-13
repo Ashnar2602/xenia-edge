@@ -125,3 +125,18 @@ TEST_CASE("VECTOR_MAX_I32_UNSIGNED", "[instr]") {
         REQUIRE(result == vec128i(-1000000, 1, UINT_MAX, 3));
       });
 }
+
+TEST_CASE("VECTOR_MAX_CONSTANT_OPERANDS_MATCH_REGISTERS", "[instr]") {
+  const vec128_t a = vec128b(0x00, 0x7F, 0x80, 0xFF, 0x01, 0xFE, 0x12, 0x34,
+                             0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x0F, 0x80);
+  const vec128_t c = vec128b(0xFF, 0x80, 0x7F, 0x00, 0xFE, 0x01, 0x34, 0x12,
+                             0x9A, 0x56, 0x78, 0xF0, 0xDE, 0xBC, 0x80, 0x0F);
+  for (TypeName part : {INT8_TYPE, INT16_TYPE, INT32_TYPE}) {
+    for (uint32_t flags : {uint32_t(0), uint32_t(ARITHMETIC_UNSIGNED)}) {
+      RequireConstantOperandsMatchRegisters(
+          a, c, [part, flags](HIRBuilder& b, Value* x, Value* y) {
+            return b.VectorMax(x, y, part, flags);
+          });
+    }
+  }
+}
