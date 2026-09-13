@@ -9,6 +9,7 @@
 
 #include "xenia/memory.h"
 
+#include <atomic>
 #include <cerrno>
 #include <cstring>
 #include <random>
@@ -236,12 +237,16 @@ bool Memory::Initialize() {
   // Host geometry decides whether guest pages can be protected individually
   // and whether the 0xE0000000 alias needs the 4 KB host offset, so it is the
   // first thing to compare when a title behaves differently across hosts.
-  XELOGI(
-      "Memory: host page size {} bytes, allocation granularity {} bytes, "
-      "virtual membase {}, physical membase {}",
-      system_page_size_, system_allocation_granularity_,
-      static_cast<void*>(virtual_membase_),
-      static_cast<void*>(physical_membase_));
+  // Once per process, the test harness builds a Memory per test function.
+  static std::atomic<bool> geometry_logged{false};
+  if (!geometry_logged.exchange(true)) {
+    XELOGI(
+        "Memory: host page size {} bytes, allocation granularity {} bytes, "
+        "virtual membase {}, physical membase {}",
+        system_page_size_, system_allocation_granularity_,
+        static_cast<void*>(virtual_membase_),
+        static_cast<void*>(physical_membase_));
+  }
 
   // Prepare virtual heaps.
   heaps_.v00000000.Initialize(this, virtual_membase_, HeapType::kGuestVirtual,
