@@ -504,9 +504,4 @@ function(xe_test_suite name base_path)
     target_link_libraries(${name} PRIVATE ${ARG_LINKS})
   endif()
   xe_target_defaults(${name})
-
-  if(MSVC)
-    # Edit-and-Continue rewrites __LINE__ and breaks Catch2 test discovery.
-    target_compile_options(${name} PRIVATE /Zi)
-  endif()
 endfunction()
