@@ -21,12 +21,10 @@
 #define MICROPROFILEUI_ENABLED 1
 #define MICROPROFILEUI_IMPL 1
 #endif
-// Paid per live guest thread, not per host thread: the cooperative scheduler
-// gives every fiber-backed thread its own log. Sized for the command processor
-// thread, which logs ~25k entries per frame where no other thread exceeds 300;
-// once the ring wraps ahead of a flip, dropped entries mispair enter/leave and
-// poison the aggregate.
+// Allocated per logging thread, a flip overrunning it loses its tail.
 #define MICROPROFILE_PER_THREAD_BUFFER_SIZE (4 * 1024 * 1024)
+// No GPU timers to wait on, so each flip replays as soon as it ends.
+#define MICROPROFILE_GPU_FRAME_DELAY 0
 #define MICROPROFILE_USE_THREAD_NAME_CALLBACK 1
 #define MICROPROFILE_WEBSERVER_MAXFRAMES 3
 #define MICROPROFILE_PRINTF(...)                               \
