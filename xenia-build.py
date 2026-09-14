@@ -1515,12 +1515,28 @@ class GenTestsCommand(Command):
                 shell_call([f"./{shell_script}"])
                 os.chdir(original_dir)
             elif sys.platform == "win32":
-                # On Windows, add Cygwin to PATH and run bash
-                cygwin_bin = r"C:\cygwin64\bin"
-                os.environ["PATH"] = f"{cygwin_bin}{os.pathsep}{os.environ['PATH']}"
+                # Absolute bash path: a bare "bash" may resolve to WSL and
+                # build Linux binaries.
+                msys2_bash = r"C:\msys64\usr\bin\bash.exe"
+                cygwin_bash = r"C:\cygwin64\bin\bash.exe"
+                env = os.environ.copy()
+                if os.path.exists(msys2_bash):
+                    env["MSYSTEM"] = "MINGW64"
+                    env["CHERE_INVOKING"] = "1"
+                    command = [msys2_bash, "-l", shell_script]
+                elif os.path.exists(cygwin_bash):
+                    env["PATH"] = f"{os.path.dirname(cygwin_bash)}{os.pathsep}{env['PATH']}"
+                    command = [cygwin_bash, "-o", "igncr", shell_script]
+                else:
+                    print_error("binutils build requires MSYS2 (C:\\msys64) or Cygwin (C:\\cygwin64).")
+                    return 1
                 os.chdir(binutils_dir)
-                shell_call(["bash", shell_script])
+                subprocess.check_call(command, env=env)
                 os.chdir(original_dir)
+
+            if not os.path.exists(ppc_as_check):
+                print_error(f"binutils build did not produce {ppc_as_check}.")
+                return 1
 
         test_src = os.path.join("src", "xenia", "cpu", "ppc", "testing")
         test_bin = os.path.join(test_src, "bin")
