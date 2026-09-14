@@ -1362,6 +1362,7 @@ void Emulator::RelaunchTitle(const std::string& host_path,
                              const std::string& launch_module,
                              uint32_t launch_flags,
                              std::vector<uint8_t> launch_data) {
+  std::unique_lock<std::mutex> launch_lock(launch_mutex_);
   XELOGI(
       "RelaunchTitle: starting full in-process relaunch, target={}, module={}",
       host_path, launch_module);
@@ -1419,6 +1420,7 @@ void Emulator::RelaunchTitle(const std::string& host_path,
   auto launch_target =
       host_path.empty() ? last_launch_path_ : xe::to_path(host_path);
   XELOGI("RelaunchTitle: launching '{}'", xe::path_to_utf8(launch_target));
+  launch_lock.unlock();
   LaunchPath(launch_target);
 
   relaunching_ = false;
@@ -1426,6 +1428,7 @@ void Emulator::RelaunchTitle(const std::string& host_path,
 }
 
 void Emulator::ResetTitle() {
+  std::lock_guard<std::mutex> launch_lock(launch_mutex_);
   XELOGI("ResetTitle: stopping title and resetting kernel");
 
   relaunching_ = true;
@@ -2018,18 +2021,32 @@ static std::string format_version(xex2_version version) {
 
 X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
                                   const std::string_view module_path) {
-  // Making changes to the UI (setting the icon) and executing game config
-  // load callbacks which expect to be called from the UI thread.
-  // If not on UI thread, dispatch to it synchronously.
-  if (!display_window_->app_context().IsInUIThread()) {
-    X_STATUS result = X_STATUS_UNSUCCESSFUL;
-    display_window_->app_context().CallInUIThreadSynchronous(
-        [this, &path, &module_path, &result]() {
-          result = CompleteLaunch(path, module_path);
-        });
+  std::lock_guard<std::mutex> launch_lock(launch_mutex_);
+  // The window icon and on_launch listeners need the UI thread.
+  X_STATUS result = X_STATUS_UNSUCCESSFUL;
+  display_window_->app_context().CallInUIThreadSynchronous(
+      [this, &path, &module_path, &result]() {
+        result = PrepareLaunch(path, module_path);
+      });
+  if (XFAILED(result)) {
     return result;
   }
 
+  // Off the UI thread and after plugins, which patch code in place.
+  auto module = kernel_state_->GetExecutableModule();
+  if (module->xex_module()) {
+    module->xex_module()->PrecompileDiscoveredFunctions();
+    module->xex_module()->PrecompileStaticInitializers();
+  }
+
+  // Drops only the launch suspend, so a debugger break still holds.
+  main_thread_->Resume();
+
+  return X_STATUS_SUCCESS;
+}
+
+X_STATUS Emulator::PrepareLaunch(const std::filesystem::path& path,
+                                 const std::string_view module_path) {
   // Per-title config has been applied by now and no guest code has been
   // translated yet, which is the only window where this can be picked up.
   processor_->RefreshTraceCountsEnabled();
@@ -2274,16 +2291,6 @@ X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
                                        module->hash().value());
     }
   }
-
-  // After plugins, which patch code in place.
-  if (module->xex_module()) {
-    module->xex_module()->PrecompileStaticInitializers();
-  }
-
-  // Resume the main thread now.
-  // If the debugger has requested a suspend this will just decrement the
-  // suspend count without resuming it until the debugger wants.
-  main_thread_->Resume();
 
   return X_STATUS_SUCCESS;
 }

@@ -439,6 +439,9 @@ class Emulator {
 
   X_STATUS CompleteLaunch(const std::filesystem::path& path,
                           const std::string_view module_path);
+  // UI-thread half of CompleteLaunch, ends with the main thread suspended.
+  X_STATUS PrepareLaunch(const std::filesystem::path& path,
+                         const std::string_view module_path);
 
   std::filesystem::path command_line_;
   std::filesystem::path last_launch_path_;  // persists across relaunch
@@ -478,6 +481,8 @@ class Emulator {
   bool paused_;
   bool restoring_;
   bool relaunching_ = false;
+  // Held across CompleteLaunch so title teardown waits for it to finish.
+  std::mutex launch_mutex_;
   threading::Fence restore_fence_;  // Fired on restore finish.
 
   // Persisted across Shutdown/Setup for relaunch.

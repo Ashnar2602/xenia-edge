@@ -1179,7 +1179,10 @@ void XexModule::Precompile() {
   }
 
   info_cache_.Init(this);
-  PrecompileDiscoveredFunctions();
+  // Emulator::CompleteLaunch compiles the executable after plugins patch it.
+  if (!is_executable()) {
+    PrecompileDiscoveredFunctions();
+  }
 }
 bool XexModule::Unload() {
   if (!loaded_) {
