@@ -2018,6 +2018,9 @@ bool PhysicalHeap::Alloc(uint32_t size, uint32_t alignment,
     parent_heap_->Release(parent_address);
     return false;
   }
+  // Pages the GPU marked valid while unowned carry no write watch.
+  TriggerCallbacks(std::move(global_lock), address, xe::align(size, alignment),
+                   true, true, true, true);
   *out_address = address;
   return true;
 }
@@ -2064,6 +2067,8 @@ bool PhysicalHeap::AllocFixed(uint32_t base_address, uint32_t size,
     parent_heap_->Release(parent_base_address);
     return false;
   }
+  TriggerCallbacks(std::move(global_lock), address, xe::align(size, alignment),
+                   true, true, true, true);
 
   return true;
 }
@@ -2110,6 +2115,8 @@ bool PhysicalHeap::AllocRange(uint32_t low_address, uint32_t high_address,
     parent_heap_->Release(parent_address);
     return false;
   }
+  TriggerCallbacks(std::move(global_lock), address, xe::align(size, alignment),
+                   true, true, true, true);
   *out_address = address;
   return true;
 }

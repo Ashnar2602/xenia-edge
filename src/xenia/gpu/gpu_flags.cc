@@ -84,11 +84,7 @@ DEFINE_bool(
     "may be used to bypass fetch constant type errors in certain games until "
     "the real reason why they're invalid is found.",
     "GPU");
-// TODO(has207): the range check this skips predates the handler that backs
-// unallocated guest pages on fault, so reading past a guest allocation is
-// now harmless. Texture mip extents routinely overrun the allocation, and
-// the check left those pages invalid forever. Drop it and this cvar if
-// nothing regresses.
+// TODO(has207): allocs invalidate stale pages, drop this if nothing regresses.
 DEFINE_bool(
     gpu_allow_invalid_upload_range, true,
     "Allows games to read data from pages that are marked as no access.",
