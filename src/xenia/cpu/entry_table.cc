@@ -9,6 +9,8 @@
 
 #include "xenia/cpu/entry_table.h"
 
+#include <algorithm>
+
 #include "xenia/base/profiling.h"
 #include "xenia/base/threading.h"
 
@@ -19,19 +21,18 @@ EntryTable::EntryTable() = default;
 
 EntryTable::~EntryTable() {
   auto global_lock = global_critical_region_.Acquire();
-  for (auto it : map_.Values()) {
-    Entry* entry = it;
+  for (auto& [address, entry] : map_) {
     delete entry;
   }
 }
 
 Entry* EntryTable::Get(uint32_t address) {
   auto global_lock = global_critical_region_.Acquire();
-  uint32_t idx = map_.IndexForKey(address);
-  if (idx == map_.size() || *map_.KeyAt(idx) != address) {
+  auto it = map_.find(address);
+  if (it == map_.end()) {
     return nullptr;
   }
-  Entry* entry = *map_.ValueAt(idx);
+  Entry* entry = it->second;
   if (entry) {
     // TODO(benvanik): wait if needed?
     if (entry->status != Entry::STATUS_READY) {
@@ -47,18 +48,13 @@ Entry::Status EntryTable::GetOrCreate(uint32_t address, Entry** out_entry) {
 
   auto global_lock = global_critical_region_.Acquire();
 
-  uint32_t idx = map_.IndexForKey(address);
-
-  Entry* entry = idx != map_.size() && *map_.KeyAt(idx) == address
-                     ? *map_.ValueAt(idx)
-                     : nullptr;
+  auto it = map_.find(address);
+  Entry* entry = it != map_.end() ? it->second : nullptr;
   Entry::Status status;
   if (entry) {
     // If we aren't ready yet spin and wait.
     if (entry->status == Entry::STATUS_COMPILING) {
-      // chrispy: i think this is dead code, if we are compiling we're holding
-      // the global lock, arent we? so we wouldnt be executing here
-      // Still compiling, so spin.
+      // Compiles run outside the lock, so another caller can land here.
       do {
         global_lock.unlock();
         // TODO(benvanik): sleep for less time?
@@ -74,8 +70,7 @@ Entry::Status EntryTable::GetOrCreate(uint32_t address, Entry** out_entry) {
     entry->end_address = 0;
     entry->status = Entry::STATUS_COMPILING;
     entry->function = 0;
-    map_.InsertAt(address, entry, idx);
-    // map_[address] = entry;
+    map_.emplace(address, entry);
     status = Entry::STATUS_NEW;
   }
   global_lock.unlock();
@@ -89,6 +84,15 @@ void EntryTable::MarkReady(Entry* entry, Function* function,
   entry->function = function;
   entry->end_address = end_address;
   entry->status = Entry::STATUS_READY;
+  // A module unload can remove the entry while it compiles.
+  auto it = map_.find(entry->address);
+  if (it == map_.end() || it->second != entry) {
+    return;
+  }
+  ready_by_address_[entry->address] = entry;
+  if (end_address > entry->address) {
+    max_ready_span_ = std::max(max_ready_span_, end_address - entry->address);
+  }
 }
 
 void EntryTable::MarkFailed(Entry* entry) {
@@ -99,21 +103,20 @@ void EntryTable::MarkFailed(Entry* entry) {
 void EntryTable::Delete(uint32_t address) {
   auto global_lock = global_critical_region_.Acquire();
   // doesnt this leak memory by not deleting the entry?
-  uint32_t idx = map_.IndexForKey(address);
-  if (idx != map_.size() && *map_.KeyAt(idx) == address) {
-    map_.EraseAt(idx);
-  }
+  map_.erase(address);
+  ready_by_address_.erase(address);
 }
 
 std::vector<Function*> EntryTable::FindWithAddress(uint32_t address) {
   auto global_lock = global_critical_region_.Acquire();
   std::vector<Function*> fns;
-  for (auto& it : map_.Values()) {
-    Entry* entry = it;
-    if (address >= entry->address && address <= entry->end_address) {
-      if (entry->status == Entry::STATUS_READY) {
-        fns.push_back(entry->function);
-      }
+  // No entry starting further below can reach the address.
+  const uint32_t lowest_start =
+      address > max_ready_span_ ? address - max_ready_span_ : 0;
+  const auto end = ready_by_address_.upper_bound(address);
+  for (auto it = ready_by_address_.lower_bound(lowest_start); it != end; ++it) {
+    if (address <= it->second->end_address) {
+      fns.push_back(it->second->function);
     }
   }
   return fns;
