@@ -723,6 +723,7 @@ struct MicroProfileThreadLog
 	MicroProfileLogEntry*	Log;
 	std::atomic<uint32_t>	nPut;
 	std::atomic<uint32_t>	nGet;
+	std::atomic<bool>		nDropped;
 
 	MicroProfileLogEntry*	LogGpu;
 	std::atomic<uint32_t>	nPutGpu;
@@ -735,7 +736,8 @@ struct MicroProfileThreadLog
 	MicroProfileThreadIdType nThreadId;
 	uint32_t 				nLogIndex;
 
-	uint32_t				nStack[MICROPROFILE_STACK_MAX];
+	// Enter entries themselves, since the ring can recycle an open scope's slot
+	MicroProfileLogEntry	nStack[MICROPROFILE_STACK_MAX];
 	int64_t					nChildTickStack[MICROPROFILE_STACK_MAX];
 	uint32_t				nStackPos;
 	// Enters skipped at max depth, each skipping the next leave
@@ -1618,6 +1620,7 @@ inline void MicroProfileLogPut(MicroProfileToken nToken_, uint64_t nTick, uint64
 	if(nNextPos == pLog->nGet.load(std::memory_order_relaxed))
 	{
 		S.nOverflow = 100;
+		pLog->nDropped.store(true, std::memory_order_relaxed);
 	}
 	else
 	{
@@ -2063,7 +2066,7 @@ void MicroProfileFlipCpu()
 					}
 					
 					
-					uint32_t* pStack = &pLog->nStack[0];
+					MicroProfileLogEntry* pStack = &pLog->nStack[0];
 					int64_t* pChildTickStack = &pLog->nChildTickStack[0];
 					uint32_t nStackPos = pLog->nStackPos;
 					uint32_t nStackOverflow = pLog->nStackOverflow;
@@ -2089,7 +2092,7 @@ void MicroProfileFlipCpu()
 								uint8_t nGroup = pTimerToGroup[nTimer];
 								MP_ASSERT(nGroup < MICROPROFILE_MAX_GROUPS);
 								pGroupStackPos[nGroup]++;
-								pStack[nStackPos++] = k;
+								pStack[nStackPos++] = LE;
 								pChildTickStack[nStackPos] = 0;
 
 							}
@@ -2100,7 +2103,7 @@ void MicroProfileFlipCpu()
 									int64_t nMetaIndex = MicroProfileLogTimerIndex(LE);
 									int64_t nMetaCount = MicroProfileLogGetTick(LE);
 									MP_ASSERT(nMetaIndex < MICROPROFILE_META_MAX);
-									int64_t nCounter = MicroProfileLogTimerIndex(pLog->Log[pStack[nStackPos-1]]);
+									int64_t nCounter = MicroProfileLogTimerIndex(pStack[nStackPos-1]);
 									S.MetaCounters[nMetaIndex].nCounters[nCounter] += nMetaCount;
 								}
 							}
@@ -2116,7 +2119,7 @@ void MicroProfileFlipCpu()
 								MP_ASSERT(nGroup < MICROPROFILE_MAX_GROUPS);
 								if(nStackPos)
 								{									
-									int64_t nTickStart = pLog->Log[pStack[nStackPos-1]];
+									int64_t nTickStart = pStack[nStackPos-1];
 									int64_t nTicks = MicroProfileLogTickDifference(nTickStart, LE);
 									int64_t nChildTicks = pChildTickStack[nStackPos];
 									nStackPos--;
@@ -2146,6 +2149,13 @@ void MicroProfileFlipCpu()
 					{
 						pLog->nGroupTicks[i] += nGroupTicks[i];
 						pFrameGroup[i] += nGroupTicks[i];
+					}
+					// Scopes cut by a drop never pair up, so start the next flip empty
+					if(pLog->nDropped.exchange(false, std::memory_order_relaxed))
+					{
+						nStackPos = 0;
+						nStackOverflow = 0;
+						memset(pGroupStackPos, 0, sizeof(pLog->nGroupStackPos));
 					}
 					pLog->nStackPos = nStackPos;
 					pLog->nStackOverflow = nStackOverflow;
