@@ -48,7 +48,8 @@ void WriteFragmentShaderInterlockSystemConstants(
         rt_keep_masks[i][0], rt_keep_masks[i][1]);
   }
 
-  // Disable depth and stencil if it aliases a written color render target.
+  // Disable depth and stencil only if an aliased color target writes bits used
+  // by either test. Otherwise its keep-masked store preserves them.
   // Don't exclude fully overlapping render targets - two with the same base are
   // used in the lighting pass of 4D5307E6, picked with dynamic control flow.
   bool depth_stencil_enabled = normalized_depth_control.stencil_enable ||
@@ -56,8 +57,9 @@ void WriteFragmentShaderInterlockSystemConstants(
   if (depth_stencil_enabled) {
     for (uint32_t i = 0; i < 4; ++i) {
       if (rb_depth_info.depth_base == color_infos[i].color_base &&
-          (rt_keep_masks[i][0] != UINT32_MAX ||
-           rt_keep_masks[i][1] != UINT32_MAX)) {
+          RenderTargetCache::ColorOverlapsDepthStencil(
+              color_infos[i].color_format, rt_keep_masks[i][0],
+              rt_keep_masks[i][1], normalized_depth_control)) {
         depth_stencil_enabled = false;
         break;
       }
