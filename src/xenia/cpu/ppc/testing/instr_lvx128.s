@@ -59,14 +59,14 @@ test_lvx128_5:
 
 test_lvx128_6:
   # Test loading to high register (v100+)
-  #_ MEMORY_IN 0x0000000010001000 [A5, A5, A5, A5, 5A, 5A, 5A, 5A, FF, 00, FF, 00, 00, FF, 00, FF]
+  #_ MEMORY_IN 10001000 A5A5A5A55A5A5A5AFF00FF0000FF00FF
   #_ REGISTER_IN r4 0x0000000010001000
   li r5, 0
-  # lvx128 v100, r4, r5 (binutils doesn't support high register names)
-  .long 0x1C8428C3
+  lvx128 v100, r4, r5
   blr
+  #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
-  #_ REGISTER_OUT v100 [00000000, 00000000, 00000000, 00000000]
+  #_ REGISTER_OUT v100 [A5A5A5A5, 5A5A5A5A, FF00FF00, 00FF00FF]
 
 test_lvx128_7:
   # Load multiple vectors sequentially

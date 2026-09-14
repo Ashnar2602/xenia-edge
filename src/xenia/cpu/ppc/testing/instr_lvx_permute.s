@@ -42,8 +42,7 @@ test_lvx_vpermwi128_1:
   #_ REGISTER_IN r4 0x0000000010001000
   li r5, 0
   lvx v3, r4, r5
-  # vpermwi128 v4, v3, 0xE4  (reverse words: 3,2,1,0)
-  .long 0x18841BD0
+  vpermwi128 v4, v3, 0xE4  # reverse words: 3,2,1,0
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
@@ -56,8 +55,7 @@ test_lvx_vpermwi128_2:
   #_ REGISTER_IN r4 0x0000000010001000
   li r5, 0
   lvx v3, r4, r5
-  # vpermwi128 v4, v3, 0 (broadcast word 0)
-  .long 0x18801A10
+  vpermwi128 v4, v3, 0  # broadcast word 0
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
@@ -89,8 +87,7 @@ test_lvx128_vperm_1:
   #_ REGISTER_IN r4 0x0000000010001000
   #_ REGISTER_IN v5 [03020100, 07060504, 0B0A0908, 0F0E0D0C]  # reverse bytes
   li r6, 0
-  # lvx128 v3, r4, r6
-  .long 0x106430C3
+  lvx128 v3, r4, r6
   vperm v7, v3, v3, v5
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
@@ -101,25 +98,23 @@ test_lvx128_vperm_1:
 
 test_multiple_lvx_swizzle_permute:
   # Complex test: multiple loads, swizzles, and permutes
-  #_ MEMORY_IN 0x0000000010001000 [11, 11, 11, 11, 22, 22, 22, 22, 33, 33, 33, 33, 44, 44, 44, 44]
-  #_ MEMORY_IN 0x0000000010001010 [55, 55, 55, 55, 66, 66, 66, 66, 77, 77, 77, 77, 88, 88, 88, 88]
+  #_ MEMORY_IN 10001000 11111111222222223333333344444444
+  #_ MEMORY_IN 10001010 55555555666666667777777788888888
   #_ REGISTER_IN r4 0x0000000010001000
   #_ REGISTER_IN v10 [00010203, 14151617, 08090A0B, 1C1D1E1F]  # mixed permute control
   li r5, 0
   lvx v3, r4, r5
   li r5, 16
   lvx v4, r4, r5
-  # vpermwi128 v5, v3, 0x1B (identity: 0,1,2,3)
-  .long 0x189B1E10
-  # vpermwi128 v6, v4, 0xE4 (reverse: 3,2,1,0)
-  .long 0x18E42350
+  vpermwi128 v5, v3, 0x1B  # identity: 0,1,2,3
+  vpermwi128 v6, v4, 0xE4  # reverse: 3,2,1,0
   vperm v7, v5, v6, v10
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 16
-  #_ REGISTER_OUT v3 [00011100, 11001100, 22002200, 22002200]
-  #_ REGISTER_OUT v4 [00055500, 55005500, 08000180, 00180001]
-  #_ REGISTER_OUT v5 [00000000, 00000000, 00000000, 00000000]
-  #_ REGISTER_OUT v6 [00000000, 00000000, 00000000, 00000000]
-  #_ REGISTER_OUT v7 [00000000, 00000000, 00000000, 00000000]
+  #_ REGISTER_OUT v3 [11111111, 22222222, 33333333, 44444444]
+  #_ REGISTER_OUT v4 [55555555, 66666666, 77777777, 88888888]
+  #_ REGISTER_OUT v5 [11111111, 22222222, 33333333, 44444444]
+  #_ REGISTER_OUT v6 [88888888, 77777777, 66666666, 55555555]
+  #_ REGISTER_OUT v7 [11111111, 77777777, 33333333, 55555555]
   #_ REGISTER_OUT v10 [00010203, 14151617, 08090A0B, 1C1D1E1F]
