@@ -299,11 +299,13 @@ class TestRunner {
                   bin_size_);
     }
 
-    // Add dummy space for memory.
+    // Add dummy space for memory. Heap resets keep host page contents, so
+    // clear it to stop tests seeing bytes written by earlier ones.
     processor_->memory()->LookupHeap(0)->AllocFixed(
         0x10001000, 0xEFFF, 0,
         kMemoryAllocationReserve | kMemoryAllocationCommit,
         kMemoryProtectRead | kMemoryProtectWrite);
+    std::memset(memory_->TranslateVirtual(0x10001000), 0, 0xEFFF);
 
     // Simulate a thread.
     uint32_t stack_size = 64 * 1024;
