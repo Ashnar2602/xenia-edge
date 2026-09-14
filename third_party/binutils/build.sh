@@ -28,6 +28,7 @@ echo "Removing old output..."
 rm -rf ./bin
 rm -rf ./powerpc-none-elf
 rm -rf ./share
+rm -rf ./binutils-$SNAPSHOT_VERSION
 
 SNAPSHOT_FILE=binutils-$SNAPSHOT_VERSION.tar.gz
 if [ ! -f $SNAPSHOT_FILE ]; then
