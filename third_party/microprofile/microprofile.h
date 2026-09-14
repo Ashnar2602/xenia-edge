@@ -738,6 +738,8 @@ struct MicroProfileThreadLog
 	uint32_t				nStack[MICROPROFILE_STACK_MAX];
 	int64_t					nChildTickStack[MICROPROFILE_STACK_MAX];
 	uint32_t				nStackPos;
+	// Enters skipped at max depth, each skipping the next leave
+	uint32_t				nStackOverflow;
 
 
 	uint8_t					nGroupStackPos[MICROPROFILE_MAX_GROUPS];
@@ -1903,6 +1905,7 @@ void MicroProfileFlipCpu()
 			if(pLog)
 			{
 				pLog->nStackPos = 0;
+				pLog->nStackOverflow = 0;
 			}
 		}
 	}
@@ -2063,6 +2066,7 @@ void MicroProfileFlipCpu()
 					uint32_t* pStack = &pLog->nStack[0];
 					int64_t* pChildTickStack = &pLog->nChildTickStack[0];
 					uint32_t nStackPos = pLog->nStackPos;
+					uint32_t nStackOverflow = pLog->nStackOverflow;
 
 					for(uint32_t j = 0; j < 2; ++j)
 					{
@@ -2075,14 +2079,18 @@ void MicroProfileFlipCpu()
 
 							if(MP_LOG_ENTER == nType)
 							{
+								// Keep one slot free, a leave reads the child ticks above the top
+								if(nStackPos >= MICROPROFILE_STACK_MAX - 1)
+								{
+									nStackOverflow++;
+									continue;
+								}
 								int nTimer = MicroProfileLogTimerIndex(LE);
 								uint8_t nGroup = pTimerToGroup[nTimer];
-								MP_ASSERT(nStackPos < MICROPROFILE_STACK_MAX);
 								MP_ASSERT(nGroup < MICROPROFILE_MAX_GROUPS);
 								pGroupStackPos[nGroup]++;
 								pStack[nStackPos++] = k;
-								if(nStackPos < MICROPROFILE_STACK_MAX)
-									pChildTickStack[nStackPos] = 0;
+								pChildTickStack[nStackPos] = 0;
 
 							}
 							else if(MP_LOG_META == nType)
@@ -2098,6 +2106,11 @@ void MicroProfileFlipCpu()
 							}
 							else if(MP_LOG_LEAVE == nType)
 							{
+								if(nStackOverflow)
+								{
+									nStackOverflow--;
+									continue;
+								}
 								int nTimer = MicroProfileLogTimerIndex(LE);
 								uint8_t nGroup = pTimerToGroup[nTimer];
 								MP_ASSERT(nGroup < MICROPROFILE_MAX_GROUPS);
@@ -2135,6 +2148,7 @@ void MicroProfileFlipCpu()
 						pFrameGroup[i] += nGroupTicks[i];
 					}
 					pLog->nStackPos = nStackPos;
+					pLog->nStackOverflow = nStackOverflow;
 				}
 			}
 			{
