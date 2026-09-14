@@ -172,8 +172,7 @@
     <in field="RS" />
     <out field="RA" />
     <out field="CR" conditional="true" />
-    <!-- note: rc may not be supported? -->
-    <disasm>cntlzd [RA], [RS]</disasm>
+    <disasm>cntlzd[Rc] [RA], [RS]</disasm>
   </insn>
   <insn mnem="cntlzwx"      opcode="7c000034" form="X"        group="i" desc="Count Leading Zeros Word">
     <in field="RS" />
@@ -850,7 +849,7 @@
     <in field="FPSCR" />
     <out field="FD" />
     <out field="CR" conditional="true" />
-    <disasm>mffs[Rc] [RD]</disasm>
+    <disasm>mffs[Rc] [FD]</disasm>
   </insn>
   <insn mnem="mfmsr"        opcode="7c0000a6" form="X"        group="c" desc="Move from Machine State Register" sync="true">
     <in field="MSR" />
@@ -1511,7 +1510,7 @@
     <in field="RA0" />
     <in field="RB" />
     <out field="VD" />
-    <disasm>lvslx [VD], [RA0], [RB]</disasm>
+    <disasm>lvxl [VD], [RA0], [RB]</disasm>
   </insn>
   <insn mnem="lvxl128"      opcode="100002C3" form="VX128_1"  group="m" desc="Load Vector Indexed LRU 128">
     <in field="RA0" />
@@ -2817,6 +2816,11 @@
     <out field="VD" />
     <disasm>vupkhsh [VD], [VB]</disasm>
   </insn>
+  <insn mnem="vupkhsh128"   opcode="180007A0" form="VX128_3"  group="v" desc="Vector128 Unpack High Signed Half Word">
+    <in field="VB" />
+    <out field="VD" />
+    <disasm>vupkhsh128 [VD], [VB]</disasm>
+  </insn>
   <insn mnem="vupklpx"      opcode="100003CE" form="VX"       group="v" desc="Vector Unpack Low Pixel">
     <in field="VB" />
     <out field="VD" />
@@ -2836,6 +2840,11 @@
     <in field="VB" />
     <out field="VD" />
     <disasm>vupklsh [VD], [VB]</disasm>
+  </insn>
+  <insn mnem="vupklsh128"   opcode="180007E0" form="VX128_3"  group="v" desc="Vector128 Unpack Low Signed Half Word">
+    <in field="VB" />
+    <out field="VD" />
+    <disasm>vupklsh128 [VD], [VB]</disasm>
   </insn>
   <insn mnem="vxor"         opcode="100004C4" form="VX"       group="v" desc="Vector Logical XOR">
     <in field="VA" />

@@ -246,9 +246,10 @@ void PrintDisasm_cmpli(const PPCDecodeData& d, StringBuffer* str) {
   str->AppendFormat("0x{:X}", d.D.UIMM());
 }
 void PrintDisasm_cntlzdx(const PPCDecodeData& d, StringBuffer* str) {
-  // cntlzd [RA], [RS]
+  // cntlzd[Rc] [RA], [RS]
   size_t str_start = str->length();
   str->Append("cntlzd");
+  if (d.X.Rc()) str->Append('.');
   PadStringBuffer(str, str_start, kNamePad);
   str->AppendFormat("r{}", d.X.RA());
   str->Append(", ");
@@ -1422,9 +1423,9 @@ void PrintDisasm_lvx128(const PPCDecodeData& d, StringBuffer* str) {
   str->AppendFormat("r{}", d.VX128_1.RB());
 }
 void PrintDisasm_lvxl(const PPCDecodeData& d, StringBuffer* str) {
-  // lvslx [VD], [RA0], [RB]
+  // lvxl [VD], [RA0], [RB]
   size_t str_start = str->length();
-  str->Append("lvslx");
+  str->Append("lvxl");
   PadStringBuffer(str, str_start, kNamePad);
   str->AppendFormat("vr{}", d.X.VD());
   str->Append(", ");
@@ -1578,12 +1579,12 @@ void PrintDisasm_mfcr(const PPCDecodeData& d, StringBuffer* str) {
   str->AppendFormat("r{}", d.X.RD());
 }
 void PrintDisasm_mffsx(const PPCDecodeData& d, StringBuffer* str) {
-  // mffs[Rc] [RD]
+  // mffs[Rc] [FD]
   size_t str_start = str->length();
   str->Append("mffs");
   if (d.X.Rc()) str->Append('.');
   PadStringBuffer(str, str_start, kNamePad);
-  str->AppendFormat("r{}", d.X.RD());
+  str->AppendFormat("fr{}", d.X.FD());
 }
 void PrintDisasm_mfmsr(const PPCDecodeData& d, StringBuffer* str) {
   // mfmsr [RD]
@@ -4854,6 +4855,15 @@ void PrintDisasm_vupkhsh(const PPCDecodeData& d, StringBuffer* str) {
   str->Append(", ");
   str->AppendFormat("vr{}", d.VX.VB());
 }
+void PrintDisasm_vupkhsh128(const PPCDecodeData& d, StringBuffer* str) {
+  // vupkhsh128 [VD], [VB]
+  size_t str_start = str->length();
+  str->Append("vupkhsh128");
+  PadStringBuffer(str, str_start, kNamePad);
+  str->AppendFormat("vr{}", d.VX128_3.VD());
+  str->Append(", ");
+  str->AppendFormat("vr{}", d.VX128_3.VB());
+}
 void PrintDisasm_vupklpx(const PPCDecodeData& d, StringBuffer* str) {
   // vupklpx [VD], [VB]
   size_t str_start = str->length();
@@ -4889,6 +4899,15 @@ void PrintDisasm_vupklsh(const PPCDecodeData& d, StringBuffer* str) {
   str->AppendFormat("vr{}", d.VX.VD());
   str->Append(", ");
   str->AppendFormat("vr{}", d.VX.VB());
+}
+void PrintDisasm_vupklsh128(const PPCDecodeData& d, StringBuffer* str) {
+  // vupklsh128 [VD], [VB]
+  size_t str_start = str->length();
+  str->Append("vupklsh128");
+  PadStringBuffer(str, str_start, kNamePad);
+  str->AppendFormat("vr{}", d.VX128_3.VD());
+  str->Append(", ");
+  str->AppendFormat("vr{}", d.VX128_3.VB());
 }
 void PrintDisasm_vxor(const PPCDecodeData& d, StringBuffer* str) {
   // vxor [VD], [VA], [VB]
@@ -5395,10 +5414,12 @@ PPCOpcodeDisasmInfo ppc_opcode_disasm_table[] = {
   INSTRUCTION(0x1000020e, "vupkhsb"     , kVX     , kV, kGeneral, "Vector Unpack High Signed Byte"                                             , PrintDisasm_vupkhsb),
   INSTRUCTION(0x18000380, "vupkhsb128"  , kVX128  , kV, kGeneral, "Vector128 Unpack High Signed Byte"                                          , PrintDisasm_vupkhsb128),
   INSTRUCTION(0x1000024e, "vupkhsh"     , kVX     , kV, kGeneral, "Vector Unpack High Signed Half Word"                                        , PrintDisasm_vupkhsh),
+  INSTRUCTION(0x180007a0, "vupkhsh128"  , kVX128_3, kV, kGeneral, "Vector128 Unpack High Signed Half Word"                                     , PrintDisasm_vupkhsh128),
   INSTRUCTION(0x100003ce, "vupklpx"     , kVX     , kV, kGeneral, "Vector Unpack Low Pixel"                                                    , PrintDisasm_vupklpx),
   INSTRUCTION(0x1000028e, "vupklsb"     , kVX     , kV, kGeneral, "Vector Unpack Low Signed Byte"                                              , PrintDisasm_vupklsb),
   INSTRUCTION(0x180003c0, "vupklsb128"  , kVX128  , kV, kGeneral, "Vector128 Unpack Low Signed Byte"                                           , PrintDisasm_vupklsb128),
   INSTRUCTION(0x100002ce, "vupklsh"     , kVX     , kV, kGeneral, "Vector Unpack Low Signed Half Word"                                         , PrintDisasm_vupklsh),
+  INSTRUCTION(0x180007e0, "vupklsh128"  , kVX128_3, kV, kGeneral, "Vector128 Unpack Low Signed Half Word"                                      , PrintDisasm_vupklsh128),
   INSTRUCTION(0x100004c4, "vxor"        , kVX     , kV, kGeneral, "Vector Logical XOR"                                                         , PrintDisasm_vxor),
   INSTRUCTION(0x14000310, "vxor128"     , kVX128  , kV, kGeneral, "Vector128 Logical XOR"                                                      , PrintDisasm_vxor128),
   INSTRUCTION(0x68000000, "xori"        , kD      , kI, kGeneral, "XOR Immediate"                                                              , PrintDisasm_xori),

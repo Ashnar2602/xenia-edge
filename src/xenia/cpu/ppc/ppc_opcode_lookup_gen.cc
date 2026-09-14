@@ -249,6 +249,8 @@ PPCOpcode LookupOpcode(uint32_t code) {
       case 0b1101111: PPC_DECODER_HIT(vlogefp128);
       case 0b1110011: PPC_DECODER_HIT(vspltw128);
       case 0b1110111: PPC_DECODER_HIT(vspltisw128);
+      case 0b1111010: PPC_DECODER_HIT(vupkhsh128);
+      case 0b1111110: PPC_DECODER_HIT(vupklsh128);
       case 0b1111111: PPC_DECODER_HIT(vupkd3d128);
     }
     switch ((ExtractBits(code, 22, 24) << 3)|(ExtractBits(code, 27, 27) << 0)) {
