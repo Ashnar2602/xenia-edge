@@ -241,12 +241,6 @@ void Win32X64CodeCache::PlaceCode(uint32_t guest_address, void* machine_code,
     // We do this outside of the lock, but with the latest total count.
     grow_table_(unwind_table_handle_, unwind_table_count_);
   }
-
-  // This isn't needed on x64 (probably), but is convention.
-  // On UWP, FlushInstructionCache available starting from 10.0.16299.0.
-  // https://docs.microsoft.com/en-us/uwp/win32-and-com/win32-apis
-  FlushInstructionCache(GetCurrentProcess(), code_execute_address,
-                        func_info.code_size.total);
 }
 
 void Win32X64CodeCache::InitializeUnwindEntry(
