@@ -1,7 +1,240 @@
 diff -u -P -r gas/config/tc-ppc.c gas/config/tc-ppc.c
 --- gas/config/tc-ppc.c	2013-11-18 00:40:15.000000000 -0800
 +++ gas/config/tc-ppc.c	2014-09-04 21:30:09.519546700 -0700
-@@ -1294,6 +1294,7 @@
+@@ -606,8 +606,36 @@
+   { "v.0", 0 },     /* Vector (Altivec/VMX) registers */
+   { "v.1", 1 },
+   { "v.10", 10 },
++  { "v.100", 100 },
++  { "v.101", 101 },
++  { "v.102", 102 },
++  { "v.103", 103 },
++  { "v.104", 104 },
++  { "v.105", 105 },
++  { "v.106", 106 },
++  { "v.107", 107 },
++  { "v.108", 108 },
++  { "v.109", 109 },
+   { "v.11", 11 },
++  { "v.110", 110 },
++  { "v.111", 111 },
++  { "v.112", 112 },
++  { "v.113", 113 },
++  { "v.114", 114 },
++  { "v.115", 115 },
++  { "v.116", 116 },
++  { "v.117", 117 },
++  { "v.118", 118 },
++  { "v.119", 119 },
+   { "v.12", 12 },
++  { "v.120", 120 },
++  { "v.121", 121 },
++  { "v.122", 122 },
++  { "v.123", 123 },
++  { "v.124", 124 },
++  { "v.125", 125 },
++  { "v.126", 126 },
++  { "v.127", 127 },
+   { "v.13", 13 },
+   { "v.14", 14 },
+   { "v.15", 15 },
+@@ -629,18 +657,114 @@
+   { "v.3", 3 },
+   { "v.30", 30 },
+   { "v.31", 31 },
++  { "v.32", 32 },
++  { "v.33", 33 },
++  { "v.34", 34 },
++  { "v.35", 35 },
++  { "v.36", 36 },
++  { "v.37", 37 },
++  { "v.38", 38 },
++  { "v.39", 39 },
+   { "v.4", 4 },
++  { "v.40", 40 },
++  { "v.41", 41 },
++  { "v.42", 42 },
++  { "v.43", 43 },
++  { "v.44", 44 },
++  { "v.45", 45 },
++  { "v.46", 46 },
++  { "v.47", 47 },
++  { "v.48", 48 },
++  { "v.49", 49 },
+   { "v.5", 5 },
++  { "v.50", 50 },
++  { "v.51", 51 },
++  { "v.52", 52 },
++  { "v.53", 53 },
++  { "v.54", 54 },
++  { "v.55", 55 },
++  { "v.56", 56 },
++  { "v.57", 57 },
++  { "v.58", 58 },
++  { "v.59", 59 },
+   { "v.6", 6 },
++  { "v.60", 60 },
++  { "v.61", 61 },
++  { "v.62", 62 },
++  { "v.63", 63 },
++  { "v.64", 64 },
++  { "v.65", 65 },
++  { "v.66", 66 },
++  { "v.67", 67 },
++  { "v.68", 68 },
++  { "v.69", 69 },
+   { "v.7", 7 },
++  { "v.70", 70 },
++  { "v.71", 71 },
++  { "v.72", 72 },
++  { "v.73", 73 },
++  { "v.74", 74 },
++  { "v.75", 75 },
++  { "v.76", 76 },
++  { "v.77", 77 },
++  { "v.78", 78 },
++  { "v.79", 79 },
+   { "v.8", 8 },
++  { "v.80", 80 },
++  { "v.81", 81 },
++  { "v.82", 82 },
++  { "v.83", 83 },
++  { "v.84", 84 },
++  { "v.85", 85 },
++  { "v.86", 86 },
++  { "v.87", 87 },
++  { "v.88", 88 },
++  { "v.89", 89 },
+   { "v.9", 9 },
++  { "v.90", 90 },
++  { "v.91", 91 },
++  { "v.92", 92 },
++  { "v.93", 93 },
++  { "v.94", 94 },
++  { "v.95", 95 },
++  { "v.96", 96 },
++  { "v.97", 97 },
++  { "v.98", 98 },
++  { "v.99", 99 },
+ 
+   { "v0", 0 },
+   { "v1", 1 },
+   { "v10", 10 },
++  { "v100", 100 },
++  { "v101", 101 },
++  { "v102", 102 },
++  { "v103", 103 },
++  { "v104", 104 },
++  { "v105", 105 },
++  { "v106", 106 },
++  { "v107", 107 },
++  { "v108", 108 },
++  { "v109", 109 },
+   { "v11", 11 },
++  { "v110", 110 },
++  { "v111", 111 },
++  { "v112", 112 },
++  { "v113", 113 },
++  { "v114", 114 },
++  { "v115", 115 },
++  { "v116", 116 },
++  { "v117", 117 },
++  { "v118", 118 },
++  { "v119", 119 },
+   { "v12", 12 },
++  { "v120", 120 },
++  { "v121", 121 },
++  { "v122", 122 },
++  { "v123", 123 },
++  { "v124", 124 },
++  { "v125", 125 },
++  { "v126", 126 },
++  { "v127", 127 },
+   { "v13", 13 },
+   { "v14", 14 },
+   { "v15", 15 },
+@@ -662,12 +786,80 @@
+   { "v3", 3 },
+   { "v30", 30 },
+   { "v31", 31 },
++  { "v32", 32 },
++  { "v33", 33 },
++  { "v34", 34 },
++  { "v35", 35 },
++  { "v36", 36 },
++  { "v37", 37 },
++  { "v38", 38 },
++  { "v39", 39 },
+   { "v4", 4 },
++  { "v40", 40 },
++  { "v41", 41 },
++  { "v42", 42 },
++  { "v43", 43 },
++  { "v44", 44 },
++  { "v45", 45 },
++  { "v46", 46 },
++  { "v47", 47 },
++  { "v48", 48 },
++  { "v49", 49 },
+   { "v5", 5 },
++  { "v50", 50 },
++  { "v51", 51 },
++  { "v52", 52 },
++  { "v53", 53 },
++  { "v54", 54 },
++  { "v55", 55 },
++  { "v56", 56 },
++  { "v57", 57 },
++  { "v58", 58 },
++  { "v59", 59 },
+   { "v6", 6 },
++  { "v60", 60 },
++  { "v61", 61 },
++  { "v62", 62 },
++  { "v63", 63 },
++  { "v64", 64 },
++  { "v65", 65 },
++  { "v66", 66 },
++  { "v67", 67 },
++  { "v68", 68 },
++  { "v69", 69 },
+   { "v7", 7 },
++  { "v70", 70 },
++  { "v71", 71 },
++  { "v72", 72 },
++  { "v73", 73 },
++  { "v74", 74 },
++  { "v75", 75 },
++  { "v76", 76 },
++  { "v77", 77 },
++  { "v78", 78 },
++  { "v79", 79 },
+   { "v8", 8 },
++  { "v80", 80 },
++  { "v81", 81 },
++  { "v82", 82 },
++  { "v83", 83 },
++  { "v84", 84 },
++  { "v85", 85 },
++  { "v86", 86 },
++  { "v87", 87 },
++  { "v88", 88 },
++  { "v89", 89 },
+   { "v9", 9 },
++  { "v90", 90 },
++  { "v91", 91 },
++  { "v92", 92 },
++  { "v93", 93 },
++  { "v94", 94 },
++  { "v95", 95 },
++  { "v96", 96 },
++  { "v97", 97 },
++  { "v98", 98 },
++  { "v99", 99 },
+ 
+   { "vs.0", 0 },     /* Vector Scalar (VSX) registers (ISA 2.06).  */
+   { "vs.1", 1 },
+@@ -1294,6 +1486,7 @@
  -many                   generate code for any architecture (PWR/PWRX/PPC)\n"));
    fprintf (stream, _("\
  -maltivec               generate code for AltiVec\n\
@@ -62,22 +295,22 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
 +#define VD128 VD + 1
 +#define VS128 VD128
 +#define VD128_MASK (0x1f << 21)
-+  { 7, 0, insert_vds128, extract_vds128, PPC_OPERAND_VR },
++  { 0x7f, 0, insert_vds128, extract_vds128, PPC_OPERAND_VR },
 +
 +  /* The VA128 field in a VA, VX, VXR or X form instruction. */
 +#define VA128 VD128 + 1
 +#define VA128_MASK (0x1f << 21)
-+  { 7, 0, insert_va128, extract_va128, PPC_OPERAND_VR },
++  { 0x7f, 0, insert_va128, extract_va128, PPC_OPERAND_VR },
 +
 +  /* The VB128 field in a VA, VX, VXR or X form instruction. */
 +#define VB128 VA128 + 1
 +#define VB128_MASK (0x1f << 21)
-+  { 7, 0, insert_vb128, extract_vb128, PPC_OPERAND_VR },
++  { 0x7f, 0, insert_vb128, extract_vb128, PPC_OPERAND_VR },
 +
 +  /* The VC128 field in a VA, VX, VXR or X form instruction. */
 +#define VC128 VB128 + 1
 +#define VC128_MASK (0x1f << 21)
-+  { 3, 6, NULL, NULL, 0 },
++  { 7, 6, NULL, NULL, 0 },
 +
 +  /* The VPERM field in a VPERM128 form instruction. */
 +#define VPERM128 VC128 + 1
@@ -231,7 +464,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  #define PPCVSX	PPC_OPCODE_VSX
  #define PPCVSX2	PPC_OPCODE_VSX
  #define POWER	PPC_OPCODE_POWER
-@@ -3314,6 +3469,90 @@
+@@ -3314,6 +3469,92 @@
  {"evsubfssiaaw",VX (4,1219),	VX_MASK,     PPCSPE|PPCVLE, PPCNONE,	{RS, RA}},
  {"evmra",	VX (4,1220),	VX_MASK,     PPCSPE|PPCVLE, PPCNONE,	{RS, RA}},
  {"vxor",	VX (4,1220),	VX_MASK,     PPCVEC|PPCVLE, PPCNONE,	{VD, VA, VB}},
@@ -297,6 +530,8 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
 +{ "vrlimi128",   VX128_4(6, 1808), VX128_4_MASK, PPCVEC128, PPCNONE, { VD128, VB128, UIMM, VD3D2} },
 +{ "vspltw128",   VX128_3(6, 1840), VX128_3_MASK, PPCVEC128, PPCNONE, { VD128, VB128, UIMM } },
 +{ "vspltisw128", VX128_3(6, 1904), VX128_3_MASK, PPCVEC128, PPCNONE, { VD128, SIMM } },
++{ "vupkhsh128",  VX128_3(6, 1952), VX128_3_MASK, PPCVEC128, PPCNONE, { VD128, VB128 } },
++{ "vupklsh128",  VX128_3(6, 2016), VX128_3_MASK, PPCVEC128, PPCNONE, { VD128, VB128 } },
 +{ "vupkd3d128",  VX128_3(6, 2032), VX128_3_MASK, PPCVEC128, PPCNONE, { VD128, VB128, UIMM } },
 +{ "vcmpeqfp128", VX128(6,   0), VX128_MASK, PPCVEC128, PPCNONE, { VD128, VA128, VB128 } },
 +{ "vcmpeqfp128.",VX128(6,  64), VX128_MASK, PPCVEC128, PPCNONE, { VD128, VA128, VB128 } },
@@ -322,7 +557,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"evdivws",	VX (4,1222),	VX_MASK,     PPCSPE|PPCVLE, PPCNONE,	{RS, RA, RB}},
  {"vcmpeqfp.",	VXR(4, 198,1),	VXR_MASK,    PPCVEC|PPCVLE, PPCNONE,	{VD, VA, VB}},
  {"udi3fcm.",	APU(4, 611,0), APU_MASK, PPC405|PPC440, PPC476,		{URT, URA, URB}},
-@@ -5375,7 +5614,7 @@
+@@ -5375,7 +5616,7 @@
  
  {"bblels",	X(31,518),	X_MASK,      PPCBRLK,	PPCNONE,	{0}},
  
@@ -331,7 +566,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"lbfcmux",	APU(31,519,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"subfco",	XO(31,8,1,0),	XO_MASK,     PPCCOM|PPCVLE, PPCNONE,	{RT, RA, RB}},
-@@ -5424,7 +5663,7 @@
+@@ -5424,7 +5665,7 @@
  
  {"bbelr",	X(31,550),	X_MASK,      PPCBRLK,	PPCNONE,	{0}},
  
@@ -340,7 +575,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"lhfcmux",	APU(31,551,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"subfo",	XO(31,40,1,0),	XO_MASK,     PPC,	PPCNONE,	{RT, RA, RB}},
-@@ -5483,7 +5722,7 @@
+@@ -5483,7 +5724,7 @@
  
  {"stbdx",	X(31,643),	X_MASK,      E500MC,	PPCNONE,	{RS, RA, RB}},
  
@@ -349,7 +584,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"stbfcmux",	APU(31,647,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"stxsspx",	X(31,652),	XX1_MASK,    PPCVSX2,	PPCNONE,	{XS6, RA0, RB}},
-@@ -5522,7 +5761,7 @@
+@@ -5522,7 +5763,7 @@
  
  {"stvfrx",	X(31,677),	X_MASK,      PPCVEC2,	PPCNONE,	{VS, RA0, RB}},
  
@@ -358,7 +593,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"sthfcmux",	APU(31,679,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"tendall.",	XRC(31,686,1)|(1<<25), XRTRARB_MASK, PPCHTM, PPCNONE,	{0}},
-@@ -5609,7 +5848,7 @@
+@@ -5609,7 +5850,7 @@
  
  {"lvsm",	X(31,773),	X_MASK,      PPCVEC2,	PPCNONE,	{VD, RA0, RB}},
  {"stvepxl",	X(31,775),	X_MASK,      PPCVEC2,	PPCNONE,	{VS, RA0, RB}},
@@ -367,7 +602,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"ldfcmux",	APU(31,775,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"dozo",	XO(31,264,1,0),	XO_MASK,     M601,	PPCNONE,	{RT, RA, RB}},
-@@ -5645,7 +5884,7 @@
+@@ -5645,7 +5886,7 @@
  
  {"lvtrxl",	X(31,805),	X_MASK,      PPCVEC2,	PPCNONE,	{VD, RA0, RB}},
  {"stvepx",	X(31,807),	X_MASK,      PPCVEC2,	PPCNONE,	{VS, RA0, RB}},
@@ -376,7 +611,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  
  {"tabortdc.",	XRC(31,814,1),	X_MASK,      PPCHTM,	PPCNONE,	{TO, RA, RB}},
  
-@@ -5704,7 +5943,7 @@
+@@ -5704,7 +5945,7 @@
  
  {"lfiwzx",	X(31,887),	X_MASK,   POWER7|PPCA2,	PPCNONE,	{FRT, RA0, RB}},
  
@@ -385,7 +620,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  {"stdfcmux",	APU(31,903,0), 	APU_MASK,    PPC405,	PPCNONE,	{FCRT, RA, RB}},
  
  {"divdeuo",	XO(31,393,1,0),	XO_MASK,  POWER7|PPCA2,	PPCNONE,	{RT, RA, RB}},
-@@ -5747,7 +5986,7 @@
+@@ -5747,7 +5988,7 @@
  {"wclrall",	X(31,934),	XRARB_MASK,  PPCA2,	PPCNONE,	{L}},
  {"wclr",	X(31,934),	X_MASK,	     PPCA2,	PPCNONE,	{L, RA0, RB}},
  
@@ -394,7 +629,7 @@ diff -u -P -r opcodes/ppc-opc.c opcodes/ppc-opc.c
  
  {"divdeo",	XO(31,425,1,0),	XO_MASK,  POWER7|PPCA2,	PPCNONE,	{RT, RA, RB}},
  {"divdeo.",	XO(31,425,1,1),	XO_MASK,  POWER7|PPCA2,	PPCNONE,	{RT, RA, RB}},
-@@ -6055,6 +6304,8 @@
+@@ -6055,6 +6306,8 @@
  {"divwo",	XO(31,491,1,0),	XO_MASK,   PPC|PPCVLE,	PPCNONE,	{RT, RA, RB}},
  {"divwo.",	XO(31,491,1,1),	XO_MASK,   PPC|PPCVLE,	PPCNONE,	{RT, RA, RB}},
 
