@@ -6,7 +6,7 @@ test_lvx_1:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
-  #_ REGISTER_OUT v3 [00010200, 03000400, 05000600, 07000800]
+  #_ REGISTER_OUT v3 [01020304, 05060708, 090A0B0C, 0D0E0F10]
 
 test_lvx_2:
   # Test with base+offset addressing
@@ -18,7 +18,7 @@ test_lvx_2:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 16
-  #_ REGISTER_OUT v3 [00034400, 55006600, 77008800, 99000000]
+  #_ REGISTER_OUT v3 [33445566, 77889900, 11223344, 55667788]
 
 test_lvx_3:
   # Test unaligned address (should mask to 16-byte boundary)
@@ -30,7 +30,7 @@ test_lvx_3:
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 5
   # Should load from aligned address 0x10001000 (masks low 4 bits)
-  #_ REGISTER_OUT v3 [00012200, 33004400, 55006600, 77008800]
+  #_ REGISTER_OUT v3 [11223344, 55667788, 99AABBCC, DDEEFF00]
 
 test_lvx_4:
   # Test with zero base register
@@ -42,7 +42,7 @@ test_lvx_4:
   blr
   #_ REGISTER_OUT r4 0
   #_ REGISTER_OUT r5 0x10001000
-  #_ REGISTER_OUT v3 [000FEE00, DD00CC00, BB00AA00, 99008800]
+  #_ REGISTER_OUT v3 [FFEEDDCC, BBAA9988, 77665544, 33221100]
 
 test_lvx_5:
   # Test loading all zeros
@@ -64,7 +64,7 @@ test_lvx_6:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
-  #_ REGISTER_OUT v3 [000FFF00, FF00FF00, FF00FF00, FF00FF00]
+  #_ REGISTER_OUT v3 [FFFFFFFF, FFFFFFFF, FFFFFFFF, FFFFFFFF]
 
 test_lvx_7:
   # Test loading pattern data
@@ -75,7 +75,7 @@ test_lvx_7:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
-  #_ REGISTER_OUT v3 [00012300, 45006700, 8900AB00, CD00EF00]
+  #_ REGISTER_OUT v3 [01234567, 89ABCDEF, FEDCBA98, 76543210]
 
 test_lvx_8:
   # Test multiple loads to different registers
@@ -89,8 +89,8 @@ test_lvx_8:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 16
-  #_ REGISTER_OUT v3 [00011100, 11001100, 22002200, 22002200]
-  #_ REGISTER_OUT v4 [00055500, 55005500, 66006600, 66006600]
+  #_ REGISTER_OUT v3 [11111111, 22222222, 33333333, 44444444]
+  #_ REGISTER_OUT v4 [55555555, 66666666, 77777777, 88888888]
 
 test_lvx_9:
   # Test unaligned address with larger offset (should mask to 16-byte boundary)
@@ -102,7 +102,7 @@ test_lvx_9:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 23
-  #_ REGISTER_OUT v3 [000ABB00, CC00DD00, EE00FF00, 11002200]
+  #_ REGISTER_OUT v3 [AABBCCDD, EEFF1122, 33445566, 77889900]
 
 test_lvx_10:
   # Test with high address
@@ -113,4 +113,4 @@ test_lvx_10:
   blr
   #_ REGISTER_OUT r4 0x0000000010001000
   #_ REGISTER_OUT r5 0
-  #_ REGISTER_OUT v3 [000EAD00, BE00EF00, CA00FE00, BA00BE00]
+  #_ REGISTER_OUT v3 [DEADBEEF, CAFEBABE, 12345678, 9ABCDEF0]

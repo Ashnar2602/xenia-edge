@@ -1,18 +1,22 @@
 test_lvrx128_1:
-  # Load vector right - loads from EA to low bytes
-  # EA=0x10001077, aligns to 0x10001070, offset=7
-  #_ MEMORY_IN 0x0000000010001070 [00, 00, 00, 00, 00, 00, 00, 0A, 0B, 0C, 0D, 0E, 0F, 10, 11, 12]
+  # Load vector right - loads from the 16-byte block start up to EA into the
+  # low bytes and zeroes the rest. EA=0x10001077, offset=7
+  #_ MEMORY_IN 0x0000000010001060 [E0, E1, E2, E3, E4, E5, E6, E7, E8, E9, EA, EB, EC, ED, EE, EF]
+  #_ MEMORY_IN 0x0000000010001070 [01, 02, 03, 04, 05, 06, 07, 08, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10]
   #_ REGISTER_IN r4 0x0000000010001077
+  #_ REGISTER_IN v3 [CCCCCCCC, CCCCCCCC, CCCCCCCC, CCCCCCCC]
   lvrx128 v3, r4, r0
   blr
   #_ REGISTER_OUT r4 0x0000000010001077
-  #_ REGISTER_OUT v3 [00000000, 00000000, 00000000, 00000000]
+  #_ REGISTER_OUT v3 [00000000, 00000000, 00010203, 04050607]
 
 test_lvrx128_2:
-  # Test aligned address
+  # Test aligned address - loads nothing, including the block below EA
   #_ MEMORY_IN 0x0000000010001000 [F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, FA, FB, FC, FD, FE, FF]
-  #_ REGISTER_IN r4 0x0000000010001000
+  #_ MEMORY_IN 0x0000000010001010 [01, 02, 03, 04, 05, 06, 07, 08, 09, 0A, 0B, 0C, 0D, 0E, 0F, 10]
+  #_ REGISTER_IN r4 0x0000000010001010
+  #_ REGISTER_IN v3 [CCCCCCCC, CCCCCCCC, CCCCCCCC, CCCCCCCC]
   lvrx128 v3, r4, r0
   blr
-  #_ REGISTER_OUT r4 0x0000000010001000
+  #_ REGISTER_OUT r4 0x0000000010001010
   #_ REGISTER_OUT v3 [00000000, 00000000, 00000000, 00000000]

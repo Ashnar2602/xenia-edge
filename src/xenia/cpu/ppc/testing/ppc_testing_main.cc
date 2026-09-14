@@ -94,6 +94,75 @@ std::unordered_set<std::string> LoadSkipList(
   return skip_list;
 }
 
+// Accepts hex pairs ("AABB CC") or a bracketed list ("[AA, BB, CC]").
+bool ParseAnnotationBytes(std::string_view text, std::vector<uint8_t>& bytes) {
+  auto hex_digit = [](char c) -> int {
+    if (c >= '0' && c <= '9') {
+      return c - '0';
+    }
+    if (c >= 'a' && c <= 'f') {
+      return c - 'a' + 10;
+    }
+    if (c >= 'A' && c <= 'F') {
+      return c - 'A' + 10;
+    }
+    return -1;
+  };
+  size_t i = 0;
+  auto skip_whitespace = [&]() {
+    while (i < text.size() &&
+           (text[i] == ' ' || text[i] == '\t' || text[i] == '\r')) {
+      ++i;
+    }
+  };
+
+  bytes.clear();
+  skip_whitespace();
+  if (i < text.size() && text[i] == '[') {
+    ++i;
+    while (true) {
+      skip_whitespace();
+      int value = 0;
+      size_t digits = 0;
+      while (i < text.size() && digits < 2 && hex_digit(text[i]) >= 0) {
+        value = value * 16 + hex_digit(text[i]);
+        ++i;
+        ++digits;
+      }
+      if (!digits) {
+        return false;
+      }
+      bytes.push_back(static_cast<uint8_t>(value));
+      skip_whitespace();
+      if (i < text.size() && text[i] == ',') {
+        ++i;
+      } else if (i < text.size() && text[i] == ']') {
+        ++i;
+        break;
+      } else {
+        return false;
+      }
+    }
+    skip_whitespace();
+    return i == text.size();
+  }
+
+  while (true) {
+    skip_whitespace();
+    if (i == text.size()) {
+      break;
+    }
+    if (i + 1 >= text.size() || hex_digit(text[i]) < 0 ||
+        hex_digit(text[i + 1]) < 0) {
+      return false;
+    }
+    bytes.push_back(
+        static_cast<uint8_t>(hex_digit(text[i]) * 16 + hex_digit(text[i + 1])));
+    i += 2;
+  }
+  return !bytes.empty();
+}
+
 struct TestCase {
   TestCase(uint32_t address, std::string& name)
       : address(address), name(name) {}
@@ -398,23 +467,15 @@ class TestRunner {
         auto address_str = it.second.substr(0, space_pos);
         auto bytes_str = it.second.substr(space_pos + 1);
         uint32_t address = std::strtoul(address_str.c_str(), nullptr, 16);
-        auto p = memory_->TranslateVirtual(address);
-        const char* c = bytes_str.c_str();
-        while (*c) {
-          while (*c == ' ') {
-            ++c;
-          }
-          // Need at least two chars for a hex pair; otherwise c+=2 below
-          // would jump past the null terminator into adjacent heap.
-          if (!*c || !c[1]) {
-            break;
-          }
-          char ccs[3] = {c[0], c[1], 0};
-          c += 2;
-          uint32_t b = std::strtoul(ccs, nullptr, 16);
-          *p = static_cast<uint8_t>(b);
-          ++p;
+        std::vector<uint8_t> bytes;
+        if (!ParseAnnotationBytes(bytes_str, bytes)) {
+          fprintf(stderr, "    [%s] Malformed MEMORY_IN bytes: %s\n",
+                  test_case.name.c_str(), bytes_str.c_str());
+          fflush(stderr);
+          return false;
         }
+        std::memcpy(memory_->TranslateVirtual(address), bytes.data(),
+                    bytes.size());
       }
     }
     return true;
@@ -446,21 +507,19 @@ class TestRunner {
         auto address_str = it.second.substr(0, space_pos);
         auto bytes_str = it.second.substr(space_pos + 1);
         uint32_t address = std::strtoul(address_str.c_str(), nullptr, 16);
+        std::vector<uint8_t> expected_bytes;
+        if (!ParseAnnotationBytes(bytes_str, expected_bytes)) {
+          any_failed = true;
+          fprintf(stderr, "    [%s] Malformed MEMORY_OUT bytes: %s\n",
+                  test_case.name.c_str(), bytes_str.c_str());
+          fflush(stderr);
+          continue;
+        }
         auto p = memory_->TranslateVirtual(address);
-        const char* c = bytes_str.c_str();
         bool failed = false;
         StringBuffer expecteds;
         StringBuffer actuals;
-        while (*c) {
-          while (*c == ' ') {
-            ++c;
-          }
-          if (!*c || !c[1]) {
-            break;
-          }
-          char ccs[3] = {c[0], c[1], 0};
-          c += 2;
-          uint32_t expected = std::strtoul(ccs, nullptr, 16);
+        for (uint8_t expected : expected_bytes) {
           uint8_t actual = *p;
 
           expecteds.AppendFormat(" {:02X}", expected);
