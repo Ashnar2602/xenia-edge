@@ -1007,6 +1007,31 @@ bool GuestScheduler::YieldCurrentThread(bool quantum_end, bool to_lower) {
              1;
 }
 
+bool GuestScheduler::YieldExecution(bool quantum_end) {
+  if (!OnDispatchThread("YieldExecution")) {
+    return false;
+  }
+  XThread* self = XThread::GetCurrentThread();
+  auto& links = self->scheduler_links();
+  int cpu_index = t_current_cpu;
+  Cpu& cpu = cpus_[cpu_index];
+  // Anything RunLoop would act on before re-dispatching this fiber.
+  if (cpu.ready_summary.load(std::memory_order_relaxed) ||
+      self->thread_state()->context()->preempt_requested || links.preempted ||
+      links.repoll_preempt ||
+      links.terminate_pending.load(std::memory_order_relaxed) ||
+      cpu.repoll_now.load(std::memory_order_relaxed) || self->suspend_count() ||
+      CpuOf(self) != cpu_index ||
+      Clock::QueryHostUptimeMillis() >= cpu.next_timed_repoll_ms) {
+    return YieldCurrentThread(quantum_end);
+  }
+  links.unyielded_quanta = 0;
+  if (cvars::guest_scheduler_stats) {
+    stats_.skipped_yields.fetch_add(1, std::memory_order_relaxed);
+  }
+  return false;
+}
+
 void GuestScheduler::SpinYield(std::chrono::milliseconds host_sleep) {
   XThread* self = XThread::GetCurrentFiberThread();
   if (self) {
@@ -1679,6 +1704,7 @@ void GuestScheduler::ReportStatsIfDue() {
   uint64_t rereadied = take(stats_.rereadied);
   uint64_t idle_wakes = take(stats_.idle_wakes);
   uint64_t switches = take(stats_.switches);
+  uint64_t skipped_yields = take(stats_.skipped_yields);
   uint64_t forced = take(stats_.forced_preempts);
   uint64_t yield_downs = take(stats_.yield_downs);
   uint64_t starved = take(stats_.starvation_yields);
@@ -1698,14 +1724,15 @@ void GuestScheduler::ReportStatsIfDue() {
   };
   XELOGI(
       "GuestScheduler: repolls {}/s (rereadied {}), idle wakes {}, switches "
-      "{}, forced preempts {}, yields down {} (starvation {}), background {} "
-      "windows {} picks, ready wait avg "
+      "{}, skipped yields {}, forced preempts {}, yields down {} (starvation "
+      "{}), background {} windows {} picks, ready wait avg "
       "{} us max {} us | io {} calls, queued avg {} us max {} us, ran avg "
       "{} us, pool {} threads peak {} in flight",
-      repolls, rereadied, idle_wakes, switches, forced, yield_downs, starved,
-      bg_windows, bg_picks, rw_count ? to_us(rw_ticks / rw_count) : 0,
-      to_us(rw_max), io_calls, io_calls ? to_us(io_queue / io_calls) : 0,
-      to_us(io_queue_max), io_calls ? to_us(io_run / io_calls) : 0,
+      repolls, rereadied, idle_wakes, switches, skipped_yields, forced,
+      yield_downs, starved, bg_windows, bg_picks,
+      rw_count ? to_us(rw_ticks / rw_count) : 0, to_us(rw_max), io_calls,
+      io_calls ? to_us(io_queue / io_calls) : 0, to_us(io_queue_max),
+      io_calls ? to_us(io_run / io_calls) : 0,
       io_pool_size_.load(std::memory_order_relaxed), io_peak);
 }
 
@@ -1789,9 +1816,9 @@ void GuestScheduler::ReportNoProgress() {
           ClampPriority(running->priority()),
           uint32_t(context->last_safepoint_pc), uint32_t(context->lr),
           uint32_t(kpcr->current_irql), uint32_t(context->preempt_requested),
-          cpu.ready_summary);
+          cpu.ready_summary.load());
     } else {
-      XELOGW("  CPU {} idle, ready_summary={:#x}", i, cpu.ready_summary);
+      XELOGW("  CPU {} idle, ready_summary={:#x}", i, cpu.ready_summary.load());
     }
     // Parked fibers are the interesting half: the cycle is whatever they are
     // all waiting for.
@@ -1916,7 +1943,7 @@ void GuestScheduler::WatchdogLoop() {
           uint32_t(kpcr->current_irql), uint32_t(context->preempt_requested),
           running->scheduler_links().preempt_defers_irql,
           running->scheduler_links().preempt_defers_lock,
-          cpus_[i].ready_summary);
+          cpus_[i].ready_summary.load());
     }
   }
 }

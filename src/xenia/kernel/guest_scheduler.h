@@ -143,6 +143,9 @@ class GuestScheduler {
   // NtYieldExecution can report NO_YIELD_PERFORMED like NT.
   bool YieldCurrentThread(bool quantum_end, bool to_lower = true);
 
+  // YieldCurrentThread, returning false without a switch if nothing could run.
+  bool YieldExecution(bool quantum_end);
+
   // Parks the running guest fiber on its CPU's blocked list and yields. Returns
   // once the dispatcher re-readies it so the wait can re-poll. A single-object
   // wait on an epoch-bumping type is re-readied only when the epoch moves past
@@ -198,7 +201,7 @@ class GuestScheduler {
     // levels so the highest ready priority is one bit scan away.
     XThread* ready_head[32] = {};
     XThread* ready_tail[32] = {};
-    uint32_t ready_summary = 0;
+    std::atomic<uint32_t> ready_summary{0};
     // The fiber currently running on this CPU, for the preemption check.
     XThread* current_thread = nullptr;
     // Set under lock_ by a voluntary yield, so the next DequeueReady prefers
@@ -371,6 +374,7 @@ class GuestScheduler {
     std::atomic<uint64_t> rereadied{0};        // waiters actually re-readied
     std::atomic<uint64_t> idle_wakes{0};       // timed wakes of a parked CPU
     std::atomic<uint64_t> switches{0};         // fiber dispatches
+    std::atomic<uint64_t> skipped_yields{0};   // yields with nothing to run
     std::atomic<uint64_t> forced_preempts{0};  // IRQL defers escaped
     std::atomic<uint64_t> yield_downs{0};      // yields that ran a lower prio
     // Of those, the ones the starvation escape hatch forced.

@@ -514,7 +514,7 @@ dword_result_t NtYieldExecution_entry() {
   if (GuestScheduler::enabled() && XThread::GetCurrentFiberThread()) {
     // NT reports whether anything else ran. Guests fall back to an alertable
     // sleep on no-yield, which is where their pending APCs get pumped.
-    if (!kernel_state()->guest_scheduler()->YieldCurrentThread(true)) {
+    if (!kernel_state()->guest_scheduler()->YieldExecution(true)) {
       return X_STATUS_NO_YIELD_PERFORMED;
     }
   } else {
