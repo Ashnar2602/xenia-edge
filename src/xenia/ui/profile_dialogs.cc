@@ -158,9 +158,8 @@ void ProfileConfigDialog::OnDraw(ImGuiIO& io) {
     const uint8_t user_index =
         profile_manager->GetUserIndexAssignedToProfile(xuid);
 
-    const auto profile_icon = profile_icon_.find(xuid) != profile_icon_.cend()
-                                  ? profile_icon_[xuid].get()
-                                  : nullptr;
+    const auto profile_icon =
+        profile_icon_.contains(xuid) ? profile_icon_[xuid].get() : nullptr;
 
     auto context_menu_fun = [=, this]() -> bool {
       // Style the context menu like Xbox

@@ -224,6 +224,17 @@ uint8_t xeXamGetLocaleEx(uint8_t max_country_id, uint8_t max_locale_id) {
 
 uint8_t xeXamGetLocale() { return xeXamGetLocaleEx(111, 43); }
 
+// "language-country", or empty if either id has no online string.
+std::u16string xeXamGetOnlineLanguageAndCountryString(uint8_t language_id,
+                                                      uint8_t country_id) {
+  auto language_str = xeXamGetOnlineLanguageString(language_id);
+  auto country_str = xeXamGetOnlineCountryString(country_id);
+  if (!language_str || !country_str) {
+    return {};
+  }
+  return std::u16string(language_str) + u"-" + std::u16string(country_str);
+}
+
 // Exports.
 
 dword_result_t XamGetLocale_entry() {
@@ -371,20 +382,11 @@ dword_result_t XamGetOnlineLanguageAndCountryString_entry(
     return X_E_INVALIDARG;
   }
 
-  auto language_str =
-      xeXamGetOnlineLanguageString(static_cast<uint8_t>(language_id));
-  if (!language_str) {
+  const auto value = xeXamGetOnlineLanguageAndCountryString(
+      static_cast<uint8_t>(language_id), static_cast<uint8_t>(country_id));
+  if (value.empty()) {
     return X_E_NOTFOUND;
   }
-
-  auto country_str =
-      xeXamGetOnlineCountryString(static_cast<uint8_t>(country_id));
-  if (!country_str) {
-    return X_E_NOTFOUND;
-  }
-
-  const auto value =
-      std::u16string(language_str) + u"-" + std::u16string(country_str);
   if (value.size() + 1 > buffer_length) {
     return X_HRESULT_FROM_WIN32(X_ERROR_INSUFFICIENT_BUFFER);
   }
@@ -395,6 +397,44 @@ dword_result_t XamGetOnlineLanguageAndCountryString_entry(
 }
 DECLARE_XAM_EXPORT1(XamGetOnlineLanguageAndCountryString, kLocale,
                     kImplemented);
+
+dword_result_t XamProfileGetLiveLegalLocale_entry(qword_t xuid,
+                                                  dword_t buffer_length,
+                                                  lpu16string_t buffer) {
+  const auto user = kernel_state()->xam_state()->GetUserProfileLive(xuid);
+
+  const uint8_t country_id =
+      user ? user->GetCountry()
+           : kernel_state()->xconfig()->ReadSetting<uint8_t>(
+                 XCONFIG_USER_CATEGORY, XCONFIG_USER_COUNTRY);
+
+  const uint32_t desired_language =
+      user ? user->GetLanguage()
+           : kernel_state()->xconfig()->ReadSetting<uint32_t>(
+                 XCONFIG_USER_CATEGORY,
+                 XCONFIG_USER_CATEGORY_ENTRIES::XCONFIG_USER_LANGUAGE);
+
+  return XamGetOnlineLanguageAndCountryString_entry(
+      desired_language, country_id, buffer_length, buffer);
+}
+DECLARE_XAM_EXPORT1(XamProfileGetLiveLegalLocale, kLocale, kImplemented);
+
+dword_result_t XapipGetLocale_entry(dword_t buffer_length,
+                                    lpstring_t buffer_ptr) {
+  // Console settings only, no profile.
+  const auto value = xeXamGetOnlineLanguageAndCountryString(
+      static_cast<uint8_t>(kernel_state()->xconfig()->ReadSetting<uint32_t>(
+          XCONFIG_USER_CATEGORY,
+          XCONFIG_USER_CATEGORY_ENTRIES::XCONFIG_USER_LANGUAGE)),
+      kernel_state()->xconfig()->ReadSetting<uint8_t>(XCONFIG_USER_CATEGORY,
+                                                      XCONFIG_USER_COUNTRY));
+  if (value.empty()) {
+    return X_E_NOTFOUND;
+  }
+  string_util::copy_truncating(buffer_ptr, to_utf8(value), buffer_length);
+  return X_E_SUCCESS;
+}
+DECLARE_XAM_EXPORT1(XapipGetLocale, kLocale, kImplemented);
 
 dword_result_t XamGetLocaleString_entry(dword_t id, dword_t buffer_length,
                                         lpu16string_t buffer) {

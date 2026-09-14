@@ -212,6 +212,16 @@ void ProfileManager::SyncProfilesWithConfig() {
                                        GetUsedUserSlots().to_ulong());
 }
 
+UserProfile* ProfileManager::GetProfileLive(const uint64_t xuid) const {
+  uint8_t user_index = GetUserIndexAssignedToLiveProfile(xuid);
+
+  if (user_index >= XUserMaxUserCount) {
+    return nullptr;
+  }
+
+  return GetProfile(user_index);
+}
+
 UserProfile* ProfileManager::GetProfile(const uint64_t xuid) const {
   const uint8_t user_index = GetUserIndexAssignedToProfile(xuid);
   if (user_index >= XUserMaxUserCount) {
@@ -479,6 +489,27 @@ uint8_t ProfileManager::GetUserIndexAssignedToProfile(
     }
 
     if (entry->xuid() != xuid) {
+      continue;
+    }
+
+    return index;
+  }
+  return XUserIndexAny;
+}
+
+uint8_t ProfileManager::GetUserIndexAssignedToLiveProfile(
+    const uint64_t xuid_online) const {
+  // GetOnlineXUID() is 0 for a profile without Live, so INVALID_XUID must not
+  // match it.
+  if (!xuid_online) {
+    return XUserIndexAny;
+  }
+  for (const auto& [index, entry] : logged_profiles_) {
+    if (!entry) {
+      continue;
+    }
+
+    if (entry->GetOnlineXUID() != xuid_online) {
       continue;
     }
 

@@ -103,6 +103,11 @@ class UserProfile {
   UserProfile(const uint64_t xuid, const X_XAMACCOUNTINFO* account_info);
 
   uint64_t xuid() const { return xuid_; }
+  uint64_t GetOnlineXUID() const {
+    return IsLiveEnabled() ? static_cast<uint64_t>(account_info_.xuid_online)
+                           : 0;
+  }
+
   std::string name() const { return account_info_.GetGamertagString(); }
   uint32_t signin_state() const {
     return static_cast<uint32_t>(SignInState::SignedInLocally);
@@ -149,7 +154,7 @@ class UserProfile {
     }
 
     // Try again with the fallback type
-    if (profile_images_.find(icon_type) == profile_images_.cend()) {
+    if (!profile_images_.contains(icon_type)) {
       return {};
     }
 
