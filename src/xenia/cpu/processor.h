@@ -119,6 +119,11 @@ class Processor {
   Module* LookupModule(uint32_t address);
   Function* LookupFunction(Module* module, uint32_t address);
   Function* ResolveFunction(uint32_t address);
+  // |expand| appends more addresses to resolve from each resolved function.
+  size_t ResolveFunctionsInParallel(
+      std::vector<uint32_t> addresses,
+      const std::function<void(Function*, std::vector<uint32_t>&)>& expand =
+          {});
 
   bool Execute(ThreadState* thread_state, uint32_t address);
   bool ExecuteRaw(ThreadState* thread_state, uint32_t address);

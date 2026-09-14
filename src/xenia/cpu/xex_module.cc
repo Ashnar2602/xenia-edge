@@ -1457,18 +1457,18 @@ void XexModule::PrecompileDiscoveredFunctions() {
   if (!cvars::enable_early_precompilation) {
     return;
   }
+  auto start_time = std::chrono::steady_clock::now();
   auto others = PreanalyzeCode();
-
-  for (auto&& other : others) {
-    if (other < low_address_ || other >= high_address_) {
-      continue;
-    }
-    auto sym = processor_->LookupFunction(other);
-
-    if (!sym || sym->status() != Symbol::Status::kDefined) {
-      processor_->ResolveFunction(other);
-    }
-  }
+  others.erase(std::remove_if(others.begin(), others.end(),
+                              [this](uint32_t address) {
+                                return !ContainsAddress(address);
+                              }),
+               others.end());
+  size_t compiled = processor_->ResolveFunctionsInParallel(std::move(others));
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start_time);
+  XELOGI("Precompiled {} discovered functions in {} ms", compiled,
+         elapsed.count());
 }
 void XexModule::PrecompileKnownFunctions() {
   if (!cvars::enable_early_precompilation) {
@@ -1618,23 +1618,17 @@ std::vector<uint32_t> XexModule::FindStaticInitializers() const {
 
 void XexModule::PrecompileStaticInitializers() {
   auto start_time = std::chrono::steady_clock::now();
-  std::vector<uint32_t> pending = FindStaticInitializers();
-  if (pending.empty()) {
+  std::vector<uint32_t> initializers = FindStaticInitializers();
+  if (initializers.empty()) {
     return;
   }
-  size_t initializer_count = pending.size();
+  size_t initializer_count = initializers.size();
 
   // Lazy compiles during static init can reorder the threads it starts.
-  std::unordered_set<uint32_t> visited(pending.begin(), pending.end());
-  size_t compiled = 0;
-  while (!pending.empty()) {
-    uint32_t address = pending.back();
-    pending.pop_back();
-    auto function = processor_->ResolveFunction(address);
-    if (!function || !function->has_end_address()) {
-      continue;
+  auto add_callees = [this](Function* function, std::vector<uint32_t>& found) {
+    if (!function->has_end_address()) {
+      return;
     }
-    ++compiled;
     // The scanner's end address is the last instruction, not one past it.
     uint32_t start = function->address();
     uint32_t last = function->end_address();
@@ -1646,12 +1640,13 @@ void XexModule::PrecompileStaticInitializers() {
       uint32_t target =
           GetBLCalledFunction(this, instr, ppc::PPCOpcodeBits{code});
       bool is_tail_call = target < start || target > last;
-      if ((IsOpcodeBL(code) || is_tail_call) && IsCodeAddress(target) &&
-          visited.insert(target).second) {
-        pending.push_back(target);
+      if ((IsOpcodeBL(code) || is_tail_call) && IsCodeAddress(target)) {
+        found.push_back(target);
       }
     }
-  }
+  };
+  size_t compiled = processor_->ResolveFunctionsInParallel(
+      std::move(initializers), add_callees);
 
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
       std::chrono::steady_clock::now() - start_time);
