@@ -610,6 +610,30 @@ bool UserTracker::GetUserSetting(uint64_t xuid, uint32_t title_id,
   return true;
 }
 
+std::pair<uint32_t, uint32_t> UserTracker::GetUserSubscriptionData(
+    UserProfile* user) const {
+  std::pair<uint32_t, uint32_t> data;
+  if (const auto setting = GetSetting(
+          user, kDashboardID,
+          static_cast<uint32_t>(
+              UserSettingId::XPROFILE_SUBSCRIPTION_TYPE_LENGTH_IN_MONTHS))) {
+    data.first = std::get<int32_t>(setting->get_host_data());
+  } else {
+    data.first = 0;
+  }
+
+  if (const auto setting =
+          GetSetting(user, kDashboardID,
+                     static_cast<uint32_t>(
+                         UserSettingId::XPROFILE_SUBSCRIPTION_PAYMENT_TYPE))) {
+    data.second = std::get<int32_t>(setting->get_host_data());
+  } else {
+    data.second = 0;
+  }
+
+  return data;
+}
+
 void UserTracker::UpdateContext(uint64_t xuid, uint32_t id, uint32_t value) {
   if (!IsUserTracked(xuid)) {
     return;

@@ -1020,7 +1020,7 @@ dword_result_t XamSessionRefObjByHandle_entry(dword_t handle,
 DECLARE_XAM_EXPORT1(XamSessionRefObjByHandle, kUserProfiles, kStub);
 
 dword_result_t XamUserIsUnsafeProgrammingAllowed_entry(dword_t user_index,
-                                                       dword_t unk,
+                                                       dword_t pc_check,
                                                        lpdword_t result_ptr) {
   if (!result_ptr) {
     return X_ERROR_INVALID_PARAMETER;
@@ -1029,7 +1029,7 @@ dword_result_t XamUserIsUnsafeProgrammingAllowed_entry(dword_t user_index,
   if (user_index != XUserIndexAny && user_index >= XUserMaxUserCount) {
     return X_ERROR_INVALID_PARAMETER;
   }
-
+  // ExGetXConfigSetting(3,0xf,&pc_flags,1,*size_out);
   // uint32_t result = XamUserCheckPrivilege_entry(user_index, 0xD4u,
   // result_ptr);
 
@@ -1039,29 +1039,34 @@ dword_result_t XamUserIsUnsafeProgrammingAllowed_entry(dword_t user_index,
 }
 DECLARE_XAM_EXPORT1(XamUserIsUnsafeProgrammingAllowed, kUserProfiles, kStub);
 
-dword_result_t XamUserGetSubscriptionType_entry(dword_t user_index,
-                                                lpdword_t subscription_ptr,
-                                                lpdword_t r5,
-                                                dword_t overlapped_ptr) {
+dword_result_t XamUserGetSubscriptionType_entry(
+    dword_t user_index, lpdword_t subscription_length_ptr,
+    lpdword_t subscription_payment_ptr) {
   if (user_index >= XUserMaxUserCount) {
-    return X_E_INVALIDARG;
-  }
-
-  if (!subscription_ptr || !r5) {
-    return X_E_INVALIDARG;
-  }
-
-  auto user = kernel_state()->xam_state()->GetUserProfile(user_index);
-  if (!user) {
     return X_ERROR_INVALID_PARAMETER;
   }
 
-  *subscription_ptr = user->GetSubscriptionTier();
-  *r5 = 0x0;
+  if (!subscription_length_ptr || !subscription_payment_ptr) {
+    return X_ERROR_INVALID_PARAMETER;
+  }
+
+  const auto user_profile =
+      kernel_state()->xam_state()->GetUserProfile(user_index);
+
+  if (!user_profile) {
+    return X_ERROR_FUNCTION_FAILED;
+  }
+
+  const auto [subscription_period, subscription_payment] =
+      kernel_state()->xam_state()->user_tracker()->GetUserSubscriptionData(
+          user_profile);
+
+  *subscription_length_ptr = subscription_period;
+  *subscription_payment_ptr = subscription_payment;
 
   return X_ERROR_SUCCESS;
 }
-DECLARE_XAM_EXPORT1(XamUserGetSubscriptionType, kUserProfiles, kStub);
+DECLARE_XAM_EXPORT1(XamUserGetSubscriptionType, kUserProfiles, kImplemented);
 
 dword_result_t XamUserGetCachedUserFlags_entry(dword_t user_index) {
   if (!kernel_state()->xam_state()->IsUserSignedIn(user_index)) {
@@ -1169,11 +1174,9 @@ dword_result_t XamUserCreateStatsEnumerator_entry(
 }
 DECLARE_XAM_EXPORT1(XamUserCreateStatsEnumerator, kUserProfiles, kSketchy);
 
-dword_result_t XamUserGetUserTenure_entry(dword_t user_index,
-                                          lpdword_t tenure_level_ptr,
-                                          lpdword_t milestone_ptr,
-                                          lpqword_t milestone_date_ptr,
-                                          dword_t overlap_ptr) {
+dword_result_t XamUserGetUserTenure_entry(
+    dword_t user_index, lpdword_t tenure_level_ptr, lpdword_t milestone_ptr,
+    lpqword_t milestone_date_ptr, pointer_t<XAM_OVERLAPPED> overlap_ptr) {
   if (!kernel_state()->xam_state()->IsUserSignedIn(user_index)) {
     return X_E_INVALIDARG;
   }
