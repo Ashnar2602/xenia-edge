@@ -110,6 +110,9 @@ class GuestScheduler {
                                  call_class);
   }
 
+  // Runs |fn| on an I/O worker without parking the caller.
+  void PostHostCall(std::function<void()> fn, BlockingCallClass call_class);
+
   // True when the calling thread is a scheduler-managed fiber, so a blocking
   // host call would stall other fibers and should be offloaded instead.
   static bool CurrentThreadOffloadsBlockingCalls();
@@ -274,11 +277,13 @@ class GuestScheduler {
   // Offload path of RunBlockingHostCall: queue to an I/O worker and park.
   void RunBlockingHostCallOffloaded(const std::function<void()>& fn,
                                     BlockingCallClass call_class);
+  // False for a posted call once shutdown has begun.
+  bool EnqueueBlockingCall(BlockingCall* call, BlockingCallClass call_class);
   // Lazily starts the serial I/O worker on the first kSerial offload.
   void EnsureIoWorker();
   void IoWorkerLoop();
   // Queues a kConcurrent call, growing the pool when every worker is busy.
-  void EnqueuePoolCall(BlockingCall* call);
+  bool EnqueuePoolCall(BlockingCall* call);
   // Caller holds io_pool_lock_.
   void StartPoolWorkerLocked();
   void IoPoolWorkerLoop();
@@ -355,9 +360,11 @@ class GuestScheduler {
   std::atomic<bool> dispatched_any_{false};
   std::atomic<bool> never_dispatched_warned_{false};
 
-  // Lives on the parked caller's fiber stack, which persists until done is set.
+  // On the parked caller's fiber stack, or heap-owned when posted.
   struct BlockingCall {
     const std::function<void()>* fn = nullptr;
+    // Set only for posted calls, which the worker deletes after running.
+    std::function<void()> posted_fn;
     std::atomic<bool> done{false};
     // Raw host ticks when queued, for the I/O wait-time counter.
     uint64_t queued_ns = 0;

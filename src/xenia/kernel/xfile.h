@@ -160,7 +160,13 @@ class XFile : public XObject {
 
   X_STATUS ReadScatter(uint32_t segments_guest_address, uint32_t length,
                        uint64_t byte_offset, uint32_t* out_bytes_read,
-                       uint32_t apc_context);
+                       uint32_t apc_context, bool notify_completion = true);
+
+  // Runs |fn| on an I/O worker without waiting.
+  void PostIo(std::function<void()> fn);
+  // Signals the completion ports and this file's wait handle.
+  void NotifyCompletion(X_STATUS status, uint32_t num_bytes,
+                        uint32_t apc_context);
 
   X_STATUS Write(uint32_t buffer_guess_address, uint32_t buffer_length,
                  uint64_t byte_offset, uint32_t* out_bytes_written,
@@ -202,7 +208,7 @@ class XFile : public XObject {
                                   bool restart);
   X_STATUS ReadScatterInternal(uint32_t segments_guest_address, uint32_t length,
                                uint64_t byte_offset, uint32_t* out_bytes_read,
-                               uint32_t apc_context);
+                               uint32_t apc_context, bool notify_completion);
   X_STATUS WriteInternal(uint32_t buffer_guest_address, uint32_t buffer_length,
                          uint64_t byte_offset, uint32_t* out_bytes_written,
                          uint32_t apc_context);

@@ -211,28 +211,27 @@ X_STATUS XFile::ReadInternal(uint32_t buffer_guest_address,
   }
 
   if (notify_completion) {
-    XIOCompletion::IONotification notify;
-    notify.apc_context = apc_context;
-    notify.num_bytes = uint32_t(bytes_read);
-    notify.status = result;
-
-    NotifyIOCompletionPorts(notify);
-
-    async_event_->Set();
+    NotifyCompletion(result, uint32_t(bytes_read), apc_context);
   }
 
   return result;
 }
 
+void XFile::PostIo(std::function<void()> fn) {
+  kernel_state()->guest_scheduler()->PostHostCall(std::move(fn),
+                                                  io_call_class());
+}
+
 X_STATUS XFile::ReadScatter(uint32_t segments_guest_address, uint32_t length,
                             uint64_t byte_offset, uint32_t* out_bytes_read,
-                            uint32_t apc_context) {
+                            uint32_t apc_context, bool notify_completion) {
   // The whole loop as one unit, so the fiber parks once.
   X_STATUS result = X_STATUS_SUCCESS;
   kernel_state()->guest_scheduler()->RunBlockingHostCall(
       [&]() {
-        result = ReadScatterInternal(segments_guest_address, length,
-                                     byte_offset, out_bytes_read, apc_context);
+        result =
+            ReadScatterInternal(segments_guest_address, length, byte_offset,
+                                out_bytes_read, apc_context, notify_completion);
       },
       io_call_class());
   return result;
@@ -241,7 +240,8 @@ X_STATUS XFile::ReadScatter(uint32_t segments_guest_address, uint32_t length,
 X_STATUS XFile::ReadScatterInternal(uint32_t segments_guest_address,
                                     uint32_t length, uint64_t byte_offset,
                                     uint32_t* out_bytes_read,
-                                    uint32_t apc_context) {
+                                    uint32_t apc_context,
+                                    bool notify_completion) {
   std::lock_guard<std::mutex> lock(file_lock_);
   X_STATUS result = X_STATUS_SUCCESS;
 
@@ -285,14 +285,9 @@ X_STATUS XFile::ReadScatterInternal(uint32_t segments_guest_address,
     *out_bytes_read = uint32_t(read_total);
   }
 
-  XIOCompletion::IONotification notify;
-  notify.apc_context = apc_context;
-  notify.num_bytes = uint32_t(read_total);
-  notify.status = result;
-
-  NotifyIOCompletionPorts(notify);
-
-  async_event_->Set();
+  if (notify_completion) {
+    NotifyCompletion(result, read_total, apc_context);
+  }
 
   return result;
 }
@@ -329,18 +324,11 @@ X_STATUS XFile::WriteInternal(uint32_t buffer_guest_address,
     position_.fetch_add(bytes_written);
   }
 
-  XIOCompletion::IONotification notify;
-  notify.apc_context = apc_context;
-  notify.num_bytes = uint32_t(bytes_written);
-  notify.status = result;
-
-  NotifyIOCompletionPorts(notify);
-
   if (out_bytes_written) {
     *out_bytes_written = uint32_t(bytes_written);
   }
 
-  async_event_->Set();
+  NotifyCompletion(result, uint32_t(bytes_written), apc_context);
   return result;
 }
 
@@ -428,6 +416,16 @@ object_ref<XFile> XFile::Restore(KernelState* kernel_state,
   file->is_synchronous_ = is_synchronous;
 
   return object_ref<XFile>(file);
+}
+
+void XFile::NotifyCompletion(X_STATUS status, uint32_t num_bytes,
+                             uint32_t apc_context) {
+  XIOCompletion::IONotification notify;
+  notify.apc_context = apc_context;
+  notify.num_bytes = num_bytes;
+  notify.status = status;
+  NotifyIOCompletionPorts(notify);
+  async_event_->Set();
 }
 
 void XFile::NotifyIOCompletionPorts(

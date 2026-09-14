@@ -350,6 +350,8 @@ void GuestScheduler::Shutdown() {
     xe::threading::Wait(watchdog_thread_.get(), false);
     watchdog_thread_.reset();
   }
+  // Waits out a racing EnsureIoWorker and stops later ones starting a worker.
+  std::call_once(io_once_, [] {});
   // After the dispatch threads, so no fiber is still watching a BlockingCall.
   if (io_thread_) {
     xe::threading::Wait(io_thread_.get(), false);
@@ -359,6 +361,18 @@ void GuestScheduler::Shutdown() {
     xe::threading::Wait(thread.get(), false);
   }
   io_pool_threads_.clear();
+  // Free posted calls no worker is left to run.
+  auto drop_queued = [](std::mutex& queue_lock,
+                        std::queue<BlockingCall*>& queue) {
+    std::lock_guard<std::mutex> lock(queue_lock);
+    for (; !queue.empty(); queue.pop()) {
+      if (queue.front()->posted_fn) {
+        delete queue.front();
+      }
+    }
+  };
+  drop_queued(io_lock_, io_queue_);
+  drop_queued(io_pool_lock_, io_pool_queue_);
   // Everything still linked is unreachable now that the dispatch threads are
   // gone. Reclaim each thread so a relaunch does not leak it and its stack.
   std::vector<XThread*> leftovers;
@@ -1096,21 +1110,11 @@ void GuestScheduler::RunBlockingHostCallOffloaded(
   XThread* self = XThread::GetCurrentFiberThread();
   BlockingCall call;
   call.fn = &fn;
-  call.queued_ns = Clock::host_tick_count_raw();
   // Set before queueing, since the worker can finish before this fiber parks.
   // Nothing switches fibers between here and the park, so this is the CPU it
   // parks on.
   call.waiter_cpu = t_current_cpu;
-  if (call_class == BlockingCallClass::kConcurrent) {
-    EnqueuePoolCall(&call);
-  } else {
-    EnsureIoWorker();
-    {
-      std::lock_guard<std::mutex> lock(io_lock_);
-      io_queue_.push(&call);
-    }
-    io_event_->Set();
-  }
+  EnqueueBlockingCall(&call, call_class);
   if (self) {
     self->set_cooperative_wait_shape(XThread::CooperativeWaitKind::kIoOffload,
                                      nullptr, 0);
@@ -1124,6 +1128,35 @@ void GuestScheduler::RunBlockingHostCallOffloaded(
   }
 }
 
+void GuestScheduler::PostHostCall(std::function<void()> fn,
+                                  BlockingCallClass call_class) {
+  auto* call = new BlockingCall;
+  call->posted_fn = std::move(fn);
+  call->fn = &call->posted_fn;
+  if (!EnqueueBlockingCall(call, call_class)) {
+    call->posted_fn();
+    delete call;
+  }
+}
+
+bool GuestScheduler::EnqueueBlockingCall(BlockingCall* call,
+                                         BlockingCallClass call_class) {
+  call->queued_ns = Clock::host_tick_count_raw();
+  if (call_class == BlockingCallClass::kConcurrent) {
+    return EnqueuePoolCall(call);
+  }
+  EnsureIoWorker();
+  {
+    std::lock_guard<std::mutex> lock(io_lock_);
+    if (call->posted_fn && shutting_down_.load()) {
+      return false;
+    }
+    io_queue_.push(call);
+  }
+  io_event_->Set();
+  return true;
+}
+
 void GuestScheduler::RunBlockingCall(BlockingCall* call) {
   uint64_t started = Clock::host_tick_count_raw();
   (*call->fn)();
@@ -1134,6 +1167,10 @@ void GuestScheduler::RunBlockingCall(BlockingCall* call) {
   stats_.io_queue_ns.fetch_add(queued_for, std::memory_order_relaxed);
   stats_.io_run_ns.fetch_add(finished - started, std::memory_order_relaxed);
   AccumulateMax(stats_.io_queue_max_ns, queued_for);
+  if (call->posted_fn) {
+    delete call;
+    return;
+  }
   // Read before publishing. Once done is set the caller can resume, unwind the
   // stack frame |call| lives in, and exit.
   int waiter_cpu = call->waiter_cpu;
@@ -1196,9 +1233,12 @@ void GuestScheduler::StartPoolWorkerLocked() {
   io_started_.store(true);
 }
 
-void GuestScheduler::EnqueuePoolCall(BlockingCall* call) {
+bool GuestScheduler::EnqueuePoolCall(BlockingCall* call) {
   {
     std::lock_guard<std::mutex> lock(io_pool_lock_);
+    if (call->posted_fn && shutting_down_.load()) {
+      return false;
+    }
     io_pool_queue_.push(call);
     // Queued work counts as well as running work. In a burst every call can
     // arrive before a worker has picked any up, and a busy count alone would
@@ -1209,6 +1249,7 @@ void GuestScheduler::EnqueuePoolCall(BlockingCall* call) {
     }
   }
   io_pool_cv_.notify_one();
+  return true;
 }
 
 void GuestScheduler::IoPoolWorkerLoop() {
