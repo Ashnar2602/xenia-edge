@@ -48,11 +48,11 @@ DEFINE_bool(writable_code_segments, false,
             "CPU");
 
 DEFINE_bool(
-    enable_early_precompilation, false,
-    "Enable pre-compiling guest functions that we know we've called/that "
-    "we've recognized as being functions via simple heuristics, good for error "
-    "finding/stress testing with the JIT",
+    enable_early_precompilation, true,
+    "Compile guest functions found by code analysis at launch instead of on "
+    "first call, avoiding stutter when they first run.",
     "CPU");
+UPDATE_from_bool(enable_early_precompilation, 2026, 9, 14, 13, false);
 
 DECLARE_bool(allow_plugins);
 
