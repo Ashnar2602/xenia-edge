@@ -471,7 +471,9 @@ class Win32Timer : public Win32Handle<Timer> {
     Cancel();
     std::lock_guard<std::mutex> lock(mutex_);
     LARGE_INTEGER due_time_li;
-    due_time_li.QuadPart = WClock_::to_file_time(due_time);
+    // SetWaitableTimer treats a negative due time as relative.
+    due_time_li.QuadPart =
+        std::max(due_time.time_since_epoch().count(), WClock_::rep(0));
     if (!SetWaitableTimer(handle_, &due_time_li, int32_t(period.count()), NULL,
                           NULL, false)) {
       return false;
