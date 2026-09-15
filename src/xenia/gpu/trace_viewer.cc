@@ -41,6 +41,12 @@
 #include "xenia/ui/windowed_app_context.h"
 #include "xenia/xbox.h"
 
+#if XE_PLATFORM_ANDROID
+#include "xenia/base/platform_arm64.h"
+#include "xenia/config.h"
+DECLARE_path(storage_root);
+#endif
+
 namespace xe {
 namespace gpu {
 
@@ -63,6 +69,14 @@ TraceViewer::TraceViewer(xe::ui::WindowedAppContext& app_context,
 TraceViewer::~TraceViewer() = default;
 
 bool TraceViewer::OnInitialize() {
+#if XE_PLATFORM_ANDROID
+  // The Android SurfaceView must exist before initializing Vulkan.
+  window_ =
+      ui::Window::Create(app_context(), "Xenia GPU Trace Viewer", 1920, 1080);
+  window_->AddListener(&window_listener_);
+  window_->AddInputListener(&window_listener_, 1);
+  return window_->Open();
+#else
   std::string path = xe::path_to_utf8(cvars::target_trace_file);
 
   // If no path passed, ask the user.
@@ -106,7 +120,24 @@ bool TraceViewer::OnInitialize() {
     return false;
   }
   return true;
+#endif
 }
+#if XE_PLATFORM_ANDROID
+bool TraceViewer::PrepareForAndroid() {
+  arm64::InitFeatureFlags();
+  config::SetupConfig(cvars::storage_root);
+  EnableAndroidFileLogging(cvars::storage_root);
+  if (cvars::target_trace_file.empty() || !Setup() ||
+      !Load(xe::path_to_utf8(cvars::target_trace_file))) {
+    return false;
+  }
+  app_context().CallInUIThreadSynchronous([&]() {
+    trace_viewer_dialog_.reset(
+        new TraceViewerDialog(imgui_drawer_.get(), *this));
+  });
+  return true;
+}
+#endif
 
 bool TraceViewer::Setup() {
   enum : size_t {
@@ -114,19 +145,29 @@ bool TraceViewer::Setup() {
     kZOrderTraceViewerInput,
   };
 
-  // Main display window.
-  assert_true(app_context().IsInUIThread());
-  window_ = xe::ui::Window::Create(app_context(), "xenia-gpu-trace-viewer",
+  // Desktop starts on the UI thread; Android prepares on a worker after its
+  // surface arrives.
+  bool opened = true;
+  app_context().CallInUIThreadSynchronous([&]() {
+    if (!window_) {
+      window_ = ui::Window::Create(app_context(), "xenia-gpu-trace-viewer",
                                    1920, 1080);
-  window_->AddListener(&window_listener_);
-  window_->AddInputListener(&window_listener_, kZOrderTraceViewerInput);
-  if (!window_->Open()) {
-    XELOGE("Failed to open the main window");
+      window_->AddListener(&window_listener_);
+      window_->AddInputListener(&window_listener_, kZOrderTraceViewerInput);
+      opened = window_->Open();
+    }
+  });
+  if (!opened) {
     return false;
   }
-
-  // Create the emulator but don't initialize so we can setup the window.
+#if XE_PLATFORM_ANDROID
+  emulator_ = std::make_unique<Emulator>(
+      "", cvars::storage_root,
+      cvars::storage_root / "cache_host/trace-viewer/content",
+      cvars::storage_root / "cache_host");
+#else
   emulator_ = std::make_unique<Emulator>("", "", "", "");
+#endif
   X_STATUS result = emulator_->Setup(
       window_.get(), nullptr, false, nullptr,
       [this]() { return CreateGraphicsSystem(); }, nullptr);
@@ -145,28 +186,34 @@ bool TraceViewer::Setup() {
 
   player_ = std::make_unique<TracePlayer>(graphics_system_);
 
-  // Setup drawing to the window.
-  ui::Presenter* presenter = graphics_system_->presenter();
-  if (!presenter) {
-    XELOGE("Failed to initialize the presenter");
-    return false;
-  }
-  xe::ui::GraphicsProvider& graphics_provider = *graphics_system_->provider();
-  immediate_drawer_ = graphics_provider.CreateImmediateDrawer();
-  if (!immediate_drawer_) {
-    XELOGE("Failed to initialize the immediate drawer");
-    return false;
-  }
-  immediate_drawer_->SetPresenter(presenter);
-  imgui_drawer_ =
-      std::make_unique<xe::ui::ImGuiDrawer>(window_.get(), kZOrderImGui);
-  imgui_drawer_->SetPresenterAndImmediateDrawer(presenter,
-                                                immediate_drawer_.get());
-  trace_viewer_dialog_ = std::unique_ptr<TraceViewerDialog>(
-      new TraceViewerDialog(imgui_drawer_.get(), *this));
-  window_->SetPresenter(presenter);
+  bool attached = false;
+  app_context().CallInUIThreadSynchronous([&]() {
+    // Setup drawing to the window.
+    ui::Presenter* presenter = graphics_system_->presenter();
+    if (!presenter) {
+      XELOGE("Failed to initialize the presenter");
+      return;
+    }
+    xe::ui::GraphicsProvider& graphics_provider = *graphics_system_->provider();
+    immediate_drawer_ = graphics_provider.CreateImmediateDrawer();
+    if (!immediate_drawer_) {
+      XELOGE("Failed to initialize the immediate drawer");
+      return;
+    }
+    immediate_drawer_->SetPresenter(presenter);
+    imgui_drawer_ =
+        std::make_unique<xe::ui::ImGuiDrawer>(window_.get(), kZOrderImGui);
+    imgui_drawer_->SetPresenterAndImmediateDrawer(presenter,
+                                                  immediate_drawer_.get());
+#if !XE_PLATFORM_ANDROID
+    trace_viewer_dialog_ = std::unique_ptr<TraceViewerDialog>(
+        new TraceViewerDialog(imgui_drawer_.get(), *this));
+#endif
+    window_->SetPresenter(presenter);
 
-  return true;
+    attached = true;
+  });
+  return attached;
 }
 
 void TraceViewer::TraceViewerWindowListener::OnClosing(xe::ui::UIEvent& e) {
@@ -189,9 +236,12 @@ void TraceViewer::TraceViewerDialog::OnDraw(ImGuiIO& io) {
 }
 
 bool TraceViewer::Load(const std::string_view trace_file_path) {
-  window_->SetTitle("Xenia GPU Trace Viewer: " + std::string(trace_file_path));
+  app_context().CallInUIThreadSynchronous([&]() {
+    window_->SetTitle("Xenia GPU Trace Viewer: " +
+                      std::string(trace_file_path));
+  });
 
-  if (!player_->Open(trace_file_path)) {
+  if (!player_->Open(trace_file_path) || !player_->frame_count()) {
     XELOGE("Could not load trace file");
     return false;
   }
@@ -786,7 +836,9 @@ void TraceViewer::DrawVertexFetcher(Shader* shader,
                                     const Shader::VertexBinding& vertex_binding,
                                     const xe_gpu_vertex_fetch_t& fetch) {
   const uint8_t* addr = memory_->TranslatePhysical(fetch.address << 2);
-  uint32_t vertex_count = fetch.size / vertex_binding.stride_words;
+  uint32_t vertex_count = vertex_binding.stride_words
+                              ? fetch.size / vertex_binding.stride_words
+                              : (fetch.size ? 1 : 0);
   int column_count = 0;
   for (const auto& attrib : vertex_binding.attributes) {
     switch (attrib.fetch_instr.attributes.data_format) {
@@ -1869,3 +1921,20 @@ void TraceViewer::DrawStateUI() {
 
 }  //  namespace gpu
 }  //  namespace xe
+
+#if XE_PLATFORM_ANDROID
+#include "xenia/ui/windowed_app_context_android.h"
+extern "C" JNIEXPORT jboolean JNICALL
+Java_jp_xenia_emulator_TraceActivity_prepareNative(JNIEnv*, jobject,
+                                                   jlong context) {
+  auto* app =
+      reinterpret_cast<xe::ui::AndroidWindowedAppContext*>(context)->app();
+  auto* viewer = dynamic_cast<xe::gpu::TraceViewer*>(app);
+  try {
+    return viewer && viewer->PrepareForAndroid();
+  } catch (const std::exception& e) {
+    XELOGE("Trace viewer: {}", e.what());
+    return false;
+  }
+}
+#endif

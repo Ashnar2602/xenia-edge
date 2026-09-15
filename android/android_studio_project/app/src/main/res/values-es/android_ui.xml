@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Complete Android UI catalog; keep placeholders aligned with values/. -->
+  <string name="gamer_name">"Nombre"</string>
+  <string name="gamer_motto">"Lema"</string>
+  <string name="gamer_bio">"Biografía"</string>
+  <string name="gamer_zone">"Zona de juego"</string>
+  <string name="data_busy">"Cierra el juego o la pantalla de gestión antes de cambiar los datos del emulador."</string>
+  <string name="controllers">"Mandos"</string>
+  <string name="no_controller">"Sin mando físico"</string>
+  <string name="postprocessing">"Posprocesado"</string>
+  <string name="performance">"Rendimiento"</string>
+  <string name="debug_tools">"Opciones de depuración"</string>
+  <string name="audio">"Audio"</string>
+  <string name="screenshot">"Hacer captura de pantalla"</string>
+  <string name="screenshot_failed">"No se pudo capturar la imagen del juego."</string>
+  <string name="screenshot_saved">"Captura guardada. La encontrarás en Ajustes → Gestionar archivos → screenshots."</string>
+  <string name="clear_gpu_cache">"Vaciar cachés de GPU"</string>
+  <string name="profiler">"Mostrar / ocultar analizador de rendimiento"</string>
+  <string name="profiles">"Perfiles"</string>
+  <string name="edit_profile">"Editar perfil"</string>
+  <string name="sign_in">"Iniciar sesión"</string>
+  <string name="sign_out">"Cerrar sesión"</string>
+  <string name="signed_out">"Sesión cerrada"</string>
+  <string name="player_number">"Jugador %1$d"</string>
+  <string name="profile_country">"País"</string>
+  <string name="profile_language">"Idioma"</string>
+  <string name="profile_live">"Live habilitado"</string>
+  <string name="profile_subscription">"Tipo de suscripción"</string>
+  <string name="patches">"Parches"</string>
+  <string name="content">"DLC y actualizaciones del juego"</string>
+  <string name="saves">"Partidas guardadas"</string>
+  <string name="statistics">"Estadísticas y compatibilidad"</string>
+  <string name="desktop_compatibility">"Informe de compatibilidad en escritorio"</string>
+  <string name="achievements">"Logros"</string>
+  <string-array name="compat_states">
+    <item>"Desconocido"</item>
+    <item>"No jugable"</item>
+    <item>"Carga"</item>
+    <item>"Entra en el juego"</item>
+    <item>"Jugable"</item>
+  </string-array>
+  <string name="working">"Procesando…"</string>
+  <string name="operation_error">"No se pudo completar la operación: %1$s"</string>
+  <string name="nothing_here">"No hay entradas disponibles."</string>
+  <string name="manage_files">"Gestionar archivos"</string>
+  <string name="add_content">"Añadir DLC o actualización del juego"</string>
+  <string name="detach_content">"Eliminar referencia"</string>
+  <string name="content_link_explanation">"Los paquetes se leen directamente desde su ubicación original. Déjalos allí. Eliminar una referencia no modifica el archivo original."</string>
+  <string name="global_options">"Opciones generales"</string>
+  <string name="global_explanation">"Valores predeterminados para todos los juegos. Las opciones de cada juego tienen prioridad. Los cambios se aplican en el próximo inicio."</string>
+  <string name="default_value">"Predeterminado"</string>
+  <string name="add_games">"Añadir juegos"</string>
+  <string name="single_game">"Un solo juego"</string>
+  <string name="game_folder">"Carpeta"</string>
+  <string name="game_options">"Opciones del juego"</string>
+  <string name="options_explanation">"Opciones específicas de este título. Los cambios se aplican la próxima vez que se inicie el juego."</string>
+  <string name="options_search">"Buscar opciones"</string>
+  <string name="options_all">"Todas las categorías"</string>
+  <string name="options_custom">"Este juego"</string>
+  <string name="options_inherited">"Ajuste general"</string>
+  <string name="options_base">"Valor general: %1$s"</string>
+  <string name="options_save">"Guardar"</string>
+  <string name="options_reset">"Restablecer"</string>
+  <string name="options_saved">"Guardado. Se aplicará en el próximo inicio del juego."</string>
+  <string name="options_error">"No se pudieron leer o guardar las opciones: %1$s"</string>
+  <string name="options_no_title">"No se pudo leer el ID del título. Las opciones de cada juego requieren un ID de título válido."</string>
+  <string name="profile_create">"Crear perfil"</string>
+  <string name="profile_select">"Elige un perfil para el jugador 1"</string>
+  <string name="profile_gamertag">"Gamertag"</string>
+  <string name="profile_explanation">"Crea un perfil de jugador local para que los juegos puedan iniciar sesión y guardar tu progreso. Iniciará sesión automáticamente la próxima vez que juegues."</string>
+  <string name="profile_migration">"Crea un perfil de jugador local y asocia con él las partidas guardadas antiguas, como en escritorio. Iniciará sesión automáticamente la próxima vez que juegues."</string>
+  <string name="profile_invalid">"Usa entre 1 y 15 letras (A–Z), números o espacios simples. Empieza con una letra y termina con una letra o un número."</string>
+  <string name="profile_error">"No se pudo crear o cargar el perfil. Comprueba el espacio de almacenamiento libre e inténtalo de nuevo."</string>
+  <string name="library">"Biblioteca"</string>
+  <string name="recent">"Recientes"</string>
+  <string name="settings">"Ajustes"</string>
+  <string name="your_games">"Tus juegos"</string>
+  <string name="recent_games">"Jugados recientemente"</string>
+  <string name="library_subtitle">"Tus juegos de Xbox 360, abiertos directamente desde el almacenamiento."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Añadir carpeta"</string>
+  <string name="import_explanation">"Elige la carpeta completa del juego XEX o GOD, incluidos sus archivos de datos. Xenia lee los originales directamente. No se copia ningún archivo."</string>
+  <string name="choose_folder">"Elegir carpeta"</string>
+  <string name="search_games">"Buscar en tu biblioteca"</string>
+  <string name="empty_library">"Tu biblioteca empieza aquí"</string>
+  <string name="no_results">"No se encontraron juegos"</string>
+  <string name="empty_hint">"Añade un ISO / ZAR o una carpeta de juego completa.\nTus juegos aparecerán aquí."</string>
+  <string name="play">"▶  Jugar"</string>
+  <string name="play_named">"Jugar a %1$s"</string>
+  <string name="remove_library">"Quitar de la lista"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d juego"</item>
+    <item quantity="other">"%d juegos"</item>
+  </plurals>
+  <string name="video">"VÍDEO"</string>
+  <string name="resolution">"Resolución de renderizado"</string>
+  <string name="fps_limit">"Límite de fotogramas por segundo"</string>
+  <string name="unlimited">"Sin límite"</string>
+  <string name="controls">"CONTROLES"</string>
+  <string name="touch_controls">"Mando en pantalla"</string>
+  <string name="controller_hint">"Controles táctiles y hasta cuatro mandos Bluetooth / USB, con vibración si es compatible."</string>
+  <string name="preview_title">"Versión preliminar de Android"</string>
+  <string name="preview_description">"La compatibilidad de los juegos sigue en pruebas. Los ajustes de vídeo se aplican a la próxima sesión de juego."</string>
+  <string name="project">"Xenia Edge en GitHub"</string>
+  <string name="file_unavailable">"El archivo no está disponible. Vuelve a seleccionarlo desde su ubicación original."</string>
+  <string name="no_executables">"No se encontró ningún título XEX, ELF, ISO, ZAR o STFS/GOD en esta carpeta."</string>
+  <string name="import_cancelled">"Importación cancelada."</string>
+  <string name="importing">"Explorando carpeta…"</string>
+  <string name="import_progress">"Explorando · %2$s"</string>
+  <string name="cannot_open">"No se pudo añadir el juego"</string>
+  <string name="image_formats">"Selecciona un ISO o ZAR. Para XEX y GOD, añade la carpeta completa del juego."</string>
+  <string name="menu">"Menú"</string>
+  <string name="preparing_game">"Preparando juego…"</string>
+  <string name="preparing_video">"Preparando vídeo…"</string>
+  <string name="loading_game">"Cargando juego…"</string>
+  <string name="launch_error">"Xenia no pudo iniciar este título (0x%1$08X). Comprueba el formato y los archivos del juego. Los detalles técnicos están en Logcat."</string>
+  <string name="cannot_launch">"No se pudo iniciar el juego"</string>
+  <string name="back_library">"Volver a la biblioteca"</string>
+  <string name="close_session">"¿Interrumpir esta sesión?"</string>
+  <string name="interrupt_loading">"El juego aún se está cargando o cerrando. Puedes esperar o interrumpir esta sesión y volver a la biblioteca."</string>
+  <string name="close_current_first">"Cierra el juego actual desde el menú antes de abrir otro título."</string>
+  <string name="resume">"Continuar juego"</string>
+  <string name="toggle_controls">"Mostrar / ocultar controles táctiles"</string>
+  <string name="stop_game">"Cerrar juego"</string>
+  <string name="storage_access">"Acceso a los archivos del juego"</string>
+  <string name="storage_explanation">"Activa el acceso a todos los archivos para Xenia para abrir juegos directamente desde el almacenamiento del dispositivo o una tarjeta SD, sin copiarlos."</string>
+  <string name="open_settings">"Abrir ajustes"</string>
+  <string name="local_storage_required">"Selecciona un archivo local del dispositivo o la tarjeta SD. Los proveedores de almacenamiento en la nube y virtuales no se pueden abrir directamente."</string>
+  <string name="game_information">"Información"</string>
+  <string name="info_unavailable">"No disponible"</string>
+  <string name="info_title_id">"ID del título"</string>
+  <string name="info_media_id">"ID del soporte"</string>
+  <string name="info_version">"Versión"</string>
+  <string name="info_base_version">"Versión base"</string>
+  <string name="info_disc">"Disco"</string>
+  <string name="info_disc_number">"%1$d de %2$d"</string>
+  <string name="info_last_played">"Último inicio"</string>
+  <string name="info_never">"Nunca"</string>
+  <string name="info_compatibility">"Compatibilidad"</string>
+  <string name="info_not_verified">"Sin verificar"</string>
+  <string name="info_file">"Archivo"</string>
+  <string name="info_format">"Formato"</string>
+  <string name="info_size">"Tamaño del archivo"</string>
+  <string name="info_path">"Ubicación"</string>
+  <string name="info_loading">"Leyendo información del título…"</string>
+  <string name="info_no_metadata">"Este archivo no contiene metadatos del título que se puedan leer."</string>
+  <string name="automatic_controller">"Automático"</string>
+  <string name="profile_image">"Imagen del perfil"</string>
+  <string name="choose_image">"Elegir imagen"</string>
+  <string name="clear_image">"Quitar imagen"</string>
+  <string name="invalid_image">"Imagen no válida"</string>
+  <string name="preloading_shaders">"Precargando shaders…"</string>
+  <string name="patches_applied">"Parches aplicados"</string>
+  <string name="plugins_loaded">"Complementos cargados"</string>
+  <string name="build_details">"Rama: %1$s\nCommit: %2$s\nFecha de compilación: %3$s"</string>
+  <string name="build_commit">"Ver commit de la compilación"</string>
+  <string name="license">"Licencia"</string>
+  <string name="interface_language">"Idioma de la interfaz"</string>
+  <string name="system_language">"Idioma del sistema"</string>
+  <string name="global_only_option">"Cambia esta opción en los ajustes generales."</string>
+  <string name="controller_type">"Tipo de mando"</string>
+  <string name="physical_keyboard">"Teclado"</string>
+  <string name="time_scale">"Velocidad de emulación"</string>
+  <string name="time_half">"Reducir la velocidad actual a la mitad"</string>
+  <string name="time_double">"Duplicar la velocidad actual"</string>
+  <string name="time_reset">"Velocidad normal"</string>
+  <string name="toggle_vibration">"Activar / desactivar vibración"</string>
+  <string name="sort_games">"Ordenar juegos"</string>
+  <string name="rename_game">"Cambiar nombre de la edición"</string>
+  <string name="invalid_name">"Introduce un nombre"</string>
+  <string name="manage_discs">"Gestionar discos"</string>
+  <string name="disc_label">"Disco %1$d"</string>
+  <string name="default_disc">"Usar como disco predeterminado"</string>
+  <string name="plugins">"Gestionar complementos"</string>
+  <string name="install_content">"Importar paquetes de contenido"</string>
+  <string name="help_faq">"Preguntas frecuentes"</string>
+  <string name="about">"Acerca de"</string>
+  <string name="about_description">"Proyecto de investigación de emulación de Xbox 360\nVersión %1$s\nVulkan · ARM64\nLicencia BSD — Colaboradores de Xenia"</string>
+  <string-array name="controller_types">
+    <item>"Automático"</item>
+    <item>"Mando"</item>
+    <item>"Volante"</item>
+    <item>"Palanca arcade"</item>
+    <item>"Palanca de vuelo"</item>
+    <item>"Alfombra de baile"</item>
+    <item>"Guitarra"</item>
+    <item>"Batería"</item>
+    <item>"Mando arcade"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Título A–Z"</item>
+    <item>"Título Z–A"</item>
+    <item>"Jugados hace más tiempo primero"</item>
+    <item>"Jugados recientemente primero"</item>
+    <item>"Compatibilidad ↑"</item>
+    <item>"Compatibilidad ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Perfiles y partidas guardadas"</string>
+  <string name="mutable_content_explanation">"Estos paquetes contienen datos de perfil o partidas guardadas modificables. Para importarlos, hay que extraerlos al almacenamiento de la aplicación. Los juegos, DLC y actualizaciones siguen vinculados a su ubicación original. Se conservan los originales y nunca se sustituyen los datos existentes."</string>
+  <string name="extract_data">"Extraer datos de perfil/partidas"</string>
+  <string name="browse_path">"Examinar…"</string>
+  <string name="unsupported_game">"Elige un juego ISO, ZAR, XEX, ELF o STFS/GOD."</string>
+  <string name="stop_confirmation">"¿Cerrar el juego? Se perderá el progreso no guardado."</string>
+  <string name="virtual_controller">"Mando en pantalla"</string>
+  <string name="disconnect_controller">"Desconectado"</string>
+  <string name="open_folder">"Abrir carpeta"</string>
+  <string name="remap_controller">"Asignaciones del mando"</string>
+  <string name="reset_mappings">"Restaurar asignaciones predeterminadas"</string>
+  <string name="mapping_key">"Código de tecla de Android"</string>
+  <string name="mapping_axis">"Eje de Android (negativo = invertido)"</string>
+  <string name="press_controller_button">"Pulsa el botón físico que quieras asignar."</string>
+  <string name="invert_axis">"Invertir eje"</string>
+  <string name="portal_failed">"No se pudo conectar al portal USB."</string>
+  <string name="open_trace">"Abrir traza de Vulkan"</string>
+  <string name="trace_failed">"No se pudo abrir la traza de GPU."</string>
+</resources>

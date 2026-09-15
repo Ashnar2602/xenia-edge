@@ -337,8 +337,6 @@ void GamercardUI::DrawSettingComboBox(UserSettingId setting_id,
 }
 
 void GamercardUI::SelectNewIcon() {
-  std::filesystem::path path;
-
   auto file_picker = xe::ui::FilePicker::Create();
   file_picker->set_mode(xe::ui::FilePicker::Mode::kOpen);
   file_picker->set_type(xe::ui::FilePicker::Type::kFile);
@@ -346,25 +344,27 @@ void GamercardUI::SelectNewIcon() {
   file_picker->set_title("Select PNG Image");
   file_picker->set_extensions({{"PNG Image", "*.png"}});
 
-  if (file_picker->Show(window_)) {
-    auto selected_files = file_picker->selected_files();
-    if (!selected_files.empty()) {
-      path = selected_files[0];
-    }
+  file_picker->ShowAsync(
+      window_, [this, alive = std::weak_ptr<int>(lifetime_)](
+                   std::vector<std::filesystem::path> paths) {
+        if (alive.expired() || paths.empty()) {
+          return;
+        }
+        const auto& path = paths.front();
 
-    if (IsFilePngImage(path)) {
-      const auto res = GetImageResolution(path);
+        if (IsFilePngImage(path)) {
+          const auto res = GetImageResolution(path);
 
-      if (res == kernel::xam::kProfileIconSizeSmall ||
-          res == kernel::xam::kProfileIconSize) {
-        gamercardValues_.profile_icon = ReadPngFromFile(path);
-        gamercardValues_.icon_texture =
-            imgui_drawer()
-                ->LoadImGuiIcon(gamercardValues_.profile_icon)
-                .release();
-      }
-    }
-  }
+          if (res == kernel::xam::kProfileIconSizeSmall ||
+              res == kernel::xam::kProfileIconSize) {
+            gamercardValues_.profile_icon = ReadPngFromFile(path);
+            gamercardValues_.icon_texture =
+                imgui_drawer()
+                    ->LoadImGuiIcon(gamercardValues_.profile_icon)
+                    .release();
+          }
+        }
+      });
 }
 
 void GamercardUI::DrawBaseSettings(ImGuiIO& io) {

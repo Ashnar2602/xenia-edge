@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Κλείστε την οθόνη παιχνιδιού ή διαχείρισης πριν αλλάξετε τα δεδομένα του εξομοιωτή."</string>
+  <string name="no_controller">"Χωρίς φυσικό ελεγκτή"</string>
+  <string name="postprocessing">"Μετα-επεξεργασία"</string>
+  <string name="performance">"Απόδοση"</string>
+  <string name="debug_tools">"Ρυθμίσεις εντοπισμού σφαλμάτων"</string>
+  <string name="screenshot">"Λήψη στιγμιότυπου οθόνης"</string>
+  <string name="screenshot_failed">"Δεν ήταν δυνατή η λήψη της εικόνας του παιχνιδιού."</string>
+  <string name="screenshot_saved">"Το στιγμιότυπο οθόνης αποθηκεύτηκε. Βρείτε το στις Ρυθμίσεις → Διαχείριση αρχείων → screenshots."</string>
+  <string name="clear_gpu_cache">"Εκκαθάριση κρυφής μνήμης GPU"</string>
+  <string name="profiler">"Εμφάνιση / απόκρυψη ανάλυσης επιδόσεων"</string>
+  <string name="profiles">"Προφίλ"</string>
+  <string name="edit_profile">"Επεξεργασία προφίλ"</string>
+  <string name="player_number">"Παίκτης %1$d"</string>
+  <string name="patches">"Μπαλώματα"</string>
+  <string name="content">"Ενημερώσεις DLC και τίτλου"</string>
+  <string name="statistics">"Στατιστικά στοιχεία και συμβατότητα"</string>
+  <string name="desktop_compatibility">"Αναφορά συμβατότητας επιτραπέζιου υπολογιστή"</string>
+  <string-array name="compat_states">
+    <item>"Άγνωστο"</item>
+    <item>"Δεν παίζεται"</item>
+    <item>"Εκκινεί"</item>
+    <item>"Μέσα στο παιχνίδι"</item>
+    <item>"Παίζεται"</item>
+  </string-array>
+  <string name="working">"Επεξεργασία…"</string>
+  <string name="operation_error">"Δεν ήταν δυνατή η ολοκλήρωση της λειτουργίας: %1$s"</string>
+  <string name="nothing_here">"Δεν υπάρχουν διαθέσιμες καταχωρήσεις."</string>
+  <string name="manage_files">"Διαχείριση αρχείων"</string>
+  <string name="add_content">"Προσθήκη DLC ή ενημέρωση τίτλου"</string>
+  <string name="detach_content">"Κατάργηση αναφοράς"</string>
+  <string name="content_link_explanation">"Τα πακέτα διαβάζονται απευθείας από την αρχική τους θέση. Κράτα τα εκεί. Η κατάργηση μιας αναφοράς αφήνει ανέπαφο το αρχικό αρχείο."</string>
+  <string name="global_options">"Γενικές επιλογές"</string>
+  <string name="global_explanation">"Προεπιλογές για όλα τα παιχνίδια. Οι επιλογές ανά παιχνίδι έχουν προτεραιότητα. Οι αλλαγές ισχύουν στην επόμενη κυκλοφορία."</string>
+  <string name="default_value">"Προεπιλογή"</string>
+  <string name="add_games">"Προσθέστε παιχνίδια"</string>
+  <string name="single_game">"Μονό παιχνίδι"</string>
+  <string name="game_folder">"Φάκελος"</string>
+  <string name="game_options">"Επιλογές παιχνιδιού"</string>
+  <string name="options_explanation">"Παρακάμψεις για αυτόν τον τίτλο. Οι αλλαγές ισχύουν την επόμενη φορά που θα ξεκινήσει το παιχνίδι."</string>
+  <string name="options_custom">"Αυτό το παιχνίδι"</string>
+  <string name="options_inherited">"Γενική ρύθμιση"</string>
+  <string name="options_base">"Γενική τιμή: %1$s"</string>
+  <string name="options_error">"Δεν ήταν δυνατή η ανάγνωση ή αποθήκευση των επιλογών: %1$s"</string>
+  <string name="options_no_title">"Δεν ήταν δυνατή η ανάγνωση του αναγνωριστικού τίτλου. Οι επιλογές ανά παιχνίδι απαιτούν έγκυρο αναγνωριστικό τίτλου."</string>
+  <string name="profile_select">"Επιλέξτε ένα προφίλ για τον παίκτη 1"</string>
+  <string name="profile_explanation">"Δημιουργήστε ένα τοπικό προφίλ παίκτη, ώστε τα παιχνίδια να μπορούν να συνδεθούν και να αποθηκεύσουν την πρόοδό σας. Θα συνδεθεί αυτόματα την επόμενη φορά που θα παίξετε."</string>
+  <string name="profile_migration">"Δημιουργήστε ένα τοπικό προφίλ παίκτη και συσχετίστε υπάρχουσες παλαιωμένες αποθηκεύσεις με αυτό, όπως στην επιφάνεια εργασίας. Θα συνδεθεί αυτόματα την επόμενη φορά που θα παίξετε."</string>
+  <string name="profile_invalid">"Χρησιμοποιήστε 1–15 γράμματα (A–Z), αριθμούς ή μονά κενά. Ξεκινήστε με ένα γράμμα και τελειώστε με ένα γράμμα ή έναν αριθμό."</string>
+  <string name="profile_error">"Δεν ήταν δυνατή η δημιουργία ή η φόρτωση του προφίλ. Ελέγξτε τον δωρεάν αποθηκευτικό χώρο και δοκιμάστε ξανά."</string>
+  <string name="library">"Βιβλιοθήκη"</string>
+  <string name="recent">"Πρόσφατα"</string>
+  <string name="your_games">"Τα παιχνίδια σας"</string>
+  <string name="recent_games">"Παίχτηκε πρόσφατα"</string>
+  <string name="library_subtitle">"Τα παιχνίδια σας Xbox 360, άνοιξαν απευθείας από τον αποθηκευτικό χώρο."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Προσθήκη φακέλου"</string>
+  <string name="import_explanation">"Επιλέξτε τον πλήρη φάκελο του παιχνιδιού XEX ή GOD, συμπεριλαμβανομένων των αρχείων δεδομένων του. Ο Xenia διαβάζει απευθείας τα πρωτότυπα. Δεν αντιγράφονται αρχεία."</string>
+  <string name="choose_folder">"Επιλέξτε φάκελο"</string>
+  <string name="empty_library">"Η βιβλιοθήκη σας ξεκινά εδώ"</string>
+  <string name="no_results">"Δεν υπάρχουν παιχνίδια που να ταιριάζουν"</string>
+  <string name="empty_hint">"Προσθέστε ένα ISO / ZAR ή έναν πλήρη φάκελο παιχνιδιού.\nΤα παιχνίδια σας θα εμφανίζονται εδώ."</string>
+  <string name="play">"▶  Παίξε"</string>
+  <string name="play_named">"Παίξε %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d παιχνίδι"</item>
+    <item quantity="other">"%d παιχνίδια"</item>
+  </plurals>
+  <string name="video">"ΒΙΝΤΕΟ"</string>
+  <string name="resolution">"Ανάλυση απόδοσης"</string>
+  <string name="fps_limit">"Όριο ρυθμού καρέ"</string>
+  <string name="controls">"ΕΛΕΓΧΟΙ"</string>
+  <string name="touch_controls">"Ελεγκτής επί της οθόνης"</string>
+  <string name="controller_hint">"Χειριστήρια αφής και έως και τέσσερα παιχνίδια Bluetooth / USB, με δόνηση όπου υποστηρίζεται."</string>
+  <string name="preview_title">"Προεπισκόπηση Android"</string>
+  <string name="preview_description">"Η συμβατότητα του παιχνιδιού είναι ακόμα υπό δοκιμή. Οι ρυθμίσεις βίντεο ισχύουν για την επόμενη περίοδο παιχνιδιού."</string>
+  <string name="project">"Το Xenia Edge στο GitHub"</string>
+  <string name="file_unavailable">"Το αρχείο δεν είναι διαθέσιμο. Επιλέξτε το ξανά από την αρχική του θέση."</string>
+  <string name="no_executables">"Δεν βρέθηκε τίτλος XEX, ELF, ISO, ZAR ή STFS/GOD σε αυτόν τον φάκελο."</string>
+  <string name="import_cancelled">"Η εισαγωγή ακυρώθηκε."</string>
+  <string name="importing">"Σάρωση φακέλου…"</string>
+  <string name="import_progress">"Σάρωση · %2$s"</string>
+  <string name="cannot_open">"Δεν ήταν δυνατή η προσθήκη του παιχνιδιού"</string>
+  <string name="image_formats">"Επιλέξτε ISO ή ZAR. Για XEX και GOD, προσθέστε τον πλήρη φάκελο του παιχνιδιού."</string>
+  <string name="menu">"Μενού"</string>
+  <string name="preparing_game">"Προετοιμασία παιχνιδιού…"</string>
+  <string name="preparing_video">"Προετοιμασία βίντεο…"</string>
+  <string name="loading_game">"Φόρτωση παιχνιδιού…"</string>
+  <string name="launch_error">"Το Xenia δεν μπόρεσε να κυκλοφορήσει αυτόν τον τίτλο (0x%1$08X). Ελέγξτε τη μορφή και τα αρχεία του παιχνιδιού. Οι τεχνικές λεπτομέρειες βρίσκονται στο Logcat."</string>
+  <string name="cannot_launch">"Δεν ήταν δυνατή η έναρξη του παιχνιδιού"</string>
+  <string name="back_library">"Επιστροφή στη βιβλιοθήκη"</string>
+  <string name="close_session">"Διακοπή αυτής της συνεδρίας;"</string>
+  <string name="interrupt_loading">"Το παιχνίδι εξακολουθεί να φορτώνει ή να κλείνει. Μπορείτε να περιμένετε ή να διακόψετε αυτήν τη συνεδρία και να επιστρέψετε στη βιβλιοθήκη."</string>
+  <string name="close_current_first">"Κλείστε το τρέχον παιχνίδι από το μενού πριν ανοίξετε έναν άλλο τίτλο."</string>
+  <string name="resume">"Συνέχιση του παιχνιδιού"</string>
+  <string name="toggle_controls">"Εμφάνιση/απόκρυψη στοιχείων ελέγχου αφής"</string>
+  <string name="storage_access">"Πρόσβαση σε αρχεία παιχνιδιών"</string>
+  <string name="storage_explanation">"Ενεργοποιήστε την \"Πρόσβαση σε όλα τα αρχεία\" για το Xenia να ανοίγει παιχνίδια απευθείας από τον χώρο αποθήκευσης της συσκευής ή από μια κάρτα SD, χωρίς να τα αντιγράψετε."</string>
+  <string name="open_settings">"Ανοίξτε τις ρυθμίσεις"</string>
+  <string name="local_storage_required">"Επιλέξτε ένα τοπικό αρχείο στη συσκευή ή στην κάρτα SD. Το cloud και οι εικονικοί πάροχοι δεν μπορούν να ανοίξουν απευθείας."</string>
+  <string name="game_information">"Πληροφορίες"</string>
+  <string name="info_unavailable">"Μη διαθέσιμο"</string>
+  <string name="info_title_id">"Αναγνωριστικό τίτλου"</string>
+  <string name="info_media_id">"Αναγνωριστικό μέσου"</string>
+  <string name="info_base_version">"Βασική έκδοση"</string>
+  <string name="info_disc">"Δίσκος"</string>
+  <string name="info_disc_number">"%1$d από %2$d"</string>
+  <string name="info_not_verified">"Δεν έχει επαληθευτεί"</string>
+  <string name="info_format">"Μορφοποίηση"</string>
+  <string name="info_size">"Μέγεθος αρχείου"</string>
+  <string name="info_path">"Τοποθεσία"</string>
+  <string name="info_loading">"Ανάγνωση πληροφοριών τίτλου…"</string>
+  <string name="info_no_metadata">"Δεν διατίθενται αναγνώσιμα μεταδεδομένα τίτλου σε αυτό το αρχείο."</string>
+  <string name="automatic_controller">"Αυτόματο"</string>
+  <string name="profile_image">"Εικόνα προφίλ"</string>
+  <string name="choose_image">"Επιλέξτε εικόνα"</string>
+  <string name="invalid_image">"Μη έγκυρη εικόνα"</string>
+  <string name="preloading_shaders">"Προφόρτωση σκίαστρων…"</string>
+  <string name="patches_applied">"Εφαρμόστηκαν μπαλώματα"</string>
+  <string name="plugins_loaded">"Τα πρόσθετα φορτώθηκαν"</string>
+  <string name="build_commit">"Προβολή build commit"</string>
+  <string name="interface_language">"Γλώσσα διεπαφής"</string>
+  <string name="system_language">"Γλώσσα συστήματος"</string>
+  <string name="global_only_option">"Αλλάξτε αυτήν την επιλογή στις καθολικές ρυθμίσεις."</string>
+  <string name="controller_type">"Τύπος ελεγκτή"</string>
+  <string name="physical_keyboard">"Πληκτρολόγιο"</string>
+  <string name="time_scale">"Ταχύτητα εξομοίωσης"</string>
+  <string name="time_half">"Μισή τρέχουσα ταχύτητα"</string>
+  <string name="time_double">"Διπλή ταχύτητα ρεύματος"</string>
+  <string name="time_reset">"Κανονική ταχύτητα"</string>
+  <string name="toggle_vibration">"Εναλλαγή δόνησης"</string>
+  <string name="sort_games">"Ταξινόμηση παιχνιδιών"</string>
+  <string name="rename_game">"Μετονομασία έκδοσης"</string>
+  <string name="invalid_name">"Εισαγάγετε ένα όνομα"</string>
+  <string name="manage_discs">"Διαχείριση δίσκων"</string>
+  <string name="default_disc">"Χρήση ως προεπιλεγμένος δίσκος"</string>
+  <string name="plugins">"Διαχείριση προσθηκών"</string>
+  <string name="install_content">"Εισαγωγή πακέτων περιεχομένου"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nΈκδοση %1$s\nVulkan · ARM64\nΆδεια BSD — Συνεργάτες Xenia"</string>
+  <string-array name="controller_types">
+    <item>"Αυτόματο"</item>
+    <item>"Gamepad"</item>
+    <item>"Τιμόνι"</item>
+    <item>"Arcade Stick"</item>
+    <item>"Flight Stick"</item>
+    <item>"Πατάκι Χορού"</item>
+    <item>"Κιθάρα"</item>
+    <item>"Σετ Τυμπάνων"</item>
+    <item>"Arcade Pad"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Τίτλος A–Z"</item>
+    <item>"Τίτλος Ζ–Α"</item>
+    <item>"Ο παλαιότερος έπαιξε πρώτος"</item>
+    <item>"Τελευταία έπαιξε πρώτος"</item>
+    <item>"Συμβατότητα ↑"</item>
+    <item>"Συμβατότητα ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Προφίλ και αποθήκευση"</string>
+  <string name="mutable_content_explanation">"Αυτά τα πακέτα περιέχουν εγγράψιμο προφίλ ή αποθηκεύουν δεδομένα. Η εισαγωγή τους απαιτεί εξαγωγή στον χώρο αποθήκευσης εφαρμογών. Παιχνίδια, DLC και ενημερώσεις παραμένουν συνδεδεμένα. Τα πρωτότυπα διατηρούνται και τα υπάρχοντα δεδομένα δεν αντικαθίστανται ποτέ."</string>
+  <string name="extract_data">"Εξαγωγή προφίλ/αποθήκευση δεδομένων"</string>
+  <string name="unsupported_game">"Επιλέξτε ένα παιχνίδι ISO, ZAR, XEX, ELF ή STFS/GOD."</string>
+  <string name="stop_confirmation">"Να σταματήσει το παιχνίδι; Η μη αποθηκευμένη πρόοδος θα χαθεί."</string>
+  <string name="virtual_controller">"Ελεγκτής επί της οθόνης"</string>
+  <string name="disconnect_controller">"Αποσυνδέθηκε"</string>
+  <string name="remap_controller">"Αντιστοιχίσεις ελεγκτών"</string>
+  <string name="reset_mappings">"Επαναφορά προεπιλεγμένων αντιστοιχίσεων"</string>
+  <string name="mapping_key">"Κωδικός κλειδιού Android"</string>
+  <string name="mapping_axis">"Άξονας Android (αρνητικό = ανεστραμμένο)"</string>
+  <string name="press_controller_button">"Πατήστε το φυσικό κουμπί για εκχώρηση."</string>
+  <string name="invert_axis">"Αντιστροφή άξονα"</string>
+  <string name="portal_failed">"Δεν ήταν δυνατή η σύνδεση στην πύλη USB."</string>
+  <string name="open_trace">"Ανοιχτό ίχνος Vulkan"</string>
+  <string name="trace_failed">"Δεν ήταν δυνατό το άνοιγμα του ίχνους της GPU."</string>
+  <string name="reset_all_options">"Επαναφορά επιλογών εξομοιωτή"</string>
+  <string name="reset_global_confirmation">"Επαναφορά όλων των επιλογών εξομοιωτή Android στις προεπιλογές τους, συμπεριλαμβανομένων των διαμορφωμένων διαδρομών και της γλώσσας διεπαφής; Προφίλ, αρχεία παιχνιδιών και επιλογές ανά παιχνίδι θα διατηρηθούν."</string>
+  <string name="reset_game_confirmation">"Να καταργηθούν όλες οι παρακάμψεις επιλογών Android για αυτόν τον τίτλο; Θα χρησιμοποιηθούν γενικές ρυθμίσεις. Τα αρχεία του παιχνιδιού θα διατηρηθούν."</string>
+  <string name="state_on">"Ενεργό"</string>
+  <string name="state_off">"Ανενεργό"</string>
+</resources>

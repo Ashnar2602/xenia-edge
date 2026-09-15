@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Isara ang screen ng laro o pamamahala bago baguhin ang data ng emulator."</string>
+  <string name="no_controller">"Walang pisikal na controller"</string>
+  <string name="postprocessing">"Post-processing"</string>
+  <string name="performance">"Pagganap"</string>
+  <string name="debug_tools">"Mga setting ng pag-debug"</string>
+  <string name="screenshot">"Kumuha ng screenshot"</string>
+  <string name="screenshot_failed">"Hindi makuha ang larawan ng laro."</string>
+  <string name="screenshot_saved">"Na-save ang screenshot. Hanapin ito sa Mga Setting → Pamahalaan ang mga file → screenshots."</string>
+  <string name="clear_gpu_cache">"I-clear ang mga cache ng GPU"</string>
+  <string name="profiler">"Ipakita / itago ang profiler"</string>
+  <string name="profiles">"Mga profile"</string>
+  <string name="edit_profile">"I-edit ang profile"</string>
+  <string name="player_number">"Manlalaro %1$d"</string>
+  <string name="content">"DLC at mga update sa pamagat"</string>
+  <string name="statistics">"Mga istatistika at pagiging tugma"</string>
+  <string name="desktop_compatibility">"Ulat sa pagiging tugma sa desktop"</string>
+  <string-array name="compat_states">
+    <item>"Hindi alam"</item>
+    <item>"Hindi nalalaro"</item>
+    <item>"Nagsisimula"</item>
+    <item>"Nakakapasok sa laro"</item>
+    <item>"Nalalaro"</item>
+  </string-array>
+  <string name="working">"Pinoproseso…"</string>
+  <string name="operation_error">"Hindi makumpleto ang operasyon: %1$s"</string>
+  <string name="nothing_here">"Walang magagamit na mga entry."</string>
+  <string name="manage_files">"Pamahalaan ang mga file"</string>
+  <string name="add_content">"Magdagdag ng DLC o pag-update ng pamagat"</string>
+  <string name="detach_content">"Alisin ang reference"</string>
+  <string name="content_link_explanation">"Ang mga pakete ay direktang binabasa mula sa kanilang orihinal na lokasyon. Panatilihin ang mga ito doon. Ang pag-alis ng reference ay nag-iiwan sa orihinal na file na buo."</string>
+  <string name="global_options">"Pangkalahatang mga pagpipilian"</string>
+  <string name="global_explanation">"Mga default para sa lahat ng laro. Pangunahin ang mga opsyon sa bawat laro. Nalalapat ang mga pagbabago sa susunod na paglulunsad."</string>
+  <string name="default_value">"Default"</string>
+  <string name="add_games">"Magdagdag ng mga laro"</string>
+  <string name="single_game">"Isang laro"</string>
+  <string name="game_folder">"Folder"</string>
+  <string name="game_options">"Mga pagpipilian sa laro"</string>
+  <string name="options_explanation">"Mga override para sa pamagat na ito. Nalalapat ang mga pagbabago sa susunod na pagsisimula ng laro."</string>
+  <string name="options_custom">"Ang larong ito"</string>
+  <string name="options_inherited">"Pangkalahatang setting"</string>
+  <string name="options_base">"Pangkalahatang halaga: %1$s"</string>
+  <string name="options_error">"Hindi mabasa o ma-save ang mga opsyon: %1$s"</string>
+  <string name="options_no_title">"Hindi mabasa ang title ID. Ang mga opsyon sa bawat laro ay nangangailangan ng wastong title ID."</string>
+  <string name="profile_select">"Pumili ng profile para sa player 1"</string>
+  <string name="profile_explanation">"Lumikha ng lokal na profile ng manlalaro upang makapag-sign in ang mga laro at mai-save ang iyong pag-unlad. Awtomatiko itong magsa-sign in sa susunod na paglalaro mo."</string>
+  <string name="profile_migration">"Gumawa ng lokal na profile ng manlalaro at iugnay ang mga umiiral nang legacy na save dito, tulad ng sa desktop. Awtomatiko itong magsa-sign in sa susunod na paglalaro mo."</string>
+  <string name="profile_invalid">"Gumamit ng 1–15 letra (A–Z), numero o solong espasyo. Magsimula sa isang titik at magtatapos sa isang titik o numero."</string>
+  <string name="profile_error">"Hindi magawa o mai-load ang profile. Tingnan ang libreng storage at subukang muli."</string>
+  <string name="library">"Library ng mga laro"</string>
+  <string name="recent">"Kamakailan"</string>
+  <string name="your_games">"Iyong mga laro"</string>
+  <string name="recent_games">"Naglaro kamakailan"</string>
+  <string name="library_subtitle">"Ang iyong mga laro sa Xbox 360, direktang binuksan mula sa storage."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Magdagdag ng folder"</string>
+  <string name="import_explanation">"Piliin ang kumpletong folder ng laro ng XEX o GOD, kasama ang mga file ng data nito. Direktang binabasa ni Xenia ang orihinal. Walang mga file na kinokopya."</string>
+  <string name="choose_folder">"Pumili ng folder"</string>
+  <string name="empty_library">"Dito magsisimula ang iyong library"</string>
+  <string name="no_results">"Walang tugmang laro"</string>
+  <string name="empty_hint">"Magdagdag ng ISO / ZAR o kumpletong folder ng laro.\nLalabas dito ang iyong mga laro."</string>
+  <string name="play">"▶  Maglaro"</string>
+  <string name="play_named">"Laruin ang %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d laro"</item>
+    <item quantity="other">"%d laro"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Resolusyon sa pag-render"</string>
+  <string name="fps_limit">"Limitasyon sa rate ng frame"</string>
+  <string name="controls">"MGA KONTROL"</string>
+  <string name="touch_controls">"On-screen na controller"</string>
+  <string name="controller_hint">"Mga kontrol sa pagpindot at hanggang apat na Bluetooth / USB gamepad, na may vibration kung saan sinusuportahan."</string>
+  <string name="preview_title">"Preview ng Android"</string>
+  <string name="preview_description">"Sinusubukan pa rin ang pagiging tugma ng laro. Nalalapat ang mga setting ng video sa susunod na session ng laro."</string>
+  <string name="project">"Xenia Edge sa GitHub"</string>
+  <string name="file_unavailable">"Hindi available ang file. Piliin itong muli mula sa orihinal nitong lokasyon."</string>
+  <string name="no_executables">"Walang XEX, ELF, ISO, ZAR o STFS/GOD na pamagat na natagpuan sa folder na ito."</string>
+  <string name="import_cancelled">"Kinansela ang pag-import."</string>
+  <string name="importing">"Ini-scan ang folder…"</string>
+  <string name="import_progress">"Pag-scan · %2$s"</string>
+  <string name="cannot_open">"Hindi maidagdag ang laro"</string>
+  <string name="image_formats">"Pumili ng ISO o ZAR. Para sa XEX at GOD, idagdag ang kumpletong folder ng laro."</string>
+  <string name="menu">"Menu"</string>
+  <string name="preparing_game">"Inihahanda ang laro…"</string>
+  <string name="preparing_video">"Inihahanda ang video…"</string>
+  <string name="loading_game">"Nilo-load ang laro..."</string>
+  <string name="launch_error">"Hindi mailunsad ni Xenia ang pamagat na ito (0x%1$08X). Suriin ang format at mga file ng laro. Ang mga teknikal na detalye ay nasa Logcat."</string>
+  <string name="cannot_launch">"Hindi makapagsimula ng laro"</string>
+  <string name="back_library">"Bumalik sa library"</string>
+  <string name="close_session">"Abalahin ang session na ito?"</string>
+  <string name="interrupt_loading">"Naglo-load o nagsasara pa ang laro. Maaari kang maghintay, o matakpan ang session na ito at bumalik sa library."</string>
+  <string name="close_current_first">"Isara ang kasalukuyang laro mula sa menu bago magbukas ng isa pang pamagat."</string>
+  <string name="resume">"Ipagpatuloy ang laro"</string>
+  <string name="toggle_controls">"Ipakita / itago ang mga kontrol sa pagpindot"</string>
+  <string name="storage_access">"Access sa mga file ng laro"</string>
+  <string name="storage_explanation">"I-enable ang “All files access” para sa Xenia na direktang magbukas ng mga laro mula sa storage ng device o SD card, nang hindi kinokopya ang mga ito."</string>
+  <string name="open_settings">"Buksan ang mga setting"</string>
+  <string name="local_storage_required">"Pumili ng lokal na file sa device o SD card. Hindi direktang mabubuksan ang mga cloud at virtual provider."</string>
+  <string name="game_information">"Impormasyon"</string>
+  <string name="info_unavailable">"Hindi magagamit"</string>
+  <string name="info_title_id">"ID ng Pamagat"</string>
+  <string name="info_media_id">"Media ID"</string>
+  <string name="info_base_version">"Batayang bersyon"</string>
+  <string name="info_disc">"Disc"</string>
+  <string name="info_disc_number">"%1$d ng %2$d"</string>
+  <string name="info_compatibility">"Pagkakatugma"</string>
+  <string name="info_not_verified">"Hindi na-verify"</string>
+  <string name="info_format">"Format"</string>
+  <string name="info_size">"Laki ng file"</string>
+  <string name="info_path">"Lokasyon"</string>
+  <string name="info_loading">"Binabasa ang impormasyon ng pamagat..."</string>
+  <string name="info_no_metadata">"Walang nababasang metadata ng pamagat na available sa file na ito."</string>
+  <string name="automatic_controller">"Awtomatiko"</string>
+  <string name="profile_image">"Larawan sa profile"</string>
+  <string name="choose_image">"Pumili ng larawan"</string>
+  <string name="invalid_image">"Di-wastong larawan"</string>
+  <string name="preloading_shaders">"Preloading shaders…"</string>
+  <string name="patches_applied">"Inilapat ang mga patch"</string>
+  <string name="plugins_loaded">"Na-load ang mga plugin"</string>
+  <string name="build_commit">"Tingnan ang build commit"</string>
+  <string name="interface_language">"Wika ng interface"</string>
+  <string name="system_language">"Wika ng sistema"</string>
+  <string name="global_only_option">"Baguhin ang opsyong ito sa mga pandaigdigang setting."</string>
+  <string name="controller_type">"Uri ng controller"</string>
+  <string name="physical_keyboard">"Keyboard"</string>
+  <string name="time_scale">"Bilis ng pagtulad"</string>
+  <string name="time_half">"Kalahating kasalukuyang bilis"</string>
+  <string name="time_double">"Dobleng kasalukuyang bilis"</string>
+  <string name="time_reset">"Normal na bilis"</string>
+  <string name="toggle_vibration">"I-toggle ang vibration"</string>
+  <string name="sort_games">"Pagbukud-bukurin ang mga laro"</string>
+  <string name="rename_game">"Palitan ang pangalan ng release"</string>
+  <string name="invalid_name">"Maglagay ng pangalan"</string>
+  <string name="manage_discs">"Pamahalaan ang mga disc"</string>
+  <string name="disc_label">"Disc %1$d"</string>
+  <string name="default_disc">"Gamitin bilang default na disc"</string>
+  <string name="plugins">"Pamahalaan ang mga plugin"</string>
+  <string name="install_content">"Mag-import ng mga pakete ng nilalaman"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nBersyon %1$s\nVulkan · ARM64\nBSD lisensya — Xenia contributor"</string>
+  <string-array name="controller_types">
+    <item>"Awtomatiko"</item>
+    <item>"Gamepad"</item>
+    <item>"Manibela"</item>
+    <item>"Arcade Stick"</item>
+    <item>"Flight Stick"</item>
+    <item>"Dance Pad"</item>
+    <item>"Gitara"</item>
+    <item>"Drum Kit"</item>
+    <item>"Arcade Pad"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Pamagat A–Z"</item>
+    <item>"Pamagat Z–A"</item>
+    <item>"Naunang naglaro ang pinakamatanda"</item>
+    <item>"Huling naglaro muna"</item>
+    <item>"Pagkakatugma ↑"</item>
+    <item>"Pagkatugma ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Mga profile at sine-save"</string>
+  <string name="mutable_content_explanation">"Ang mga paketeng ito ay naglalaman ng maisusulat na profile o nagse-save ng data. Ang pag-import sa mga ito ay nangangailangan ng pagkuha sa storage ng app. Ang mga laro, DLC at mga update ay nananatiling naka-link sa lugar. Pinapanatili ang mga orihinal at hindi kailanman mapapalitan ang umiiral na data."</string>
+  <string name="extract_data">"I-extract ang profile/i-save ang data"</string>
+  <string name="unsupported_game">"Pumili ng larong ISO, ZAR, XEX, ELF o STFS/GOD."</string>
+  <string name="stop_confirmation">"Itigil ang laro? Mawawala ang hindi na-save na pag-unlad."</string>
+  <string name="virtual_controller">"On-screen na controller"</string>
+  <string name="disconnect_controller">"Nadiskonekta"</string>
+  <string name="remap_controller">"Mga pagmamapa ng controller"</string>
+  <string name="reset_mappings">"Ibalik ang mga default na pagmamapa"</string>
+  <string name="mapping_key">"Android key code"</string>
+  <string name="mapping_axis">"Android axis (negatibo = baligtad)"</string>
+  <string name="press_controller_button">"Pindutin ang pisikal na button para italaga."</string>
+  <string name="invert_axis">"Baliktarin ang axis"</string>
+  <string name="portal_failed">"Hindi makakonekta sa USB portal."</string>
+  <string name="open_trace">"Buksan ang Vulkan trace"</string>
+  <string name="trace_failed">"Hindi mabuksan ang GPU trace."</string>
+  <string name="reset_all_options">"I-reset ang mga opsyon sa emulator"</string>
+  <string name="reset_global_confirmation">"I-reset ang lahat ng opsyon sa Android emulator sa kanilang mga default, kabilang ang mga naka-configure na path at wika ng interface? Ang mga profile, mga file ng laro at mga opsyon sa bawat laro ay pananatilihin."</string>
+  <string name="reset_game_confirmation">"Alisin ang lahat ng pag-override ng opsyon sa Android para sa pamagat na ito? Gagamitin ang mga pangkalahatang setting. Ang mga file ng laro ay itatago."</string>
+  <string name="state_on">"Naka-on"</string>
+  <string name="state_off">"Naka-off"</string>
+</resources>

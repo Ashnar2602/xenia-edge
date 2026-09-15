@@ -18,17 +18,15 @@
 #include "xenia/xbox.h"
 
 namespace xe {
+class Emulator;
 namespace app {
-
-class EmulatorWindow;
 
 class ProfileConfigDialog final : public ui::ImGuiGamepadDialog {
  public:
-  ProfileConfigDialog(ui::ImGuiDrawer* imgui_drawer,
-                      EmulatorWindow* emulator_window,
+  ProfileConfigDialog(ui::ImGuiDrawer* imgui_drawer, xe::Emulator* emulator,
                       hid::InputSystem* input_system)
       : ui::ImGuiGamepadDialog(imgui_drawer, input_system),
-        emulator_window_(emulator_window) {
+        emulator_(emulator) {
     LoadProfileIcon();
   }
 
@@ -54,7 +52,7 @@ class ProfileConfigDialog final : public ui::ImGuiGamepadDialog {
 
   uint64_t selected_xuid_ = 0;
   bool context_menu_open_ = false;
-  EmulatorWindow* emulator_window_;
+  xe::Emulator* emulator_;
   std::function<void()> on_close_callback_;
 };
 

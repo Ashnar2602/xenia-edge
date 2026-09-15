@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Etsi pelitiedosto</string>
+    <string name="wrong_game_release">Valitse saman pelin ja version tiedosto.</string>
+    <string name="install_cancelled">Asennus peruutettu</string>
+</resources>

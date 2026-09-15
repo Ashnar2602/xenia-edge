@@ -366,7 +366,9 @@ void XObject::RecordCooperativeSignal(XObject* object) {
   rec.handle = object->handle();
   rec.type = static_cast<uint8_t>(object->type());
   rec.uptime_ms = uint32_t(Clock::QueryGuestUptimeMillis());
-  if (auto* thread = XThread::GetCurrentThread()) {
+  // Initialization may signal events from a host thread, before any guest runs.
+  if (auto* thread =
+          XThread::IsInThread() ? XThread::GetCurrentThread() : nullptr) {
     rec.signaler_thread = thread->handle();
     if (auto* state = thread->thread_state()) {
       rec.signaler_lr = uint32_t(state->context()->lr);

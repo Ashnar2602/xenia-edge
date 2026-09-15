@@ -19,7 +19,7 @@
 #include "xenia/hid/input_driver.h"
 #include "xenia/kernel/util/shim_utils.h"
 
-#ifdef XE_PLATFORM_WIN32
+#if XE_PLATFORM_WIN32 || XE_PLATFORM_ANDROID
 #include "xenia/hid/portal/hardware_portal.h"
 #endif  // XE_PLATFORM_WIN32
 
@@ -42,7 +42,7 @@ DEFINE_transient_string(
     "HID");
 
 InputSystem::InputSystem(xe::ui::Window* window) : window_(window) {
-#ifdef XE_PLATFORM_WIN32
+#if XE_PLATFORM_WIN32 || XE_PLATFORM_ANDROID
   portal_ = std::make_unique<HardwarePortal>();
 #endif  // XE_PLATFORM_WIN32
 }

@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"قبل از تغییر داده های شبیه ساز، صفحه بازی یا مدیریت را ببندید."</string>
+  <string name="no_controller">"بدون کنترل فیزیکی"</string>
+  <string name="postprocessing">"پس پردازش"</string>
+  <string name="performance">"عملکرد"</string>
+  <string name="debug_tools">"تنظیمات اشکال زدایی"</string>
+  <string name="screenshot">"اسکرین شات بگیرید"</string>
+  <string name="screenshot_failed">"نمی توان تصویر بازی را گرفت."</string>
+  <string name="screenshot_saved">"اسکرین شات ذخیره شد. آن را در تنظیمات → مدیریت فایل‌ها → screenshots پیدا کنید."</string>
+  <string name="clear_gpu_cache">"کش های GPU را پاک کنید"</string>
+  <string name="profiler">"نمایش / پنهان‌سازی تحلیل‌گر کارایی"</string>
+  <string name="profiles">"نمایه‌ها"</string>
+  <string name="edit_profile">"ویرایش نمایه"</string>
+  <string name="player_number">"بازیکن %1$d"</string>
+  <string name="content">"به روز رسانی DLC و عنوان"</string>
+  <string name="statistics">"آمار و سازگاری"</string>
+  <string name="desktop_compatibility">"گزارش سازگاری دسکتاپ"</string>
+  <string-array name="compat_states">
+    <item>"ناشناس"</item>
+    <item>"غیرقابل بازی"</item>
+    <item>"اجرا می‌شود"</item>
+    <item>"اجرای بازی"</item>
+    <item>"قابل بازی"</item>
+  </string-array>
+  <string name="working">"در حال پردازش…"</string>
+  <string name="operation_error">"عملیات تکمیل نشد: %1$s"</string>
+  <string name="nothing_here">"هیچ ورودی در دسترس نیست."</string>
+  <string name="manage_files">"مدیریت فایل ها"</string>
+  <string name="add_content">"DLC یا به‌روزرسانی عنوان را اضافه کنید"</string>
+  <string name="detach_content">"حذف مرجع"</string>
+  <string name="content_link_explanation">"بسته ها مستقیماً از محل اصلی خود خوانده می شوند. آنها را آنجا نگه دارید. با حذف یک مرجع، فایل اصلی دست نخورده باقی می ماند."</string>
+  <string name="global_options">"گزینه های عمومی"</string>
+  <string name="global_explanation">"پیش فرض برای همه بازی ها گزینه های هر بازی اولویت دارند. تغییرات در راه اندازی بعدی اعمال می شود."</string>
+  <string name="default_value">"پیش فرض"</string>
+  <string name="add_games">"بازی ها را اضافه کنید"</string>
+  <string name="single_game">"تک بازی"</string>
+  <string name="game_folder">"پوشه"</string>
+  <string name="game_options">"گزینه های بازی"</string>
+  <string name="options_explanation">"لغو برای این عنوان. دفعه بعد که بازی شروع می شود، تغییرات اعمال می شود."</string>
+  <string name="options_custom">"این بازی"</string>
+  <string name="options_inherited">"تنظیم کلی"</string>
+  <string name="options_base">"مقدار عمومی: %1$s"</string>
+  <string name="options_error">"نمی توان گزینه ها را خواند یا ذخیره کرد: %1$s"</string>
+  <string name="options_no_title">"شناسه عنوان خوانده نشد. گزینه‌های هر بازی به شناسه عنوان معتبر نیاز دارند."</string>
+  <string name="profile_select">"یک نمایه برای بازیکن 1 انتخاب کنید"</string>
+  <string name="profile_explanation">"یک نمایه بازیکن محلی ایجاد کنید تا بازی ها بتوانند وارد سیستم شوند و پیشرفت شما را ذخیره کنند. دفعه بعد که بازی می کنید به طور خودکار وارد سیستم می شود."</string>
+  <string name="profile_migration">"یک نمایه بازیکن محلی ایجاد کنید و ذخیره های قدیمی موجود را مانند دسکتاپ با آن مرتبط کنید. دفعه بعد که بازی می کنید به طور خودکار وارد سیستم می شود."</string>
+  <string name="profile_invalid">"از 1 تا 15 حرف (A–Z)، اعداد یا تک فاصله استفاده کنید. با یک حرف شروع کنید و با یک حرف یا عدد تمام کنید."</string>
+  <string name="profile_error">"نمایه ایجاد یا بارگیری نشد. فضای ذخیره‌سازی رایگان را بررسی کنید و دوباره امتحان کنید."</string>
+  <string name="library">"کتابخانه"</string>
+  <string name="recent">"اخیر"</string>
+  <string name="your_games">"بازی های شما"</string>
+  <string name="recent_games">"اخیرا بازی شده است"</string>
+  <string name="library_subtitle">"بازی‌های Xbox 360 شما که مستقیماً از فضای ذخیره‌سازی باز می‌شوند."</string>
+  <string name="open_image">"ISO / ZAR"</string>
+  <string name="import_folder">"پوشه اضافه کنید"</string>
+  <string name="import_explanation">"پوشه کامل بازی XEX یا GOD، از جمله فایل های داده آن را انتخاب کنید. Xenia نسخه‌های اصلی را مستقیماً می‌خواند. هیچ فایلی کپی نمیشه"</string>
+  <string name="choose_folder">"پوشه را انتخاب کنید"</string>
+  <string name="empty_library">"کتابخانه شما از اینجا شروع می شود"</string>
+  <string name="no_results">"بدون بازی منطبق"</string>
+  <string name="empty_hint">"یک ISO / ZAR یا یک پوشه کامل بازی اضافه کنید.\nبازی‌های شما در اینجا ظاهر می‌شوند."</string>
+  <string name="play">"▶  اجرا"</string>
+  <string name="play_named">"اجرای %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d بازی"</item>
+    <item quantity="other">"%d بازی"</item>
+  </plurals>
+  <string name="video">"ویدیو"</string>
+  <string name="resolution">"وضوح رندر"</string>
+  <string name="fps_limit">"محدودیت نرخ فریم"</string>
+  <string name="controls">"کنترل ها"</string>
+  <string name="touch_controls">"کنترلر روی صفحه"</string>
+  <string name="controller_hint">"کنترل‌های لمسی و حداکثر چهار گیم پد بلوتوث/USB، با لرزش در صورت پشتیبانی."</string>
+  <string name="preview_title">"پیش نمایش Android"</string>
+  <string name="preview_description">"سازگاری بازی هنوز در حال آزمایش است. تنظیمات ویدیو برای جلسه بعدی بازی اعمال می شود."</string>
+  <string name="project">"Xenia Edge در GitHub"</string>
+  <string name="file_unavailable">"فایل در دسترس نیست دوباره آن را از محل اصلی خود انتخاب کنید."</string>
+  <string name="no_executables">"هیچ عنوان XEX، ELF، ISO، ZAR یا STFS/GOD در این پوشه یافت نشد."</string>
+  <string name="import_cancelled">"واردات لغو شد."</string>
+  <string name="importing">"در حال اسکن پوشه…"</string>
+  <string name="import_progress">"در حال اسکن · %2$s"</string>
+  <string name="cannot_open">"بازی اضافه نشد"</string>
+  <string name="image_formats">"ISO یا ZAR را انتخاب کنید. برای XEX و GOD، پوشه کامل بازی را اضافه کنید."</string>
+  <string name="menu">"منو"</string>
+  <string name="preparing_game">"در حال آماده سازی بازی…"</string>
+  <string name="preparing_video">"در حال آماده سازی ویدیو…"</string>
+  <string name="loading_game">"در حال بارگیری بازی…"</string>
+  <string name="launch_error">"Xenia نتوانست این عنوان را راه اندازی کند (0x%1$08X). فرمت و فایل های بازی را بررسی کنید. جزئیات فنی در Logcat موجود است."</string>
+  <string name="cannot_launch">"بازی شروع نشد"</string>
+  <string name="back_library">"بازگشت به کتابخانه"</string>
+  <string name="close_session">"این جلسه قطع شود؟"</string>
+  <string name="interrupt_loading">"بازی هنوز در حال بارگیری یا بسته شدن است. می توانید صبر کنید یا این جلسه را قطع کنید و به کتابخانه بازگردید."</string>
+  <string name="close_current_first">"قبل از باز کردن عنوان دیگری، بازی فعلی را از منو ببندید."</string>
+  <string name="resume">"از سرگیری بازی"</string>
+  <string name="toggle_controls">"نمایش / پنهان کردن کنترل های لمسی"</string>
+  <string name="storage_access">"دسترسی به فایل های بازی"</string>
+  <string name="storage_explanation">"«دسترسی به همه فایل‌ها» را برای Xenia فعال کنید تا بازی‌ها را مستقیماً از حافظه دستگاه یا کارت SD بدون کپی کردن باز کند."</string>
+  <string name="open_settings">"تنظیمات را باز کنید"</string>
+  <string name="local_storage_required">"یک فایل محلی روی دستگاه یا کارت SD انتخاب کنید. ارائه دهندگان ابری و مجازی را نمی توان مستقیماً باز کرد."</string>
+  <string name="game_information">"اطلاعات"</string>
+  <string name="info_unavailable">"در دسترس نیست"</string>
+  <string name="info_title_id">"شناسه عنوان"</string>
+  <string name="info_media_id">"شناسه رسانه"</string>
+  <string name="info_base_version">"نسخه پایه"</string>
+  <string name="info_disc">"دیسک"</string>
+  <string name="info_disc_number">"%1$d از %2$d"</string>
+  <string name="info_not_verified">"تایید نشده است"</string>
+  <string name="info_format">"قالب"</string>
+  <string name="info_size">"اندازه فایل"</string>
+  <string name="info_path">"مکان"</string>
+  <string name="info_loading">"خواندن اطلاعات عنوان…"</string>
+  <string name="info_no_metadata">"هیچ ابرداده عنوان قابل خواندن در این فایل موجود نیست."</string>
+  <string name="automatic_controller">"خودکار"</string>
+  <string name="profile_image">"تصویر نمایه"</string>
+  <string name="choose_image">"تصویر را انتخاب کنید"</string>
+  <string name="invalid_image">"تصویر نامعتبر"</string>
+  <string name="preloading_shaders">"در حال بارگیری سایه‌زن‌ها…"</string>
+  <string name="patches_applied">"وصله ها اعمال شد"</string>
+  <string name="plugins_loaded">"پلاگین ها بارگیری شدند"</string>
+  <string name="build_commit">"مشاهده commit ساخت"</string>
+  <string name="interface_language">"زبان رابط"</string>
+  <string name="system_language">"زبان سیستم"</string>
+  <string name="global_only_option">"این گزینه را در تنظیمات جهانی تغییر دهید."</string>
+  <string name="controller_type">"نوع کنترلر"</string>
+  <string name="physical_keyboard">"صفحه کلید"</string>
+  <string name="time_scale">"سرعت شبیه سازی"</string>
+  <string name="time_half">"نیم سرعت جریان"</string>
+  <string name="time_double">"سرعت جریان دو برابر"</string>
+  <string name="time_reset">"سرعت معمولی"</string>
+  <string name="toggle_vibration">"لرزش را تغییر دهید"</string>
+  <string name="sort_games">"مرتب سازی بازی ها"</string>
+  <string name="rename_game">"تغییر نام انتشار"</string>
+  <string name="invalid_name">"یک نام وارد کنید"</string>
+  <string name="manage_discs">"دیسک ها را مدیریت کنید"</string>
+  <string name="default_disc">"به عنوان دیسک پیش فرض استفاده کنید"</string>
+  <string name="plugins">"پلاگین ها را مدیریت کنید"</string>
+  <string name="install_content">"بسته های محتوا را وارد کنید"</string>
+  <string name="about_description">"پروژه تحقیقاتی شبیه ساز Xbox 360\nنسخه %1$s\nVulkan · ARM64\nمجوز BSD — مشارکت کنندگان Xenia"</string>
+  <string-array name="controller_types">
+    <item>"خودکار"</item>
+    <item>"گیم‌پد"</item>
+    <item>"فرمان"</item>
+    <item>"استیک آرکید"</item>
+    <item>"استیک پرواز"</item>
+    <item>"پد رقص"</item>
+    <item>"گیتار"</item>
+    <item>"ست درامز"</item>
+    <item>"پد آرکید"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"عنوان A–Z"</item>
+    <item>"عنوان Z–A"</item>
+    <item>"قدیمی ترین بازی اول"</item>
+    <item>"آخرین بازی اول"</item>
+    <item>"سازگاری ↑"</item>
+    <item>"سازگاری ↓"</item>
+  </string-array>
+  <string name="mutable_content">"پروفایل و ذخیره"</string>
+  <string name="mutable_content_explanation">"این بسته ها حاوی نمایه قابل نوشتن یا ذخیره داده هستند. وارد کردن آنها نیاز به استخراج در حافظه برنامه دارد. بازی‌ها، DLCها و به‌روزرسانی‌ها همچنان در جای خود مرتبط هستند. نسخه های اصلی حفظ می شوند و داده های موجود هرگز جایگزین نمی شوند."</string>
+  <string name="extract_data">"استخراج پروفایل/ذخیره داده ها"</string>
+  <string name="unsupported_game">"یک بازی ISO، ZAR، XEX، ELF یا STFS/GOD را انتخاب کنید."</string>
+  <string name="stop_confirmation">"بازی را متوقف کنیم؟ پیشرفت ذخیره نشده از بین خواهد رفت."</string>
+  <string name="virtual_controller">"کنترلر روی صفحه"</string>
+  <string name="disconnect_controller">"قطع شده است"</string>
+  <string name="remap_controller">"نگاشت کنترلر"</string>
+  <string name="reset_mappings">"بازیابی نقشه های پیش فرض"</string>
+  <string name="mapping_key">"کد کلید Android"</string>
+  <string name="mapping_axis">"محور Android (منفی = معکوس)"</string>
+  <string name="press_controller_button">"برای اختصاص دادن دکمه فیزیکی را فشار دهید."</string>
+  <string name="invert_axis">"محور معکوس"</string>
+  <string name="portal_failed">"نمی توان به پورتال USB متصل شد."</string>
+  <string name="open_trace">"ردیابی Vulkan را باز کنید"</string>
+  <string name="trace_failed">"ردیابی GPU باز نشد."</string>
+  <string name="reset_all_options">"گزینه های شبیه ساز را بازنشانی کنید"</string>
+  <string name="reset_global_confirmation">"همه گزینه‌های شبیه‌ساز Android به پیش‌فرض‌هایشان، از جمله مسیرهای پیکربندی‌شده و زبان رابط، بازنشانی شوند؟ پروفایل ها، فایل های بازی و گزینه های هر بازی حفظ خواهند شد."</string>
+  <string name="reset_game_confirmation">"همه موارد لغو گزینه Android برای این عنوان حذف شود؟ تنظیمات عمومی استفاده خواهد شد. فایل های بازی حفظ خواهد شد."</string>
+  <string name="state_on">"روشن"</string>
+  <string name="state_off">"خاموش"</string>
+</resources>

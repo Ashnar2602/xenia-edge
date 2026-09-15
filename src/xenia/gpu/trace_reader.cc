@@ -42,6 +42,11 @@ bool TraceReader::Open(const std::string_view path) {
   trace_data_ = reinterpret_cast<const uint8_t*>(mmap_->data());
   trace_size_ = mmap_->size();
 
+  if (trace_size_ < sizeof(TraceHeader)) {
+    Close();
+    return false;
+  }
+
   // Verify version.
   auto header = reinterpret_cast<const TraceHeader*>(trace_data_);
   if (header->version != kTraceFormatVersion) {

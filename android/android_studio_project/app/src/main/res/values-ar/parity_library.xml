@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">تحديد موقع ملف اللعبة</string>
+    <string name="wrong_game_release">اختر ملفًا للعنوان والإصدار نفسيهما.</string>
+    <string name="install_cancelled">تم إلغاء التثبيت</string>
+</resources>

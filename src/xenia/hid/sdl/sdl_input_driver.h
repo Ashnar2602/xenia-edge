@@ -19,14 +19,11 @@
 #include <thread>
 
 #include <SDL3/SDL.h>
+#include "xenia/hid/gamepad_keystroke.h"
 #include "xenia/hid/input_driver.h"
 #include "xenia/xbox.h"
 
 #define HID_SDL_USER_COUNT 4
-#define HID_SDL_THUMB_THRES 0x4E00
-#define HID_SDL_TRIGG_THRES 0x1F
-#define HID_SDL_REPEAT_DELAY 400
-#define HID_SDL_REPEAT_RATE 100
 
 namespace xe {
 namespace hid {
@@ -59,27 +56,12 @@ class SDLInputDriver final : public InputDriver {
     bool state_changed;
   };
 
-  enum class RepeatState {
-    Idle,       // no buttons pressed or repeating has ended
-    Waiting,    // a button is held and the delay is awaited
-    Repeating,  // actively repeating at a rate
-  };
-  struct KeystrokeState {
-    uint64_t buttons;
-    RepeatState repeat_state;
-    // the button number that was pressed last:
-    uint8_t repeat_butt_idx;
-    // the last time (ms) a down (and/or repeat) event for that button was send:
-    uint32_t repeat_time;
-  };
-
   void HandleEvent(const SDL_Event& event);
   void OnControllerDeviceAdded(const SDL_Event& event);
   void OnControllerDeviceRemoved(const SDL_Event& event);
   void OnControllerDeviceAxisMotion(const SDL_Event& event);
   void OnControllerDeviceButtonChanged(const SDL_Event& event);
 
-  inline uint64_t AnalogToKeyfield(const X_INPUT_GAMEPAD& gamepad) const;
   std::optional<size_t> GetControllerIndexFromInstanceID(
       SDL_JoystickID instance_id);
   ControllerState* GetControllerState(uint32_t user_index);
@@ -95,7 +77,7 @@ class SDLInputDriver final : public InputDriver {
   std::thread sdl_thread_;
   std::atomic<bool> sdl_thread_should_exit_;
   std::array<ControllerState, HID_SDL_USER_COUNT> controllers_;
-  std::array<KeystrokeState, HID_SDL_USER_COUNT> keystroke_states_;
+  std::array<GamepadKeystroke, HID_SDL_USER_COUNT> keystroke_states_;
 };
 
 }  // namespace sdl

@@ -8,12 +8,10 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
-
+import jp.xenia.XeniaRuntimeException;
 import org.jetbrains.annotations.Nullable;
 
-import jp.xenia.XeniaRuntimeException;
-
-public abstract class WindowedAppActivity extends Activity {
+public abstract class WindowedAppActivity extends LocalizedActivity {
     // The EXTRA_CVARS value literal is also used in the native code.
 
     /**
@@ -29,9 +27,63 @@ public abstract class WindowedAppActivity extends Activity {
 
     // May be 0 while destroying (mainly while the superclass is).
     private long mAppContext = 0;
+    private DataLock dataLock;
 
-    @Nullable
-    private WindowSurfaceView mWindowSurfaceView = null;
+    protected final long getNativeAppContext() {
+        return mAppContext;
+    }
+
+    private static final int NATIVE_FILES = 7301;
+    private boolean nativeDirectory;
+    private native void filesSelectedNative(long context, String[] paths);
+
+    protected void pickNativeFiles(int mode, int type, boolean multiple) {
+        nativeDirectory = type == 1;
+        android.content.Intent intent = new android.content.Intent(nativeDirectory
+                        ? android.content.Intent.ACTION_OPEN_DOCUMENT_TREE
+                        : mode == 1 ? android.content.Intent.ACTION_CREATE_DOCUMENT
+                                    : android.content.Intent.ACTION_OPEN_DOCUMENT);
+        if (!nativeDirectory)
+            intent.setType("*/*")
+                    .addCategory(android.content.Intent.CATEGORY_OPENABLE)
+                    .putExtra(android.content.Intent.EXTRA_ALLOW_MULTIPLE, multiple);
+        try {
+            startActivityForResult(intent, NATIVE_FILES);
+        } catch (android.content.ActivityNotFoundException e) {
+            filesSelectedNative(mAppContext, new String[0]);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int request, int result, android.content.Intent data) {
+        super.onActivityResult(request, result, data);
+        if (request != NATIVE_FILES || mAppContext == 0)
+            return;
+        java.util.ArrayList<String> paths = new java.util.ArrayList<>();
+        try {
+            if (result == RESULT_OK && data != null) {
+                java.util.ArrayList<android.net.Uri> uris = new java.util.ArrayList<>();
+                if (data.getClipData() != null) {
+                    for (int i = 0; i < data.getClipData().getItemCount(); i++)
+                        uris.add(data.getClipData().getItemAt(i).getUri());
+                } else if (data.getData() != null)
+                    uris.add(data.getData());
+                for (android.net.Uri uri : uris)
+                    paths.add((nativeDirectory ? AndroidStorage.directory(this, uri)
+                                               : AndroidStorage.file(this, uri))
+                                    .getAbsolutePath());
+            }
+        } catch (java.io.IOException e) {
+            paths.clear();
+            new android.app.AlertDialog.Builder(this)
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        }
+        filesSelectedNative(mAppContext, paths.toArray(new String[0]));
+    }
+
+    @Nullable private WindowSurfaceView mWindowSurfaceView = null;
 
     private native long initializeWindowedAppOnCreate(
             String windowedAppIdentifier, AssetManager assetManager);
@@ -48,6 +100,7 @@ public abstract class WindowedAppActivity extends Activity {
     private native void paintWindow(long appContext, boolean forcePaint);
 
     protected abstract String getWindowedAppIdentifier();
+    protected void sessionEvent(int event, String[] values) {}
 
     protected void setWindowSurfaceView(@Nullable final WindowSurfaceView windowSurfaceView) {
         if (mWindowSurfaceView == windowSurfaceView) {
@@ -105,6 +158,19 @@ public abstract class WindowedAppActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle launch = getIntent().getBundleExtra(EXTRA_CVARS);
+        String storage = launch == null ? null : launch.getString("storage_root");
+        if (storage != null) {
+            try {
+                dataLock = new DataLock(new java.io.File(storage));
+            } catch (java.io.IOException e) {
+                android.widget.Toast
+                        .makeText(this, R.string.data_busy, android.widget.Toast.LENGTH_LONG)
+                        .show();
+                finish();
+                return;
+            }
+        }
 
         final String windowedAppIdentifier = getWindowedAppIdentifier();
         mAppContext = initializeWindowedAppOnCreate(windowedAppIdentifier, getAssets());
@@ -122,18 +188,23 @@ public abstract class WindowedAppActivity extends Activity {
             onDestroyNative(mAppContext);
         }
         mAppContext = 0;
+        if (dataLock != null) {
+            try {
+                dataLock.close();
+            } catch (java.io.IOException ignored) {
+            }
+            dataLock = null;
+        }
         super.onDestroy();
     }
 
-    private class WindowSurfaceListener implements
-            View.OnGenericMotionListener,
-            View.OnLayoutChangeListener,
-            View.OnTouchListener,
-            SurfaceHolder.Callback2 {
+    private class WindowSurfaceListener implements View.OnGenericMotionListener,
+                                                   View.OnLayoutChangeListener,
+                                                   View.OnTouchListener, SurfaceHolder.Callback2 {
         @Override
-        public void onLayoutChange(
-                final View v, final int left, final int top, final int right, final int bottom,
-                final int oldLeft, final int oldTop, final int oldRight, final int oldBottom) {
+        public void onLayoutChange(final View v, final int left, final int top, final int right,
+                final int bottom, final int oldLeft, final int oldTop, final int oldRight,
+                final int oldBottom) {
             if (mAppContext != 0) {
                 onWindowSurfaceLayoutChange(mAppContext, left, top, right, bottom);
             }

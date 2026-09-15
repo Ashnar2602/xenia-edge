@@ -8,9 +8,9 @@
  */
 
 #include "xenia/ui/imgui_postprocessing_dialog.h"
+#include "xenia/ui/display_config.h"
 
 #include "third_party/imgui/imgui.h"
-#include "xenia/app/emulator_window.h"
 #include "xenia/base/cvar.h"
 #include "xenia/emulator.h"
 #include "xenia/gpu/command_processor.h"
@@ -29,10 +29,8 @@ namespace xe {
 namespace ui {
 
 ImGuiPostProcessingDialog::ImGuiPostProcessingDialog(
-    ImGuiDrawer* drawer, app::EmulatorWindow* emulator_window,
-    hid::InputSystem* input_system)
-    : ImGuiGamepadDialog(drawer, input_system),
-      emulator_window_(emulator_window) {
+    ImGuiDrawer* drawer, Emulator* emulator, hid::InputSystem* input_system)
+    : ImGuiGamepadDialog(drawer, input_system), emulator_(emulator) {
   LoadCurrentSettings();
 
   // Initialize highlight positions to match current selections
@@ -48,8 +46,8 @@ void ImGuiPostProcessingDialog::OnClose() {
 
 void ImGuiPostProcessingDialog::LoadCurrentSettings() {
   // Load anti-aliasing setting
-  auto aa_effect = app::EmulatorWindow::GetSwapPostEffectForCvarValue(
-      cvars::postprocess_antialiasing);
+  auto aa_effect =
+      GetSwapPostEffectForCvarValue(cvars::postprocess_antialiasing);
   switch (aa_effect) {
     case gpu::CommandProcessor::SwapPostEffect::kFxaa:
       anti_aliasing_mode_ = 1;
@@ -63,7 +61,7 @@ void ImGuiPostProcessingDialog::LoadCurrentSettings() {
   }
 
   // Load resampling/scaling effect
-  auto paint_config = app::EmulatorWindow::GetGuestOutputPaintConfigForCvars();
+  auto paint_config = GetGuestOutputPaintConfigForCvars();
   switch (paint_config.GetEffect()) {
     case Presenter::GuestOutputPaintConfig::Effect::kCas:
       resampling_mode_ = 1;
@@ -111,8 +109,8 @@ void ImGuiPostProcessingDialog::OnAntiAliasingChanged(int value) {
       break;
   }
 
-  emulator_window_->UpdateAntiAliasingCvar(effect);
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateAntiAliasingCvar(effect);
+  ApplyDisplayConfigForCvars(emulator_);
   ShowNotification("Anti-Aliasing", mode_name);
 }
 
@@ -135,30 +133,29 @@ void ImGuiPostProcessingDialog::OnResamplingChanged(int value) {
       break;
   }
 
-  emulator_window_->UpdateScalingAndSharpeningCvar(effect);
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateScalingAndSharpeningCvar(effect);
+  ApplyDisplayConfigForCvars(emulator_);
   ShowNotification("Resampling", mode_name);
 }
 
 void ImGuiPostProcessingDialog::OnFsrSharpnessChanged(float value) {
-  emulator_window_->UpdateFsrSharpnessCvar(value);
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateFsrSharpnessCvar(value);
+  ApplyDisplayConfigForCvars(emulator_);
 }
 
 void ImGuiPostProcessingDialog::OnFsrMaxUpsamplingPassesChanged(int value) {
-  emulator_window_->UpdateFsrMaxUpsamplingPassesCvar(
-      static_cast<uint32_t>(value));
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateFsrMaxUpsamplingPassesCvar(static_cast<uint32_t>(value));
+  ApplyDisplayConfigForCvars(emulator_);
 }
 
 void ImGuiPostProcessingDialog::OnCasSharpnessChanged(float value) {
-  emulator_window_->UpdateCasSharpnessCvar(value);
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateCasSharpnessCvar(value);
+  ApplyDisplayConfigForCvars(emulator_);
 }
 
 void ImGuiPostProcessingDialog::OnDitherChanged(bool value) {
-  emulator_window_->UpdateDitherCvar(value);
-  emulator_window_->ApplyDisplayConfigForCvars();
+  UpdateDitherCvar(value);
+  ApplyDisplayConfigForCvars(emulator_);
   ShowNotification("Dithering", value ? "Enabled" : "Disabled");
 }
 

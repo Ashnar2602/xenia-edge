@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">गेम फ़ाइल खोजें</string>
+    <string name="wrong_game_release">उसी गेम और संस्करण की फ़ाइल चुनें।</string>
+    <string name="install_cancelled">इंस्टॉलेशन रद्द किया गया</string>
+</resources>

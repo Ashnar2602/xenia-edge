@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Játékfájl keresése</string>
+    <string name="wrong_game_release">Válassza ki ugyanannak a játéknak és verziónak a fájlját.</string>
+    <string name="install_cancelled">Telepítés megszakítva</string>
+</resources>

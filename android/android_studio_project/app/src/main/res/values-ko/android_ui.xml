@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"에뮬레이터 데이터를 변경하기 전에 게임이나 관리 화면을 닫으세요."</string>
+  <string name="no_controller">"물리적 컨트롤러 없음"</string>
+  <string name="postprocessing">"후처리"</string>
+  <string name="performance">"성능"</string>
+  <string name="debug_tools">"디버그 설정"</string>
+  <string name="screenshot">"스크린샷 찍기"</string>
+  <string name="screenshot_failed">"게임 이미지를 캡쳐하지 못했습니다."</string>
+  <string name="screenshot_saved">"스크린샷이 저장되었습니다. 설정 → 파일 관리 → screenshots에서 찾으세요."</string>
+  <string name="clear_gpu_cache">"GPU 캐시 지우기"</string>
+  <string name="profiler">"프로파일러 표시 / 숨기기"</string>
+  <string name="profiles">"프로필"</string>
+  <string name="edit_profile">"프로필 수정"</string>
+  <string name="player_number">"플레이어 %1$d"</string>
+  <string name="content">"DLC 및 타이틀 업데이트"</string>
+  <string name="statistics">"통계 및 호환성"</string>
+  <string name="desktop_compatibility">"데스크탑 호환성 보고서"</string>
+  <string-array name="compat_states">
+    <item>"알 수 없음"</item>
+    <item>"플레이 불가"</item>
+    <item>"실행 가능"</item>
+    <item>"게임 내 진입"</item>
+    <item>"정상 플레이"</item>
+  </string-array>
+  <string name="working">"처리 중…"</string>
+  <string name="operation_error">"작업을 완료할 수 없습니다: %1$s"</string>
+  <string name="nothing_here">"항목이 없습니다."</string>
+  <string name="manage_files">"파일 관리"</string>
+  <string name="add_content">"DLC 또는 타이틀 업데이트 추가"</string>
+  <string name="detach_content">"참조 삭제"</string>
+  <string name="content_link_explanation">"패키지는 원래 위치에서 직접 읽습니다. 거기에 보관하세요. 참조를 제거하면 원본 파일은 그대로 유지됩니다."</string>
+  <string name="global_options">"일반 옵션"</string>
+  <string name="global_explanation">"모든 게임의 기본값입니다. 게임별 옵션이 우선 적용됩니다. 변경 사항은 다음 실행 시 적용됩니다."</string>
+  <string name="default_value">"기본값"</string>
+  <string name="add_games">"게임 추가"</string>
+  <string name="single_game">"싱글 게임"</string>
+  <string name="game_folder">"폴더"</string>
+  <string name="game_options">"게임 옵션"</string>
+  <string name="options_explanation">"이 제목을 재정의합니다. 변경 사항은 다음에 게임을 시작할 때 적용됩니다."</string>
+  <string name="options_custom">"이 게임"</string>
+  <string name="options_inherited">"일반 설정"</string>
+  <string name="options_base">"일반 값: %1$s"</string>
+  <string name="options_error">"옵션을 읽거나 저장할 수 없습니다: %1$s"</string>
+  <string name="options_no_title">"타이틀 ID를 읽을 수 없습니다. 게임별 옵션에는 유효한 타이틀 ID가 필요합니다."</string>
+  <string name="profile_select">"플레이어 1의 프로필을 선택하세요"</string>
+  <string name="profile_explanation">"게임에서 로그인하고 진행 상황을 저장할 수 있도록 로컬 플레이어 프로필을 만드세요. 다음에 플레이할 때 자동으로 로그인됩니다."</string>
+  <string name="profile_migration">"데스크탑에서처럼 로컬 플레이어 프로필을 생성하고 기존 레거시 저장 내용을 프로필과 연결하세요. 다음에 플레이할 때 자동으로 로그인됩니다."</string>
+  <string name="profile_invalid">"1~15자의 문자(A–Z), 숫자 또는 단일 공백을 사용하세요. 문자로 시작하여 문자나 숫자로 끝납니다."</string>
+  <string name="profile_error">"프로필을 생성하거나 로드할 수 없습니다. 무료 저장용량을 확인하고 다시 시도하세요."</string>
+  <string name="library">"게임 라이브러리"</string>
+  <string name="recent">"최근"</string>
+  <string name="your_games">"당신의 게임"</string>
+  <string name="recent_games">"최근에 플레이한"</string>
+  <string name="library_subtitle">"Xbox 360 게임을 저장소에서 직접 열 수 있습니다."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"폴더 추가"</string>
+  <string name="import_explanation">"데이터 파일을 포함하여 전체 XEX 또는 GOD 게임 폴더를 선택하세요. Xenia는 원본을 직접 읽습니다. 파일이 복사되지 않습니다."</string>
+  <string name="choose_folder">"폴더 선택"</string>
+  <string name="empty_library">"게임 라이브러리이 여기서 시작됩니다"</string>
+  <string name="no_results">"일치하는 게임 없음"</string>
+  <string name="empty_hint">"ISO/ZAR 또는 전체 게임 폴더를 추가하세요.\n게임이 여기에 표시됩니다."</string>
+  <string name="play">"▶  플레이"</string>
+  <string name="play_named">"%1$s 플레이"</string>
+  <plurals name="game_count">
+    <item quantity="one">"게임 %d개"</item>
+    <item quantity="other">"게임 %d개"</item>
+  </plurals>
+  <string name="video">"비디오"</string>
+  <string name="resolution">"렌더링 해상도"</string>
+  <string name="fps_limit">"프레임 속도 제한"</string>
+  <string name="controls">"컨트롤"</string>
+  <string name="touch_controls">"온스크린 컨트롤러"</string>
+  <string name="controller_hint">"터치 컨트롤과 최대 4개의 Bluetooth/USB 게임패드(지원되는 경우 진동 포함)."</string>
+  <string name="preview_title">"Android 미리보기"</string>
+  <string name="preview_description">"게임 호환성은 아직 테스트 중입니다. 비디오 설정은 다음 게임 세션에 적용됩니다."</string>
+  <string name="project">"GitHub의 Xenia Edge"</string>
+  <string name="file_unavailable">"파일을 사용할 수 없습니다. 원래 위치에서 다시 선택하세요."</string>
+  <string name="no_executables">"이 폴더에는 XEX, ELF, ISO, ZAR 또는 STFS/GOD 제목이 없습니다."</string>
+  <string name="import_cancelled">"가져오기가 취소되었습니다."</string>
+  <string name="importing">"폴더 검색 중…"</string>
+  <string name="import_progress">"스캔 중 · %2$s"</string>
+  <string name="cannot_open">"게임을 추가할 수 없습니다."</string>
+  <string name="image_formats">"ISO 또는 ZAR을 선택합니다. XEX와 GOD의 경우 전체 게임 폴더를 추가하세요."</string>
+  <string name="menu">"메뉴"</string>
+  <string name="preparing_game">"게임 준비 중…"</string>
+  <string name="preparing_video">"영상 준비 중…"</string>
+  <string name="loading_game">"게임 로드 중…"</string>
+  <string name="launch_error">"Xenia는 이 타이틀(0x%1$08X)을 시작할 수 없습니다. 형식과 게임 파일을 확인하세요. 기술적인 세부 사항은 Logcat에 있습니다."</string>
+  <string name="cannot_launch">"게임을 시작할 수 없습니다"</string>
+  <string name="back_library">"게임 라이브러리로 돌아가기"</string>
+  <string name="close_session">"이 세션을 중단하시겠습니까?"</string>
+  <string name="interrupt_loading">"게임이 아직 로드 중이거나 종료 중입니다. 이 세션을 기다리거나 중단하고 라이브러리로 돌아갈 수 있습니다."</string>
+  <string name="close_current_first">"다른 타이틀을 열기 전에 메뉴에서 현재 게임을 닫으세요."</string>
+  <string name="resume">"게임 재개"</string>
+  <string name="toggle_controls">"터치 컨트롤 표시/숨기기"</string>
+  <string name="storage_access">"게임 파일에 접근"</string>
+  <string name="storage_explanation">"Xenia가 게임을 복사하지 않고 장치 저장소나 SD 카드에서 직접 열 수 있도록 \"모든 파일 액세스\"를 활성화합니다."</string>
+  <string name="open_settings">"설정 열기"</string>
+  <string name="local_storage_required">"장치 또는 SD 카드에서 로컬 파일을 선택합니다. 클라우드 및 가상 공급자는 직접 열 수 없습니다."</string>
+  <string name="game_information">"정보"</string>
+  <string name="info_unavailable">"이용 불가"</string>
+  <string name="info_title_id">"타이틀 ID"</string>
+  <string name="info_media_id">"미디어 ID"</string>
+  <string name="info_base_version">"기본 버전"</string>
+  <string name="info_disc">"디스크"</string>
+  <string name="info_disc_number">"%2$d개 중 %1$d개"</string>
+  <string name="info_not_verified">"확인되지 않음"</string>
+  <string name="info_format">"형식"</string>
+  <string name="info_size">"파일 크기"</string>
+  <string name="info_path">"위치"</string>
+  <string name="info_loading">"제목 정보를 읽는 중…"</string>
+  <string name="info_no_metadata">"이 파일에는 읽을 수 있는 제목 메타데이터가 없습니다."</string>
+  <string name="automatic_controller">"자동"</string>
+  <string name="profile_image">"프로필 이미지"</string>
+  <string name="choose_image">"이미지 선택"</string>
+  <string name="invalid_image">"잘못된 이미지"</string>
+  <string name="preloading_shaders">"셰이더를 미리 로드하는 중…"</string>
+  <string name="patches_applied">"적용된 패치"</string>
+  <string name="plugins_loaded">"플러그인이 로드됨"</string>
+  <string name="build_commit">"빌드 커밋 보기"</string>
+  <string name="interface_language">"인터페이스 언어"</string>
+  <string name="system_language">"시스템 언어"</string>
+  <string name="global_only_option">"전역 설정에서 이 옵션을 변경하세요."</string>
+  <string name="controller_type">"컨트롤러 유형"</string>
+  <string name="physical_keyboard">"키보드"</string>
+  <string name="time_scale">"에뮬레이션 속도"</string>
+  <string name="time_half">"절반 현재 속도"</string>
+  <string name="time_double">"현재 속도의 두 배"</string>
+  <string name="time_reset">"정상 속도"</string>
+  <string name="toggle_vibration">"진동 전환"</string>
+  <string name="sort_games">"게임 정렬"</string>
+  <string name="rename_game">"릴리스 이름 바꾸기"</string>
+  <string name="invalid_name">"이름을 입력하세요"</string>
+  <string name="manage_discs">"디스크 관리"</string>
+  <string name="default_disc">"기본 디스크로 사용"</string>
+  <string name="plugins">"플러그인 관리"</string>
+  <string name="install_content">"콘텐츠 패키지 가져오기"</string>
+  <string name="about_description">"Xbox 360 에뮬레이터 연구 프로젝트\n버전 %1$s\nVulkan · ARM64\nBSD 라이센스 — Xenia 기여자"</string>
+  <string-array name="controller_types">
+    <item>"자동"</item>
+    <item>"게임패드"</item>
+    <item>"휠"</item>
+    <item>"아케이드 스틱"</item>
+    <item>"비행 스틱"</item>
+    <item>"댄스 패드"</item>
+    <item>"기타"</item>
+    <item>"드럼 세트"</item>
+    <item>"아케이드 패드"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"제목 A~Z"</item>
+    <item>"타이틀 Z–A"</item>
+    <item>"가장 나이 많은 사람이 먼저 플레이함"</item>
+    <item>"마지막으로 먼저 재생됨"</item>
+    <item>"호환성 ↑"</item>
+    <item>"호환성 ↓"</item>
+  </string-array>
+  <string name="mutable_content">"프로필 및 저장"</string>
+  <string name="mutable_content_explanation">"이 패키지에는 쓰기 가능한 프로필 또는 저장 데이터가 포함되어 있습니다. 가져오려면 앱 저장소로 추출해야 합니다. 게임, DLC 및 업데이트는 그대로 유지됩니다. 원본은 보존되며 기존 데이터는 절대 교체되지 않습니다."</string>
+  <string name="extract_data">"프로필 추출/데이터 저장"</string>
+  <string name="unsupported_game">"ISO, ZAR, XEX, ELF 또는 STFS/GOD 게임을 선택하세요."</string>
+  <string name="stop_confirmation">"게임을 중단하시겠습니까? 저장하지 않은 진행 상황은 손실됩니다."</string>
+  <string name="virtual_controller">"온스크린 컨트롤러"</string>
+  <string name="disconnect_controller">"연결이 끊김"</string>
+  <string name="remap_controller">"컨트롤러 매핑"</string>
+  <string name="reset_mappings">"기본 매핑 복원"</string>
+  <string name="mapping_key">"Android 키 코드"</string>
+  <string name="mapping_axis">"Android 축(음수 = 반전)"</string>
+  <string name="press_controller_button">"할당하려면 물리적 버튼을 누르세요."</string>
+  <string name="invert_axis">"축 반전"</string>
+  <string name="portal_failed">"USB 포털에 연결할 수 없습니다."</string>
+  <string name="open_trace">"Vulkan 추적 열기"</string>
+  <string name="trace_failed">"GPU 추적을 열 수 없습니다."</string>
+  <string name="reset_all_options">"에뮬레이터 옵션 재설정"</string>
+  <string name="reset_global_confirmation">"구성된 경로 및 인터페이스 언어를 포함하여 모든 Android 에뮬레이터 옵션을 기본값으로 재설정하시겠습니까? 프로필, 게임 파일, 게임별 옵션은 유지됩니다."</string>
+  <string name="reset_game_confirmation">"이 타이틀의 Android 옵션 재정의를 모두 삭제하시겠습니까? 일반 설정이 사용됩니다. 게임 파일은 보관됩니다."</string>
+  <string name="state_on">"켜짐"</string>
+  <string name="state_off">"꺼짐"</string>
+</resources>

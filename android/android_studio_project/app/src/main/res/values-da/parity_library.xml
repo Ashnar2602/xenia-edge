@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Find spilfil</string>
+    <string name="wrong_game_release">Vælg en fil til samme titel og version.</string>
+    <string name="install_cancelled">Installation annulleret</string>
+</resources>

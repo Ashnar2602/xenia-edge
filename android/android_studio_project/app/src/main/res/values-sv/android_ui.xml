@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Stäng spel- eller hanteringsskärmen innan du ändrar emulatordata."</string>
+  <string name="no_controller">"Ingen fysisk styrenhet"</string>
+  <string name="postprocessing">"Efterbearbetning"</string>
+  <string name="performance">"Prestanda"</string>
+  <string name="debug_tools">"Felsökningsinställningar"</string>
+  <string name="screenshot">"Ta en skärmdump"</string>
+  <string name="screenshot_failed">"Det gick inte att fånga spelbilden."</string>
+  <string name="screenshot_saved">"Skärmdumpen sparad. Hitta den i Inställningar → Hantera filer → screenshots."</string>
+  <string name="clear_gpu_cache">"Rensa GPU-cacher"</string>
+  <string name="profiler">"Visa / dölj prestandaprofilering"</string>
+  <string name="profiles">"Profiler"</string>
+  <string name="edit_profile">"Redigera profil"</string>
+  <string name="player_number">"Spelare %1$d"</string>
+  <string name="content">"DLC och titeluppdateringar"</string>
+  <string name="statistics">"Statistik och kompatibilitet"</string>
+  <string name="desktop_compatibility">"Skrivbordskompatibilitetsrapport"</string>
+  <string-array name="compat_states">
+    <item>"Okänd"</item>
+    <item>"Ospelbar"</item>
+    <item>"Startar"</item>
+    <item>"Inne i spelet"</item>
+    <item>"Spelbar"</item>
+  </string-array>
+  <string name="working">"Bearbetar…"</string>
+  <string name="operation_error">"Kunde inte slutföra åtgärden: %1$s"</string>
+  <string name="nothing_here">"Inga poster tillgängliga."</string>
+  <string name="manage_files">"Hantera filer"</string>
+  <string name="add_content">"Lägg till DLC eller titeluppdatering"</string>
+  <string name="detach_content">"Ta bort referens"</string>
+  <string name="content_link_explanation">"Paketen läses direkt från sin ursprungliga plats. Håll dem där. Om du tar bort en referens lämnas originalfilen intakt."</string>
+  <string name="global_options">"Allmänna alternativ"</string>
+  <string name="global_explanation">"Standard för alla spel. Alternativen per spel har företräde. Ändringar gäller vid nästa lansering."</string>
+  <string name="default_value">"Standard"</string>
+  <string name="add_games">"Lägg till spel"</string>
+  <string name="single_game">"Enstaka spel"</string>
+  <string name="game_folder">"Mapp"</string>
+  <string name="game_options">"Spelalternativ"</string>
+  <string name="options_explanation">"Åsidosätter den här titeln. Ändringar gäller nästa gång spelet startar."</string>
+  <string name="options_custom">"Det här spelet"</string>
+  <string name="options_inherited">"Allmän inställning"</string>
+  <string name="options_base">"Allmänt värde: %1$s"</string>
+  <string name="options_error">"Det gick inte att läsa eller spara alternativ: %1$s"</string>
+  <string name="options_no_title">"Titel-ID kunde inte läsas. Alternativ per spel kräver ett giltigt titel-ID."</string>
+  <string name="profile_select">"Välj en profil för spelare 1"</string>
+  <string name="profile_explanation">"Skapa en lokal spelarprofil så att spel kan logga in och spara dina framsteg. Den loggar in automatiskt nästa gång du spelar."</string>
+  <string name="profile_migration">"Skapa en lokal spelarprofil och associera befintliga lagringar med den, som på skrivbordet. Den loggar in automatiskt nästa gång du spelar."</string>
+  <string name="profile_invalid">"Använd 1–15 bokstäver (A–Z), siffror eller enstaka mellanslag. Börja med en bokstav och avsluta med en bokstav eller siffra."</string>
+  <string name="profile_error">"Det gick inte att skapa eller läsa in profilen. Kontrollera gratis lagringsutrymme och försök igen."</string>
+  <string name="library">"Bibliotek"</string>
+  <string name="recent">"Nyligen"</string>
+  <string name="your_games">"Dina spel"</string>
+  <string name="recent_games">"Nyligen spelat"</string>
+  <string name="library_subtitle">"Dina Xbox 360-spel, öppnas direkt från lagringen."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Lägg till mapp"</string>
+  <string name="import_explanation">"Välj hela XEX- eller GOD-spelmappen, inklusive dess datafiler. Xenia läser originalen direkt. Inga filer kopieras."</string>
+  <string name="choose_folder">"Välj mapp"</string>
+  <string name="empty_library">"Ditt bibliotek börjar här"</string>
+  <string name="no_results">"Inga matchande spel"</string>
+  <string name="empty_hint">"Lägg till en ISO/ZAR eller en komplett spelmapp.\nDina spel visas här."</string>
+  <string name="play">"▶  Spela"</string>
+  <string name="play_named">"Spela %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d spel"</item>
+    <item quantity="other">"%d spel"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Återgivningsupplösning"</string>
+  <string name="fps_limit">"Gräns för bildhastighet"</string>
+  <string name="controls">"KONTROLLER"</string>
+  <string name="touch_controls">"Styrenhet på skärmen"</string>
+  <string name="controller_hint">"Pekkontroller och upp till fyra Bluetooth/USB-spelplattor, med vibration där stöds."</string>
+  <string name="preview_title">"Android förhandsvisning"</string>
+  <string name="preview_description">"Spelkompatibilitet testas fortfarande. Videoinställningar gäller för nästa spelsession."</string>
+  <string name="project">"Xenia Edge på GitHub"</string>
+  <string name="file_unavailable">"Filen är inte tillgänglig. Välj den igen från dess ursprungliga plats."</string>
+  <string name="no_executables">"Ingen XEX, ELF, ISO, ZAR eller STFS/GOD-titel hittades i den här mappen."</string>
+  <string name="import_cancelled">"Importen avbröts."</string>
+  <string name="importing">"Skannar mapp..."</string>
+  <string name="import_progress">"Skannar · %2$s"</string>
+  <string name="cannot_open">"Det gick inte att lägga till spelet"</string>
+  <string name="image_formats">"Välj en ISO eller ZAR. För XEX och GOD, lägg till hela spelmappen."</string>
+  <string name="menu">"Meny"</string>
+  <string name="preparing_game">"Förbereder spel..."</string>
+  <string name="preparing_video">"Förbereder video..."</string>
+  <string name="loading_game">"Laddar spel..."</string>
+  <string name="launch_error">"Xenia kunde inte starta den här titeln (0x%1$08X). Kontrollera formatet och spelfilerna. Tekniska detaljer finns i Logcat."</string>
+  <string name="cannot_launch">"Kunde inte starta spelet"</string>
+  <string name="back_library">"Tillbaka till biblioteket"</string>
+  <string name="close_session">"Vill du avbryta den här sessionen?"</string>
+  <string name="interrupt_loading">"Spelet laddas eller stängs fortfarande. Du kan vänta eller avbryta den här sessionen och återvända till biblioteket."</string>
+  <string name="close_current_first">"Stäng det aktuella spelet från menyn innan du öppnar en annan titel."</string>
+  <string name="resume">"Återuppta spelet"</string>
+  <string name="toggle_controls">"Visa/dölj pekkontroller"</string>
+  <string name="storage_access">"Tillgång till spelfiler"</string>
+  <string name="storage_explanation">"Aktivera \"Alla filer åtkomst\" för Xenia att öppna spel direkt från enhetslagring eller ett SD-kort, utan att kopiera dem."</string>
+  <string name="open_settings">"Öppna inställningar"</string>
+  <string name="local_storage_required">"Välj en lokal fil på enheten eller SD-kortet. Moln och virtuella leverantörer kan inte öppnas direkt."</string>
+  <string name="game_information">"Information"</string>
+  <string name="info_unavailable">"Ej tillgänglig"</string>
+  <string name="info_title_id">"Titel-ID"</string>
+  <string name="info_media_id">"Media ID"</string>
+  <string name="info_version">"Version"</string>
+  <string name="info_base_version">"Basversion"</string>
+  <string name="info_disc">"skiva"</string>
+  <string name="info_disc_number">"%1$d av %2$d"</string>
+  <string name="info_not_verified">"Ej verifierad"</string>
+  <string name="info_format">"Format"</string>
+  <string name="info_size">"Filstorlek"</string>
+  <string name="info_path">"Plats"</string>
+  <string name="info_loading">"Läser titelinformation..."</string>
+  <string name="info_no_metadata">"Ingen läsbar titelmetadata finns tillgänglig i den här filen."</string>
+  <string name="automatic_controller">"Automatisk"</string>
+  <string name="profile_image">"Profilbild"</string>
+  <string name="choose_image">"Välj bild"</string>
+  <string name="invalid_image">"Ogiltig bild"</string>
+  <string name="preloading_shaders">"Förladdar shaders..."</string>
+  <string name="patches_applied">"Plåster applicerade"</string>
+  <string name="plugins_loaded">"Plugins laddade"</string>
+  <string name="build_commit">"Se byggåtagande"</string>
+  <string name="interface_language">"Gränssnittsspråk"</string>
+  <string name="system_language">"Systemspråk"</string>
+  <string name="global_only_option">"Ändra detta alternativ i globala inställningar."</string>
+  <string name="controller_type">"Kontrolltyp"</string>
+  <string name="physical_keyboard">"Tangentbord"</string>
+  <string name="time_scale">"Emuleringshastighet"</string>
+  <string name="time_half">"Halv aktuell hastighet"</string>
+  <string name="time_double">"Dubbel strömhastighet"</string>
+  <string name="time_reset">"Normal hastighet"</string>
+  <string name="toggle_vibration">"Växla vibration"</string>
+  <string name="sort_games">"Sortera spel"</string>
+  <string name="rename_game">"Byt namn på release"</string>
+  <string name="invalid_name">"Ange ett namn"</string>
+  <string name="manage_discs">"Hantera skivor"</string>
+  <string name="default_disc">"Använd som standardskiva"</string>
+  <string name="plugins">"Hantera plugins"</string>
+  <string name="install_content">"Importera innehållspaket"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nVersion %1$s\nVulkan · ARM64\nBSD-licens – Xenia-bidragsgivare"</string>
+  <string-array name="controller_types">
+    <item>"Automatisk"</item>
+    <item>"Handkontroll"</item>
+    <item>"Ratt"</item>
+    <item>"Arkadspak"</item>
+    <item>"Flygspak"</item>
+    <item>"Dansmatta"</item>
+    <item>"Gitarr"</item>
+    <item>"Trumset"</item>
+    <item>"Arkadkontroll"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Titel A–Z"</item>
+    <item>"Titel Z–A"</item>
+    <item>"Äldst spelade först"</item>
+    <item>"Senast spelade först"</item>
+    <item>"Kompatibilitet ↑"</item>
+    <item>"Kompatibilitet ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profiler och sparar"</string>
+  <string name="mutable_content_explanation">"Dessa paket innehåller skrivbar profil eller spara data. Att importera dem kräver extrahering till applagring. Spel, DLC och uppdateringar förblir länkade på plats. Originalen bevaras och befintliga data ersätts aldrig."</string>
+  <string name="extract_data">"Extrahera profil/spara data"</string>
+  <string name="unsupported_game">"Välj ett ISO-, ZAR-, XEX-, ELF- eller STFS/GOD-spel."</string>
+  <string name="stop_confirmation">"Stoppa spelet? Osparade framsteg kommer att gå förlorade."</string>
+  <string name="virtual_controller">"Styrenhet på skärmen"</string>
+  <string name="disconnect_controller">"Osammanhängande"</string>
+  <string name="remap_controller">"Styrmappningar"</string>
+  <string name="reset_mappings">"Återställ standardmappningar"</string>
+  <string name="mapping_key">"Android nyckelkod"</string>
+  <string name="mapping_axis">"Android-axel (negativ = inverterad)"</string>
+  <string name="press_controller_button">"Tryck på den fysiska knappen för att tilldela."</string>
+  <string name="invert_axis">"Invertera axeln"</string>
+  <string name="portal_failed">"Kunde inte ansluta till USB-portalen."</string>
+  <string name="open_trace">"Öppna Vulkan-spår"</string>
+  <string name="trace_failed">"Det gick inte att öppna GPU-spåret."</string>
+  <string name="reset_all_options">"Återställ emulatoralternativ"</string>
+  <string name="reset_global_confirmation">"Återställa alla Android-emulatoralternativ till deras standardinställningar, inklusive konfigurerade sökvägar och gränssnittsspråk? Profiler, spelfiler och alternativ per spel kommer att behållas."</string>
+  <string name="reset_game_confirmation">"Vill du ta bort alla åsidosättningar av Android-alternativ för den här titeln? Allmänna inställningar kommer att användas. Spelfiler kommer att sparas."</string>
+  <string name="state_on">"På"</string>
+  <string name="state_off">"Av"</string>
+</resources>

@@ -13,11 +13,17 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <vector>
 
 #include "xenia/vfs/xex_metadata.h"
 
 namespace xe {
 namespace vfs {
+
+// Reads only the executable into bounded transient memory, never stages the
+// archive.
+std::vector<uint8_t> ReadZarExecutable(const std::filesystem::path& path,
+                                       size_t limit, bool header_only = false);
 
 std::optional<XexMetadata> ExtractZarMetadata(
     const std::filesystem::path& path);

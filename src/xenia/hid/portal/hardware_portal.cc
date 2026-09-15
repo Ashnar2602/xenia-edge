@@ -14,8 +14,14 @@ namespace xe {
 namespace hid {
 
 HardwarePortal::HardwarePortal() : Portal() {
+#if XE_PLATFORM_ANDROID
+  libusb_init_option option{};
+  option.option = LIBUSB_OPTION_NO_DEVICE_DISCOVERY;
+  libusb_init_context(&context_, &option, 1);
+#else
   libusb_init(&context_);
   OpenDevice();
+#endif
 }
 
 HardwarePortal::~HardwarePortal() {
@@ -26,9 +32,38 @@ HardwarePortal::~HardwarePortal() {
   libusb_exit(context_);
 }
 
-bool HardwarePortal::IsConnected() { return handle_ != nullptr; }
+bool HardwarePortal::IsConnected() {
+#if XE_PLATFORM_ANDROID
+  return android_connected_.load();
+#else
+  return handle_ != nullptr;
+#endif
+}
+#if XE_PLATFORM_ANDROID
+bool HardwarePortal::SetAndroidDevice(int fd) {
+  std::lock_guard<xe_mutex> guard(lock_);
+  CloseDevice();
+  if (fd < 0) {
+    return true;
+  }
+  if (!context_ ||
+      libusb_wrap_sys_device(context_, intptr_t(fd), &handle_) < 0) {
+    return false;
+  }
+  libusb_set_auto_detach_kernel_driver(handle_, 1);
+  if (libusb_claim_interface(handle_, 0) < 0) {
+    CloseDevice();
+    return false;
+  }
+  android_connected_.store(true);
+  return true;
+}
+#endif
 
 void HardwarePortal::OpenDevice() {
+#if XE_PLATFORM_ANDROID
+  return;  // Only Java may discover/open a device, after the user's USB grant.
+#else
   if (!context_ || handle_) {
     return;
   }
@@ -42,9 +77,13 @@ void HardwarePortal::OpenDevice() {
       break;
     }
   }
+#endif
 }
 
 void HardwarePortal::CloseDevice() {
+#if XE_PLATFORM_ANDROID
+  android_connected_.store(false);
+#endif
   if (!handle_) {
     return;
   }

@@ -19,7 +19,6 @@
 #include <string>
 
 #include "third_party/imgui/imgui.h"
-#include "xenia/app/emulator_window.h"
 #include "xenia/base/cvar.h"
 #include "xenia/base/profiling.h"
 #include "xenia/config.h"
@@ -201,22 +200,19 @@ struct BackendState {
   bool vulkan = false;
 };
 
-BackendState GetBackendState(app::EmulatorWindow* emulator_window) {
+BackendState GetBackendState(Emulator* emulator) {
   BackendState state;
 
-  if (emulator_window != nullptr) {
-    auto emulator = emulator_window->emulator();
-    if (emulator != nullptr) {
-      auto graphics_system = emulator->graphics_system();
-      if (graphics_system != nullptr) {
-        state.label = graphics_system->name();
-        if (state.label == "D3D12") {
-          state.d3d12 = true;
-        } else if (state.label == "Vulkan") {
-          state.vulkan = true;
-        } else if (state.label == "Metal") {
-          state.metal = true;
-        }
+  if (emulator != nullptr) {
+    auto graphics_system = emulator->graphics_system();
+    if (graphics_system != nullptr) {
+      state.label = graphics_system->name();
+      if (state.label == "D3D12") {
+        state.d3d12 = true;
+      } else if (state.label == "Vulkan") {
+        state.vulkan = true;
+      } else if (state.label == "Metal") {
+        state.metal = true;
       }
     }
   }
@@ -234,11 +230,9 @@ bool BeginSection(const char* title, bool default_open, bool filter_active) {
 
 }  // namespace
 
-ImGuiDebugDialog::ImGuiDebugDialog(ImGuiDrawer* drawer,
-                                   app::EmulatorWindow* emulator_window,
+ImGuiDebugDialog::ImGuiDebugDialog(ImGuiDrawer* drawer, Emulator* emulator,
                                    hid::InputSystem* input_system)
-    : ImGuiGamepadDialog(drawer, input_system),
-      emulator_window_(emulator_window) {
+    : ImGuiGamepadDialog(drawer, input_system), emulator_(emulator) {
   LoadCurrentSettings();
   std::snprintf(filter_buffer_, sizeof(filter_buffer_), "%s",
                 g_debug_settings_filter.c_str());
@@ -364,8 +358,7 @@ void ImGuiDebugDialog::LoadCurrentSettings() {
 }
 
 void ImGuiDebugDialog::ClearGpuCaches() {
-  Emulator* emulator =
-      emulator_window_ != nullptr ? emulator_window_->emulator() : nullptr;
+  Emulator* emulator = emulator_;
   if (emulator == nullptr) {
     return;
   }
@@ -380,8 +373,7 @@ void ImGuiDebugDialog::ApplyBoolSetting(const char* section,
                                         const char* cvar_name, bool value,
                                         bool clear_gpu_caches) {
   OverrideCvarByName<bool>(cvar_name, value);
-  Emulator* emulator =
-      emulator_window_ ? emulator_window_->emulator() : nullptr;
+  Emulator* emulator = emulator_;
   config::SaveGameConfigSetting(emulator, section, cvar_name, value);
   if (clear_gpu_caches) {
     ClearGpuCaches();
@@ -393,8 +385,7 @@ void ImGuiDebugDialog::ApplyInt32Setting(const char* section,
                                          const char* cvar_name, int32_t value,
                                          bool clear_gpu_caches) {
   OverrideCvarByName<int32_t>(cvar_name, value);
-  Emulator* emulator =
-      emulator_window_ ? emulator_window_->emulator() : nullptr;
+  Emulator* emulator = emulator_;
   config::SaveGameConfigSetting(emulator, section, cvar_name, value);
   if (clear_gpu_caches) {
     ClearGpuCaches();
@@ -408,8 +399,7 @@ void ImGuiDebugDialog::ApplyUint32Setting(const char* section,
                                           const char* cvar_name, uint32_t value,
                                           bool clear_gpu_caches) {
   OverrideCvarByName<uint32_t>(cvar_name, value);
-  Emulator* emulator =
-      emulator_window_ ? emulator_window_->emulator() : nullptr;
+  Emulator* emulator = emulator_;
   config::SaveGameConfigSetting(emulator, section, cvar_name, value);
   if (clear_gpu_caches) {
     ClearGpuCaches();
@@ -423,8 +413,7 @@ void ImGuiDebugDialog::ApplyDoubleSetting(const char* section,
                                           const char* cvar_name, double value,
                                           bool clear_gpu_caches) {
   OverrideCvarByName<double>(cvar_name, value);
-  Emulator* emulator =
-      emulator_window_ ? emulator_window_->emulator() : nullptr;
+  Emulator* emulator = emulator_;
   config::SaveGameConfigSetting(emulator, section, cvar_name, value);
   if (clear_gpu_caches) {
     ClearGpuCaches();
@@ -604,13 +593,12 @@ void ImGuiDebugDialog::OnDraw(ImGuiIO& io) {
                                       "4x",        "8x",      "16x"};
   int anisotropic_combo_index = anisotropic_override_ + 1;
 
-  BackendState backend_state = GetBackendState(emulator_window_);
+  BackendState backend_state = GetBackendState(emulator_);
 
   // CPU JIT tracing toggles reflect runtime backend state (not cvars) and only
   // appear for trace modes compiled into the active backend
   // (XENIA_ENABLE_ITRACE / XENIA_ENABLE_DTRACE build options).
-  Emulator* cpu_emulator =
-      emulator_window_ ? emulator_window_->emulator() : nullptr;
+  Emulator* cpu_emulator = emulator_;
   cpu::Processor* cpu_processor =
       cpu_emulator ? cpu_emulator->processor() : nullptr;
   cpu::backend::Backend* cpu_backend =
@@ -1467,8 +1455,7 @@ void ImGuiDebugDialog::OnDraw(ImGuiIO& io) {
           }
 
           if (MatchesFilter("capture_gpu_trace")) {
-            Emulator* trace_emulator =
-                emulator_window_ ? emulator_window_->emulator() : nullptr;
+            Emulator* trace_emulator = emulator_;
             gpu::GraphicsSystem* trace_graphics =
                 trace_emulator ? trace_emulator->graphics_system() : nullptr;
             bool streaming =

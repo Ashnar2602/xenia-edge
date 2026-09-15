@@ -1643,6 +1643,9 @@ const std::filesystem::path Emulator::GetNewDiscPath(
   }
 
   // Show file picker if needed
+  if (use_file_picker && disc_picker_) {
+    return disc_picker_(window_message);
+  }
   if (use_file_picker && display_window_) {
     display_window_->app_context().CallInUIThreadSynchronous([&]() {
       auto file_picker = xe::ui::FilePicker::Create();

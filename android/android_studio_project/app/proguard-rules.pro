@@ -19,3 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Looked up by name from AndroidWindowedAppContext through JNI.
+-keepclassmembers class jp.xenia.emulator.WindowedAppActivity {
+    protected void postInvalidateWindowSurface();
+    protected void pickNativeFiles(int, int, boolean);
+}
+
+# SDL registers natives and looks up Java callbacks by name.
+-keep class org.libsdl.app.** { *; }
+-keepnames class jp.xenia.emulator.FilesActivity
+
+-keepclassmembers class jp.xenia.emulator.WindowedAppActivity { protected void sessionEvent(int, java.lang.String[]); }

@@ -360,6 +360,10 @@ class Emulator {
   void set_disc_provider(DiscProvider provider) {
     disc_provider_ = std::move(provider);
   }
+  // Frontends with asynchronous system pickers may park the guest while their
+  // UI completes the request, rather than blocking the UI thread in FilePicker.
+  using DiscPicker = std::function<std::filesystem::path(const std::string&)>;
+  void set_disc_picker(DiscPicker picker) { disc_picker_ = std::move(picker); }
 
   using DiscRecorder =
       std::function<void(uint32_t title_id, const std::filesystem::path& path)>;
@@ -446,6 +450,7 @@ class Emulator {
   std::filesystem::path command_line_;
   std::filesystem::path last_launch_path_;  // persists across relaunch
   DiscProvider disc_provider_;
+  DiscPicker disc_picker_;
   DiscRecorder disc_recorder_;
   std::filesystem::path storage_root_;
   std::filesystem::path content_root_;

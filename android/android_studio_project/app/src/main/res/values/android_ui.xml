@@ -1,0 +1,185 @@
+<resources>
+    <string name="gamer_name">Name</string>
+    <string name="gamer_motto">Motto</string>
+    <string name="gamer_bio">Bio</string>
+    <string name="gamer_zone">Gamer zone</string>
+    <string name="data_busy">Close the game or management screen before changing emulator data.</string>
+    <string name="controllers">Controllers</string>
+    <string name="no_controller">No physical controller</string>
+    <string name="postprocessing">Post-processing</string>
+    <string name="performance">Performance</string>
+    <string name="debug_tools">Debug settings</string>
+    <string name="audio">Audio</string>
+    <string name="screenshot">Take screenshot</string>
+    <string name="screenshot_failed">Could not capture the game image.</string>
+    <string name="screenshot_saved">Screenshot saved. Find it in Settings → Manage files → screenshots.</string>
+    <string name="clear_gpu_cache">Clear GPU caches</string>
+    <string name="profiler">Show / hide profiler</string>
+    <string name="profiles">Profiles</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign out</string>
+    <string name="signed_out">Signed out</string>
+    <string name="player_number">Player %1$d</string>
+    <string name="profile_country">Country</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_live">Live enabled</string>
+    <string name="profile_subscription">Subscription tier</string>
+    <string name="patches">Patches</string>
+    <string name="content">DLC and title updates</string>
+    <string name="saves">Saves</string>
+    <string name="statistics">Statistics and compatibility</string>
+    <string name="desktop_compatibility">Desktop compatibility report</string>
+    <string name="achievements">Achievements</string>
+    <string-array name="compat_states"><item>Unknown</item><item>Unplayable</item><item>Loads</item><item>Gameplay</item><item>Playable</item></string-array>
+    <string name="working">Working…</string>
+    <string name="operation_error">Could not complete the operation: %1$s</string>
+    <string name="nothing_here">No entries available.</string>
+    <string name="manage_files">Manage files</string>
+    <string name="add_content">Add DLC or title update</string>
+    <string name="detach_content">Remove reference</string>
+    <string name="content_link_explanation">Packages are read directly from their original location. Keep them there. Removing a reference leaves the original file intact.</string>
+    <string name="global_options">General options</string>
+    <string name="global_explanation">Defaults for all games. Per-game options take precedence. Changes apply on the next launch.</string>
+    <string name="default_value">Default</string>
+    <!-- English is the fallback when no translation matches the device language. -->
+    <string name="add_games">Add games</string>
+    <string name="single_game">Single game</string>
+    <string name="game_folder">Folder</string>
+    <string name="game_options">Game options</string>
+    <string name="options_explanation">Overrides for this title. Changes apply the next time the game starts.</string>
+    <string name="options_search">Search options</string>
+    <string name="options_all">All categories</string>
+    <string name="options_custom">This game</string>
+    <string name="options_inherited">General setting</string>
+    <string name="options_base">General value: %1$s</string>
+    <string name="options_save">Save</string>
+    <string name="options_reset">Reset</string>
+    <string name="options_saved">Saved. Applies on the next game launch.</string>
+    <string name="options_error">Could not read or save options: %1$s</string>
+    <string name="options_no_title">The title ID could not be read. Per-game options require a valid title ID.</string>
+    <string name="profile_create">Create profile</string>
+    <string name="profile_select">Choose a profile for player 1</string>
+    <string name="profile_gamertag">Gamertag</string>
+    <string name="profile_explanation">Create a local player profile so games can sign in and save your progress. It will sign in automatically the next time you play.</string>
+    <string name="profile_migration">Create a local player profile and associate existing legacy saves with it, as on desktop. It will sign in automatically the next time you play.</string>
+    <string name="profile_invalid">Use 1–15 letters (A–Z), numbers or single spaces. Start with a letter and end with a letter or number.</string>
+    <string name="profile_error">Could not create or load the profile. Check free storage and try again.</string>
+
+    <style name="XeniaAndroidTheme" parent="android:style/Theme.Material.NoActionBar">
+
+        <item name="android:fontFamily">sans</item>
+
+        <item name="android:colorAccent">#9BE06B</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <item name="android:windowBackground">#0F1319</item>
+
+        <item name="android:statusBarColor">#0F1319</item>
+
+        <item name="android:navigationBarColor">#0F1319</item>
+
+    </style>
+
+    <string name="library">Library</string><string name="recent">Recent</string><string name="settings">Settings</string>
+
+    <string name="your_games">Your games</string><string name="recent_games">Recently played</string>
+
+    <string name="library_subtitle">Your Xbox 360 games, opened directly from storage.</string>
+
+    <string name="open_image">＋ ISO / ZAR</string><string name="import_folder">Add folder</string>
+
+    <string name="import_explanation">Choose the complete XEX or GOD game folder, including its data files. Xenia reads the originals directly. No files are copied.</string>
+
+    <string name="choose_folder">Choose folder</string><string name="search_games">Search your library</string>
+
+    <string name="empty_library">Your library starts here</string>
+
+    <string name="no_results">No matching games</string>
+
+    <string name="empty_hint">Add an ISO / ZAR or a complete game folder.\nYour games will appear here.</string>
+
+    <string name="play">▶  Play</string><string name="play_named">Play %1$s</string>
+
+    <string name="remove_library">Remove from list</string>
+
+    <plurals name="game_count"><item quantity="one">%d game</item><item quantity="other">%d games</item></plurals>
+
+    <string name="video">VIDEO</string><string name="resolution">Rendering resolution</string>
+
+    <string name="fps_limit">Frame rate limit</string><string name="unlimited">No limit</string>
+
+    <string name="controls">CONTROLS</string><string name="touch_controls">On-screen controller</string>
+
+    <string name="controller_hint">Touch controls and up to four Bluetooth / USB gamepads, with vibration where supported.</string>
+
+    <string name="preview_title">Android preview</string>
+
+    <string name="preview_description">Game compatibility is still being tested. Video settings apply to the next game session.</string>
+
+    <string name="project">Xenia Edge on GitHub</string>
+
+    <string name="file_unavailable">The file is unavailable. Select it again from its original location.</string>
+
+    <string name="no_executables">No XEX, ELF, ISO, ZAR or STFS/GOD title was found in this folder.</string>
+
+    <string name="import_cancelled">Import cancelled.</string>
+
+    <string name="importing">Scanning folder…</string><string name="import_progress">Scanning · %2$s</string>
+
+    <string name="cannot_open">Could not add game</string>
+
+    <string name="image_formats">Select an ISO or ZAR. For XEX and GOD, add the complete game folder.</string>
+
+    <string name="menu">Menu</string><string name="preparing_game">Preparing game…</string>
+
+    <string name="preparing_video">Preparing video…</string><string name="loading_game">Loading game…</string>
+
+
+    <string name="launch_error">Xenia could not launch this title (0x%1$08X). Check the format and game files. Technical details are in Logcat.</string>
+
+    <string name="cannot_launch">Could not start game</string><string name="back_library">Back to library</string>
+
+    <string name="close_session">Interrupt this session?</string>
+
+    <string name="interrupt_loading">The game is still loading or closing. You can wait, or interrupt this session and return to the library.</string>
+
+    <string name="close_current_first">Close the current game from the menu before opening another title.</string>
+
+    <string name="resume">Resume game</string><string name="toggle_controls">Show / hide touch controls</string><string name="stop_game">Close game</string>
+
+    <string name="storage_access">Access to game files</string>
+
+    <string name="storage_explanation">Enable “All files access” for Xenia to open games directly from device storage or an SD card, without copying them.</string>
+
+    <string name="open_settings">Open settings</string>
+
+    <string name="local_storage_required">Select a local file on the device or SD card. Cloud and virtual providers cannot be opened directly.</string>
+
+    <string name="game_information">Information</string>
+    <string name="info_unavailable">Unavailable</string>
+    <string name="info_title_id">Title ID</string>
+    <string name="info_media_id">Media ID</string>
+    <string name="info_version">Version</string>
+    <string name="info_base_version">Base version</string>
+    <string name="info_disc">Disc</string>
+    <string name="info_disc_number">%1$d of %2$d</string>
+    <string name="info_last_played">Last launched</string>
+    <string name="info_never">Never</string>
+    <string name="info_compatibility">Compatibility</string>
+    <string name="info_not_verified">Not verified</string>
+    <string name="info_file">File</string>
+    <string name="info_format">Format</string>
+    <string name="info_size">File size</string>
+    <string name="info_path">Location</string>
+    <string name="info_loading">Reading title information…</string>
+    <string name="info_no_metadata">No readable title metadata is available in this file.</string>
+    <string name="automatic_controller">Automatic</string>
+    <string name="profile_image">Profile image</string>
+    <string name="choose_image">Choose image</string>
+    <string name="clear_image">Clear image</string>
+    <string name="invalid_image">Invalid image</string>
+</resources>

@@ -1,0 +1,124 @@
+<resources>
+    <string name="gamer_name">Nome</string>
+    <string name="gamer_motto">Motto</string>
+    <string name="gamer_bio">Biografia</string>
+    <string name="gamer_zone">Zona giocatore</string>
+    <string name="data_busy">Chiudi il gioco o la schermata di gestione prima di modificare i dati dell’emulatore.</string>
+    <string name="controllers">Controller</string>
+    <string name="no_controller">Nessun controller fisico</string>
+    <string name="postprocessing">Post-processing</string>
+    <string name="performance">Prestazioni</string>
+    <string name="debug_tools">Impostazioni di debug</string>
+    <string name="audio">Audio</string>
+    <string name="screenshot">Scatta screenshot</string>
+    <string name="screenshot_failed">Impossibile acquisire l’immagine del gioco.</string>
+    <string name="screenshot_saved">Screenshot salvato. Lo trovi in Impostazioni → Gestisci file → screenshots.</string>
+    <string name="clear_gpu_cache">Svuota cache GPU</string>
+    <string name="profiler">Mostra / nascondi profiler</string>
+    <string name="profiles">Profili</string>
+    <string name="edit_profile">Modifica profilo</string>
+    <string name="sign_in">Accedi</string>
+    <string name="sign_out">Disconnetti</string>
+    <string name="signed_out">Disconnesso</string>
+    <string name="player_number">Giocatore %1$d</string>
+    <string name="profile_country">Paese</string>
+    <string name="profile_language">Lingua</string>
+    <string name="profile_live">Live abilitato</string>
+    <string name="profile_subscription">Tipo di abbonamento</string>
+    <string name="patches">Patch</string>
+    <string name="content">DLC e aggiornamenti del titolo</string>
+    <string name="saves">Salvataggi</string>
+    <string name="statistics">Statistiche e compatibilità</string>
+    <string name="desktop_compatibility">Rapporto di compatibilità desktop</string>
+    <string name="achievements">Obiettivi</string>
+    <string-array name="compat_states"><item>Sconosciuta</item><item>Non giocabile</item><item>Si avvia</item><item>Gameplay</item><item>Giocabile</item></string-array>
+    <string name="working">Operazione in corso…</string>
+    <string name="operation_error">Impossibile completare l’operazione: %1$s</string>
+    <string name="nothing_here">Nessuna voce disponibile.</string>
+    <string name="manage_files">Gestisci file</string>
+    <string name="add_content">Aggiungi DLC o aggiornamento</string>
+    <string name="detach_content">Rimuovi riferimento</string>
+    <string name="content_link_explanation">I pacchetti vengono letti dalla posizione originale. Mantienili lì. Rimuovere un riferimento lascia intatto il file originale.</string>
+    <string name="global_options">Opzioni generali</string>
+    <string name="global_explanation">Valori predefiniti per tutti i giochi. Le opzioni per gioco hanno precedenza. Le modifiche si applicano al prossimo avvio.</string>
+    <string name="default_value">Predefinito</string>
+    <string name="add_games">Aggiungi giochi</string>
+    <string name="single_game">Gioco singolo</string>
+    <string name="game_folder">Cartella</string>
+    <string name="game_options">Opzioni del gioco</string>
+    <string name="options_explanation">Preferenze per questo titolo. Le modifiche si applicano al prossimo avvio del gioco.</string>
+    <string name="options_search">Cerca nelle opzioni</string>
+    <string name="options_all">Tutte le categorie</string>
+    <string name="options_custom">Questo gioco</string>
+    <string name="options_inherited">Impostazione generale</string>
+    <string name="options_base">Valore generale: %1$s</string>
+    <string name="options_save">Salva</string>
+    <string name="options_reset">Ripristina</string>
+    <string name="options_saved">Salvato. Si applica al prossimo avvio del gioco.</string>
+    <string name="options_error">Impossibile leggere o salvare le opzioni: %1$s</string>
+    <string name="options_no_title">Impossibile leggere il Title ID. Le opzioni per gioco richiedono un Title ID valido.</string>
+    <string name="profile_create">Crea profilo</string>
+    <string name="profile_select">Scegli un profilo per il giocatore 1</string>
+    <string name="profile_gamertag">Gamertag</string>
+    <string name="profile_explanation">Crea un profilo giocatore locale per consentire ai giochi di accedere e salvare i progressi. Gli accessi successivi saranno automatici.</string>
+    <string name="profile_migration">Crea un profilo giocatore locale e associagli i salvataggi nel vecchio formato, come su desktop. Gli accessi successivi saranno automatici.</string>
+    <string name="profile_invalid">Usa da 1 a 15 lettere (A–Z), numeri o spazi singoli. Inizia con una lettera e termina con una lettera o un numero.</string>
+    <string name="profile_error">Impossibile creare o caricare il profilo. Controlla lo spazio libero e riprova.</string>
+    <string name="library">Libreria</string><string name="recent">Recenti</string><string name="settings">Impostazioni</string>
+    <string name="your_games">I tuoi giochi</string><string name="recent_games">Giocati di recente</string>
+    <string name="library_subtitle">I tuoi giochi Xbox 360, aperti direttamente dalla memoria.</string>
+    <string name="open_image">＋ ISO / ZAR</string><string name="import_folder">＋ Cartella</string>
+    <string name="import_explanation">Scegli la cartella completa del gioco XEX o GOD, inclusi i file dei dati. Xenia legge direttamente gli originali. Nessun file viene copiato.</string>
+    <string name="choose_folder">Scegli cartella</string><string name="search_games">Cerca nella libreria</string>
+    <string name="empty_library">La tua libreria inizia qui</string><string name="no_results">Nessun gioco trovato</string>
+    <string name="empty_hint">Aggiungi una ISO / ZAR o una cartella completa.\nI tuoi giochi appariranno qui.</string>
+    <string name="play">▶  Gioca</string><string name="play_named">Avvia %1$s</string><string name="remove_library">Rimuovi dalla lista</string>
+    <plurals name="game_count"><item quantity="one">%d gioco</item><item quantity="other">%d giochi</item></plurals>
+    <string name="video">VIDEO</string><string name="resolution">Risoluzione di rendering</string>
+    <string name="fps_limit">Limite dei fotogrammi</string><string name="unlimited">Nessun limite</string>
+    <string name="controls">COMANDI</string><string name="touch_controls">Controller sullo schermo</string>
+    <string name="controller_hint">Comandi touch e fino a quattro gamepad Bluetooth / USB, con vibrazione dove supportata.</string>
+    <string name="preview_title">Anteprima Android</string>
+    <string name="preview_description">La compatibilità dei giochi è ancora in verifica. Le impostazioni video si applicano alla prossima sessione.</string>
+    <string name="project">Xenia Edge su GitHub</string>
+    <string name="file_unavailable">File non disponibile. Selezionalo di nuovo dalla posizione originale.</string>
+    <string name="no_executables">Nessun titolo XEX, ELF, ISO, ZAR o STFS/GOD trovato nella cartella.</string>
+    <string name="import_cancelled">Scansione annullata.</string><string name="importing">Scansione cartella…</string>
+    <string name="import_progress">Scansione · %2$s</string><string name="cannot_open">Impossibile aggiungere il gioco</string>
+    <string name="image_formats">Seleziona una ISO o un archivio ZAR. Per XEX e GOD, aggiungi la cartella completa del gioco.</string>
+    <string name="menu">Menu</string><string name="preparing_game">Preparazione del gioco…</string>
+    <string name="preparing_video">Preparazione video…</string><string name="loading_game">Caricamento del gioco…</string>
+    <string name="launch_error">Xenia non ha potuto avviare il titolo (0x%1$08X). Controlla formato e file del gioco. I dettagli tecnici sono in Logcat.</string>
+    <string name="cannot_launch">Impossibile avviare il gioco</string><string name="back_library">Torna alla libreria</string>
+    <string name="close_session">Interrompere questa sessione?</string>
+    <string name="interrupt_loading">Il gioco sta ancora caricando o chiudendo. Puoi attendere oppure interrompere la sessione e tornare alla libreria.</string>
+    <string name="close_current_first">Chiudi il gioco corrente dal menu prima di aprire un altro titolo.</string>
+    <string name="resume">Riprendi il gioco</string><string name="toggle_controls">Mostra / nascondi comandi touch</string><string name="stop_game">Chiudi il gioco</string>
+    <string name="storage_access">Accesso ai file dei giochi</string>
+    <string name="storage_explanation">Abilita “Accesso a tutti i file” per Xenia per aprire i giochi direttamente dalla memoria o dalla scheda SD, senza copiarli.</string>
+    <string name="open_settings">Apri impostazioni</string>
+    <string name="local_storage_required">Seleziona un file locale sul dispositivo o sulla scheda SD. I servizi cloud e i file virtuali non possono essere aperti direttamente.</string>
+    <string name="game_information">Informazioni</string>
+    <string name="info_unavailable">Non disponibile</string>
+    <string name="info_title_id">Title ID</string>
+    <string name="info_media_id">Media ID</string>
+    <string name="info_version">Versione</string>
+    <string name="info_base_version">Versione base</string>
+    <string name="info_disc">Disco</string>
+    <string name="info_disc_number">%1$d di %2$d</string>
+    <string name="info_last_played">Ultimo avvio</string>
+    <string name="info_never">Mai</string>
+    <string name="info_compatibility">Compatibilità</string>
+    <string name="info_not_verified">Non verificata</string>
+    <string name="info_file">File</string>
+    <string name="info_format">Formato</string>
+    <string name="info_size">Dimensione del file</string>
+    <string name="info_path">Percorso</string>
+    <string name="info_loading">Lettura delle informazioni…</string>
+    <string name="info_no_metadata">Il file non contiene metadati del titolo leggibili.</string>
+    <string name="automatic_controller">Automatico</string>
+    <string name="profile_image">Immagine profilo</string>
+    <string name="choose_image">Scegli immagine</string>
+    <string name="clear_image">Rimuovi immagine</string>
+    <string name="invalid_image">Immagine non valida</string>
+</resources>

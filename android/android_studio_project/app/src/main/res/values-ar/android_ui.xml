@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"أغلق شاشة اللعبة أو الإدارة قبل تغيير بيانات المحاكي."</string>
+  <string name="no_controller">"لا توجد وحدة تحكم فعلية"</string>
+  <string name="postprocessing">"مرحلة ما بعد المعالجة"</string>
+  <string name="performance">"الأداء"</string>
+  <string name="debug_tools">"إعدادات التصحيح"</string>
+  <string name="screenshot">"أخذ لقطة للشاشة"</string>
+  <string name="screenshot_failed">"تعذر التقاط صورة اللعبة."</string>
+  <string name="screenshot_saved">"تم حفظ لقطة الشاشة. يمكنك العثور عليه في الإعدادات ← إدارة الملفات ← screenshots."</string>
+  <string name="clear_gpu_cache">"مسح ذاكرة التخزين المؤقت لوحدة معالجة الرسومات"</string>
+  <string name="profiler">"إظهار / إخفاء محلّل الأداء"</string>
+  <string name="profiles">"الملفات الشخصية"</string>
+  <string name="edit_profile">"تحرير الملف الشخصي"</string>
+  <string name="player_number">"اللاعب %1$d"</string>
+  <string name="content">"المحتوى القابل للتنزيل (DLC) وتحديثات العنوان"</string>
+  <string name="statistics">"الإحصائيات والتوافق"</string>
+  <string name="desktop_compatibility">"تقرير توافق سطح المكتب"</string>
+  <string-array name="compat_states">
+    <item>"غير معروف"</item>
+    <item>"غير قابل للعب"</item>
+    <item>"يبدأ التشغيل"</item>
+    <item>"داخل اللعبة"</item>
+    <item>"قابل للعب"</item>
+  </string-array>
+  <string name="working">"جارٍ التنفيذ…"</string>
+  <string name="operation_error">"لا يمكن إكمال العملية: %1$s"</string>
+  <string name="nothing_here">"لا توجد إدخالات متاحة."</string>
+  <string name="manage_files">"إدارة الملفات"</string>
+  <string name="add_content">"إضافة DLC أو تحديث العنوان"</string>
+  <string name="detach_content">"قم بإزالة المرجع"</string>
+  <string name="content_link_explanation">"تتم قراءة الحزم مباشرة من موقعها الأصلي. احتفظ بهم هناك. تؤدي إزالة مرجع إلى ترك الملف الأصلي سليمًا."</string>
+  <string name="global_options">"الخيارات العامة"</string>
+  <string name="global_explanation">"الإعدادات الافتراضية لجميع الألعاب. الخيارات لكل لعبة لها الأولوية. تنطبق التغييرات على الإطلاق التالي."</string>
+  <string name="default_value">"الافتراضي"</string>
+  <string name="add_games">"إضافة ألعاب"</string>
+  <string name="single_game">"لعبة واحدة"</string>
+  <string name="game_folder">"المجلد"</string>
+  <string name="game_options">"خيارات اللعبة"</string>
+  <string name="options_explanation">"تجاوزات لهذا العنوان. تنطبق التغييرات في المرة التالية التي تبدأ فيها اللعبة."</string>
+  <string name="options_custom">"هذه اللعبة"</string>
+  <string name="options_inherited">"الإعداد العام"</string>
+  <string name="options_base">"القيمة العامة: %1$s"</string>
+  <string name="options_error">"لا يمكن قراءة الخيارات أو حفظها: %1$s"</string>
+  <string name="options_no_title">"لا يمكن قراءة معرف العنوان. تتطلب خيارات كل لعبة معرف عنوان صالحًا."</string>
+  <string name="profile_select">"اختر ملف تعريف للاعب 1"</string>
+  <string name="profile_explanation">"قم بإنشاء ملف تعريف لاعب محلي حتى تتمكن الألعاب من تسجيل الدخول وحفظ تقدمك. سيتم تسجيل الدخول تلقائيًا في المرة التالية التي تلعب فيها."</string>
+  <string name="profile_migration">"قم بإنشاء ملف تعريف لاعب محلي وربط عمليات الحفظ القديمة الموجودة به، كما هو الحال على سطح المكتب. سيتم تسجيل الدخول تلقائيًا في المرة التالية التي تلعب فيها."</string>
+  <string name="profile_invalid">"استخدم 1–15 حرفًا (A–Z) أو أرقامًا أو مسافات مفردة. تبدأ بحرف وتنتهي بحرف أو رقم."</string>
+  <string name="profile_error">"لا يمكن إنشاء ملف التعريف أو تحميله. تحقق من سعة التخزين المجانية وحاول مرة أخرى."</string>
+  <string name="library">"المكتبة"</string>
+  <string name="recent">"الأخيرة"</string>
+  <string name="your_games">"ألعابك"</string>
+  <string name="recent_games">"تم تشغيله مؤخرًا"</string>
+  <string name="library_subtitle">"يتم فتح ألعاب Xbox 360 الخاصة بك مباشرة من وحدة التخزين."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"إضافة مجلد"</string>
+  <string name="import_explanation">"اختر مجلد لعبة XEX أو GOD الكامل، بما في ذلك ملفات البيانات الخاصة به. تقرأ Xenia النسخ الأصلية مباشرة. لا يتم نسخ أي ملفات."</string>
+  <string name="choose_folder">"اختر المجلد"</string>
+  <string name="empty_library">"مكتبتك تبدأ هنا"</string>
+  <string name="no_results">"لا توجد ألعاب مطابقة"</string>
+  <string name="empty_hint">"أضف ISO / ZAR أو مجلد اللعبة الكامل.\nستظهر ألعابك هنا."</string>
+  <string name="play">"▶  العب"</string>
+  <string name="play_named">"العب %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="zero">"الألعاب: %d"</item>
+    <item quantity="one">"الألعاب: %d"</item>
+    <item quantity="two">"الألعاب: %d"</item>
+    <item quantity="few">"%d ألعاب"</item>
+    <item quantity="many">"%d لعبة"</item>
+    <item quantity="other">"الألعاب: %d"</item>
+  </plurals>
+  <string name="video">"فيديو"</string>
+  <string name="resolution">"دقة العرض"</string>
+  <string name="fps_limit">"حد معدل الإطار"</string>
+  <string name="controls">"الضوابط"</string>
+  <string name="touch_controls">"جهاز التحكم على الشاشة"</string>
+  <string name="controller_hint">"عناصر التحكم باللمس وما يصل إلى أربع لوحات ألعاب Bluetooth / USB، مع الاهتزاز عندما تكون مدعومة."</string>
+  <string name="preview_title">"Android معاينة"</string>
+  <string name="preview_description">"لا يزال توافق اللعبة قيد الاختبار. تنطبق إعدادات الفيديو على جلسة اللعبة التالية."</string>
+  <string name="project">"Xenia Edge في GitHub"</string>
+  <string name="file_unavailable">"الملف غير متوفر. حدده مرة أخرى من موقعه الأصلي."</string>
+  <string name="no_executables">"لم يتم العثور على عنوان XEX أو ELF أو ISO أو ZAR أو STFS/GOD في هذا المجلد."</string>
+  <string name="import_cancelled">"تم إلغاء الاستيراد."</string>
+  <string name="importing">"مسح المجلد..."</string>
+  <string name="import_progress">"المسح الضوئي · %2$s"</string>
+  <string name="cannot_open">"لا يمكن إضافة اللعبة"</string>
+  <string name="image_formats">"حدد ISO أو ZAR. بالنسبة لـ XEX وGOD، أضف مجلد اللعبة الكامل."</string>
+  <string name="menu">"القائمة"</string>
+  <string name="preparing_game">"تحضير اللعبة..."</string>
+  <string name="preparing_video">"تحضير الفيديو..."</string>
+  <string name="loading_game">"جاري تحميل اللعبة..."</string>
+  <string name="launch_error">"لم تتمكن Xenia من تشغيل هذا العنوان (0x%1$08X). التحقق من التنسيق وملفات اللعبة. التفاصيل الفنية موجودة في Logcat."</string>
+  <string name="cannot_launch">"تعذر بدء اللعبة"</string>
+  <string name="back_library">"العودة إلى المكتبة"</string>
+  <string name="close_session">"هل تريد مقاطعة هذه الجلسة؟"</string>
+  <string name="interrupt_loading">"لا تزال اللعبة قيد التحميل أو الإغلاق. يمكنك الانتظار أو مقاطعة هذه الجلسة والعودة إلى المكتبة."</string>
+  <string name="close_current_first">"أغلق اللعبة الحالية من القائمة قبل فتح عنوان آخر."</string>
+  <string name="resume">"استئناف اللعبة"</string>
+  <string name="toggle_controls">"إظهار/إخفاء عناصر التحكم باللمس"</string>
+  <string name="storage_access">"الوصول إلى ملفات اللعبة"</string>
+  <string name="storage_explanation">"قم بتمكين \"الوصول إلى جميع الملفات\" لـ Xenia لفتح الألعاب مباشرة من مساحة تخزين الجهاز أو بطاقة SD، دون نسخها."</string>
+  <string name="open_settings">"افتح الإعدادات"</string>
+  <string name="local_storage_required">"حدد ملفًا محليًا على الجهاز أو بطاقة SD. لا يمكن فتح موفري الخدمات السحابية والافتراضية مباشرة."</string>
+  <string name="game_information">"المعلومات"</string>
+  <string name="info_unavailable">"غير متاح"</string>
+  <string name="info_title_id">"معرف العنوان"</string>
+  <string name="info_media_id">"معرف الوسائط"</string>
+  <string name="info_base_version">"الإصدار الأساسي"</string>
+  <string name="info_disc">"القرص"</string>
+  <string name="info_disc_number">"%1$d من %2$d"</string>
+  <string name="info_not_verified">"لم يتم التحقق منه"</string>
+  <string name="info_format">"التنسيق"</string>
+  <string name="info_size">"حجم الملف"</string>
+  <string name="info_path">"الموقع"</string>
+  <string name="info_loading">"قراءة معلومات العنوان..."</string>
+  <string name="info_no_metadata">"لا تتوفر بيانات تعريف عنوان قابلة للقراءة في هذا الملف."</string>
+  <string name="automatic_controller">"تلقائي"</string>
+  <string name="profile_image">"صورة الملف الشخصي"</string>
+  <string name="choose_image">"اختر الصورة"</string>
+  <string name="invalid_image">"صورة غير صالحة"</string>
+  <string name="preloading_shaders">"التحميل المسبق للتظليل…"</string>
+  <string name="patches_applied">"تم تطبيق التصحيحات"</string>
+  <string name="plugins_loaded">"تم تحميل المكونات الإضافية"</string>
+  <string name="build_commit">"عرض التزام البناء"</string>
+  <string name="interface_language">"لغة الواجهة"</string>
+  <string name="system_language">"لغة النظام"</string>
+  <string name="global_only_option">"قم بتغيير هذا الخيار في الإعدادات العامة."</string>
+  <string name="controller_type">"نوع جهاز التحكم"</string>
+  <string name="physical_keyboard">"لوحة المفاتيح"</string>
+  <string name="time_scale">"سرعة المحاكاة"</string>
+  <string name="time_half">"نصف السرعة الحالية"</string>
+  <string name="time_double">"مضاعفة سرعة التيار"</string>
+  <string name="time_reset">"السرعة العادية"</string>
+  <string name="toggle_vibration">"تبديل الاهتزاز"</string>
+  <string name="sort_games">"فرز الألعاب"</string>
+  <string name="rename_game">"إعادة تسمية الإصدار"</string>
+  <string name="invalid_name">"أدخل اسمًا"</string>
+  <string name="manage_discs">"إدارة الأقراص"</string>
+  <string name="default_disc">"استخدم كقرص افتراضي"</string>
+  <string name="plugins">"إدارة المكونات الإضافية"</string>
+  <string name="install_content">"استيراد حزم المحتوى"</string>
+  <string name="about_description">"المشروع البحثي لمحاكي Xbox 360\nالإصدار %1$s\nVulkan · ARM64\nترخيص BSD — مساهمو Xenia"</string>
+  <string-array name="controller_types">
+    <item>"تلقائي"</item>
+    <item>"وحدة تحكم"</item>
+    <item>"عجلة قيادة"</item>
+    <item>"عصا الأركيد"</item>
+    <item>"عصا طيران"</item>
+    <item>"وسادة الرقص"</item>
+    <item>"غيتار"</item>
+    <item>"مجموعة طبول"</item>
+    <item>"لوحة الأركيد"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"العنوان أ–ي"</item>
+    <item>"العنوان Z–A"</item>
+    <item>"الأقدم يلعب أولاً"</item>
+    <item>"تم تشغيله آخر مرة أولاً"</item>
+    <item>"التوافق ↑"</item>
+    <item>"التوافق ↓"</item>
+  </string-array>
+  <string name="mutable_content">"الملفات الشخصية والحفظات"</string>
+  <string name="mutable_content_explanation">"تحتوي هذه الحزم على ملف تعريف قابل للكتابة أو حفظ البيانات. يتطلب استيرادها استخراجها من مساحة تخزين التطبيق. تظل الألعاب والمحتوى القابل للتنزيل (DLC) والتحديثات مرتبطة في مكانها. يتم الاحتفاظ بالأصول ولا يتم استبدال البيانات الموجودة أبدًا."</string>
+  <string name="extract_data">"استخراج الملف الشخصي/حفظ البيانات"</string>
+  <string name="unsupported_game">"اختر لعبة ISO أو ZAR أو XEX أو ELF أو STFS/GOD."</string>
+  <string name="stop_confirmation">"إيقاف اللعبة؟ سيتم فقدان التقدم غير المحفوظ."</string>
+  <string name="virtual_controller">"جهاز التحكم على الشاشة"</string>
+  <string name="disconnect_controller">"غير متصل"</string>
+  <string name="remap_controller">"تعيينات وحدة التحكم"</string>
+  <string name="reset_mappings">"استعادة التعيينات الافتراضية"</string>
+  <string name="mapping_key">"رمز مفتاح Android"</string>
+  <string name="mapping_axis">"Android المحور (سالب = مقلوب)"</string>
+  <string name="press_controller_button">"اضغط على الزر الفعلي للتعيين."</string>
+  <string name="invert_axis">"عكس المحور"</string>
+  <string name="portal_failed">"تعذر الاتصال بمدخل USB."</string>
+  <string name="open_trace">"افتح تتبع Vulkan."</string>
+  <string name="trace_failed">"لا يمكن فتح تتبع GPU."</string>
+  <string name="reset_all_options">"إعادة ضبط خيارات المحاكي"</string>
+  <string name="reset_global_confirmation">"هل تريد إعادة تعيين جميع خيارات محاكي Android إلى إعداداتها الافتراضية، بما في ذلك المسارات التي تم تكوينها ولغة الواجهة؟ سيتم الاحتفاظ بالملفات الشخصية وملفات اللعبة والخيارات الخاصة بكل لعبة."</string>
+  <string name="reset_game_confirmation">"هل تريد إزالة جميع تجاوزات خيارات Android لهذا العنوان؟ سيتم استخدام الإعدادات العامة. سيتم الاحتفاظ بملفات اللعبة."</string>
+  <string name="state_on">"مفعّل"</string>
+  <string name="state_off">"معطّل"</string>
+</resources>

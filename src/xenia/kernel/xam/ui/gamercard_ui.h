@@ -76,6 +76,8 @@ class GamercardUI final : public XamDialog {
   const bool is_valid_gamertag_ = true;
 
   bool has_opened_ = false;
+  // Invalidates asynchronous file results when the dialog has been closed.
+  std::shared_ptr<int> lifetime_ = std::make_shared<int>(0);
   KernelState* kernel_state_;
   xe::ui::Window* window_;
 

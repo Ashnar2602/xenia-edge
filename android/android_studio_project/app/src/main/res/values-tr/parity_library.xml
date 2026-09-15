@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Oyun dosyasını bul</string>
+    <string name="wrong_game_release">Aynı oyun ve sürüme ait bir dosya seçin.</string>
+    <string name="install_cancelled">Kurulum iptal edildi</string>
+</resources>

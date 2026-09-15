@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Emülatör verilerini değiştirmeden önce oyunu veya yönetim ekranını kapatın."</string>
+  <string name="no_controller">"Fiziksel denetleyici yok"</string>
+  <string name="postprocessing">"İşlem sonrası"</string>
+  <string name="performance">"Performans"</string>
+  <string name="debug_tools">"Hata ayıklama ayarları"</string>
+  <string name="screenshot">"Ekran görüntüsü al"</string>
+  <string name="screenshot_failed">"Oyun görüntüsü yakalanamadı."</string>
+  <string name="screenshot_saved">"Ekran görüntüsü kaydedildi. Bunu Ayarlar → Dosyaları yönet → screenshots bölümünde bulabilirsiniz."</string>
+  <string name="clear_gpu_cache">"GPU önbelleklerini temizle"</string>
+  <string name="profiler">"Performans analizini göster / gizle"</string>
+  <string name="profiles">"Profiller"</string>
+  <string name="edit_profile">"Profili düzenle"</string>
+  <string name="player_number">"Oyuncu %1$d"</string>
+  <string name="content">"DLC ve başlık güncellemeleri"</string>
+  <string name="statistics">"İstatistikler ve uyumluluk"</string>
+  <string name="desktop_compatibility">"Masaüstü uyumluluk raporu"</string>
+  <string-array name="compat_states">
+    <item>"Bilinmiyor"</item>
+    <item>"Oynanamaz"</item>
+    <item>"Başlıyor"</item>
+    <item>"Oyun içi"</item>
+    <item>"Oynanabilir"</item>
+  </string-array>
+  <string name="working">"İşleniyor…"</string>
+  <string name="operation_error">"İşlem tamamlanamadı: %1$s"</string>
+  <string name="nothing_here">"Hiçbir giriş mevcut değil."</string>
+  <string name="manage_files">"Dosyaları yönet"</string>
+  <string name="add_content">"DLC veya başlık güncellemesi ekleyin"</string>
+  <string name="detach_content">"Referansı kaldır"</string>
+  <string name="content_link_explanation">"Paketler doğrudan orijinal konumlarından okunur. Onları orada tut. Bir referansın kaldırılması orijinal dosyayı olduğu gibi bırakır."</string>
+  <string name="global_options">"Genel seçenekler"</string>
+  <string name="global_explanation">"Tüm oyunlar için varsayılanlar. Oyun başına seçenekler önceliklidir. Değişiklikler bir sonraki başlatmada geçerli olur."</string>
+  <string name="default_value">"Varsayılan"</string>
+  <string name="add_games">"Oyun ekle"</string>
+  <string name="single_game">"Tek oyun"</string>
+  <string name="game_folder">"Klasör"</string>
+  <string name="game_options">"Oyun seçenekleri"</string>
+  <string name="options_explanation">"Bu başlık için geçersiz kılmalar. Değişiklikler oyunun bir sonraki başlangıcında geçerli olur."</string>
+  <string name="options_custom">"Bu oyun"</string>
+  <string name="options_inherited">"Genel ayar"</string>
+  <string name="options_base">"Genel değer: %1$s"</string>
+  <string name="options_error">"Seçenekler okunamadı veya kaydedilemedi: %1$s"</string>
+  <string name="options_no_title">"Başlık kimliği okunamadı. Oyun başına seçenekler geçerli bir başlık kimliği gerektirir."</string>
+  <string name="profile_select">"Oyuncu 1 için bir profil seçin"</string>
+  <string name="profile_explanation">"Oyunların oturum açabilmesi ve ilerlemenizi kaydedebilmesi için yerel bir oyuncu profili oluşturun. Bir sonraki oynadığınızda otomatik olarak oturum açacaktır."</string>
+  <string name="profile_migration">"Yerel bir oyuncu profili oluşturun ve mevcut eski kayıtları masaüstünde olduğu gibi bununla ilişkilendirin. Bir sonraki oynadığınızda otomatik olarak oturum açacaktır."</string>
+  <string name="profile_invalid">"1–15 harf (A–Z), rakam veya tek boşluk kullanın. Bir harfle başlayın ve bir harf veya rakamla bitirin."</string>
+  <string name="profile_error">"Profil oluşturulamadı veya yüklenemedi. Ücretsiz depolama alanını kontrol edip tekrar deneyin."</string>
+  <string name="library">"Kütüphane"</string>
+  <string name="recent">"Son"</string>
+  <string name="your_games">"Oyunlarınız"</string>
+  <string name="recent_games">"Son oynanan"</string>
+  <string name="library_subtitle">"Doğrudan depolama alanından açılan Xbox 360 oyunlarınız."</string>
+  <string name="open_image">"+ ISO / ZAR"</string>
+  <string name="import_folder">"Klasör ekle"</string>
+  <string name="import_explanation">"Veri dosyaları da dahil olmak üzere XEX veya GOD oyun klasörünün tamamını seçin. Xenia orijinalleri doğrudan okur. Hiçbir dosya kopyalanmaz."</string>
+  <string name="choose_folder">"Klasör seç"</string>
+  <string name="empty_library">"Kitaplığınız burada başlıyor"</string>
+  <string name="no_results">"Eşleşen oyun yok"</string>
+  <string name="empty_hint">"Bir ISO / ZAR veya tam bir oyun klasörü ekleyin.\nOyunlarınız burada görünecek."</string>
+  <string name="play">"▶  Oyna"</string>
+  <string name="play_named">"%1$s oyna"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d oyun"</item>
+    <item quantity="other">"%d oyun"</item>
+  </plurals>
+  <string name="video">"VİDEO"</string>
+  <string name="resolution">"İşleme çözünürlüğü"</string>
+  <string name="fps_limit">"Kare hızı sınırı"</string>
+  <string name="controls">"KONTROLLER"</string>
+  <string name="touch_controls">"Ekran denetleyicisi"</string>
+  <string name="controller_hint">"Desteklenen yerlerde titreşimli dokunmatik kontroller ve dört adede kadar Bluetooth / USB gamepad."</string>
+  <string name="preview_title">"Android önizlemesi"</string>
+  <string name="preview_description">"Oyun uyumluluğu halen test edilmektedir. Video ayarları bir sonraki oyun oturumuna uygulanır."</string>
+  <string name="project">"GitHub\'da Xenia Edge"</string>
+  <string name="file_unavailable">"Dosya kullanılamıyor. Orijinal konumundan tekrar seçin."</string>
+  <string name="no_executables">"Bu klasörde XEX, ELF, ISO, ZAR veya STFS/GOD başlığı bulunamadı."</string>
+  <string name="import_cancelled">"İçe aktarma iptal edildi."</string>
+  <string name="importing">"Klasör taranıyor…"</string>
+  <string name="import_progress">"Taranıyor · %2$s"</string>
+  <string name="cannot_open">"Oyun eklenemedi"</string>
+  <string name="image_formats">"Bir ISO veya ZAR seçin. XEX ve GOD için oyun klasörünün tamamını ekleyin."</string>
+  <string name="menu">"Menü"</string>
+  <string name="preparing_game">"Oyun hazırlanıyor…"</string>
+  <string name="preparing_video">"Video hazırlanıyor…"</string>
+  <string name="loading_game">"Oyun yükleniyor…"</string>
+  <string name="launch_error">"Xenia bu başlığı (0x%1$08X) başlatamadı. Formatı ve oyun dosyalarını kontrol edin. Teknik detaylar Logcat\'te."</string>
+  <string name="cannot_launch">"Oyun başlatılamadı"</string>
+  <string name="back_library">"Kütüphaneye geri dön"</string>
+  <string name="close_session">"Bu oturum kesilsin mi?"</string>
+  <string name="interrupt_loading">"Oyun hala yükleniyor veya kapanıyor. Bu oturumu bekleyebilir veya yarıda kesip kütüphaneye dönebilirsiniz."</string>
+  <string name="close_current_first">"Başka bir başlık açmadan önce menüden mevcut oyunu kapatın."</string>
+  <string name="resume">"Oyuna devam et"</string>
+  <string name="toggle_controls">"Dokunmatik kontrolleri göster / gizle"</string>
+  <string name="storage_access">"Oyun dosyalarına erişim"</string>
+  <string name="storage_explanation">"Xenia\'nın oyunları kopyalamadan doğrudan cihaz depolama alanından veya SD karttan açması için \"Tüm dosyalara erişim\"i etkinleştirin."</string>
+  <string name="open_settings">"Ayarları aç"</string>
+  <string name="local_storage_required">"Cihazda veya SD kartta yerel bir dosya seçin. Bulut ve sanal sağlayıcılar doğrudan açılamaz."</string>
+  <string name="game_information">"Bilgi"</string>
+  <string name="info_unavailable">"Kullanılamıyor"</string>
+  <string name="info_title_id">"Başlık Kimliği"</string>
+  <string name="info_media_id">"Medya Kimliği"</string>
+  <string name="info_base_version">"Temel sürüm"</string>
+  <string name="info_disc">"Disk"</string>
+  <string name="info_disc_number">"%1$d / %2$d"</string>
+  <string name="info_not_verified">"Doğrulanmadı"</string>
+  <string name="info_format">"Biçim"</string>
+  <string name="info_size">"Dosya boyutu"</string>
+  <string name="info_path">"Konum"</string>
+  <string name="info_loading">"Başlık bilgileri okunuyor…"</string>
+  <string name="info_no_metadata">"Bu dosyada okunabilir başlık meta verisi yok."</string>
+  <string name="automatic_controller">"Otomatik"</string>
+  <string name="profile_image">"Profil resmi"</string>
+  <string name="choose_image">"Resim seç"</string>
+  <string name="invalid_image">"Geçersiz resim"</string>
+  <string name="preloading_shaders">"Gölgelendiriciler önceden yükleniyor…"</string>
+  <string name="patches_applied">"Uygulanan yamalar"</string>
+  <string name="plugins_loaded">"Yüklenen eklentiler"</string>
+  <string name="build_commit">"Derleme taahhüdünü görüntüle"</string>
+  <string name="interface_language">"Arayüz dili"</string>
+  <string name="system_language">"Sistem dili"</string>
+  <string name="global_only_option">"Bu seçeneği genel ayarlarda değiştirin."</string>
+  <string name="controller_type">"Denetleyici türü"</string>
+  <string name="physical_keyboard">"Klavye"</string>
+  <string name="time_scale">"Emülasyon hızı"</string>
+  <string name="time_half">"Yarım akım hızı"</string>
+  <string name="time_double">"Çift akım hızı"</string>
+  <string name="time_reset">"Normal hız"</string>
+  <string name="toggle_vibration">"Titreşimi aç/kapat"</string>
+  <string name="sort_games">"Oyunları sırala"</string>
+  <string name="rename_game">"Sürümü yeniden adlandır"</string>
+  <string name="invalid_name">"Bir ad girin"</string>
+  <string name="manage_discs">"Diskleri yönet"</string>
+  <string name="default_disc">"Varsayılan disk olarak kullan"</string>
+  <string name="plugins">"Eklentileri yönet"</string>
+  <string name="install_content">"İçerik paketlerini içe aktar"</string>
+  <string name="about_description">"Xbox 360 Emülatör Araştırma Projesi\nSürüm %1$s\nVulkan · ARM64\nBSD lisansı - Xenia\'ya katkıda bulunanlar"</string>
+  <string-array name="controller_types">
+    <item>"Otomatik"</item>
+    <item>"Oyun Kumandası"</item>
+    <item>"Direksiyon"</item>
+    <item>"Arcade Kolu"</item>
+    <item>"Uçuş Kolu"</item>
+    <item>"Dans Matı"</item>
+    <item>"Gitar"</item>
+    <item>"Davul Seti"</item>
+    <item>"Arcade Pad"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Başlık A’dan Z’ye"</item>
+    <item>"Başlık Z-A"</item>
+    <item>"En eskisi ilk önce oynadı"</item>
+    <item>"En son ilk oynanan"</item>
+    <item>"Uyumluluk ↑"</item>
+    <item>"Uyumluluk ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profiller ve kayıtlar"</string>
+  <string name="mutable_content_explanation">"Bu paketler yazılabilir profil veya veri kaydetme içerir. Bunları içe aktarmak, uygulama depolama alanına çıkarma gerektirir. Oyunlar, DLC ve güncellemeler yerinde kalır. Orijinaller korunur ve mevcut veriler asla değiştirilmez."</string>
+  <string name="extract_data">"Profili çıkar/verileri kaydet"</string>
+  <string name="unsupported_game">"Bir ISO, ZAR, XEX, ELF veya STFS/GOD oyunu seçin."</string>
+  <string name="stop_confirmation">"Oyunu durdurmak mı istiyorsunuz? Kaydedilmemiş ilerleme kaybolacaktır."</string>
+  <string name="virtual_controller">"Ekran denetleyicisi"</string>
+  <string name="disconnect_controller">"Bağlantı kesildi"</string>
+  <string name="remap_controller">"Denetleyici eşlemeleri"</string>
+  <string name="reset_mappings">"Varsayılan eşlemeleri geri yükle"</string>
+  <string name="mapping_key">"Android anahtar kodu"</string>
+  <string name="mapping_axis">"Android ekseni (negatif = ters çevrilmiş)"</string>
+  <string name="press_controller_button">"Atamak için fiziksel düğmeye basın."</string>
+  <string name="invert_axis">"Ekseni ters çevir"</string>
+  <string name="portal_failed">"USB portalına bağlanılamadı."</string>
+  <string name="open_trace">"Vulkan izini aç"</string>
+  <string name="trace_failed">"GPU izlemesi açılamadı."</string>
+  <string name="reset_all_options">"Emülatör seçeneklerini sıfırla"</string>
+  <string name="reset_global_confirmation">"Yapılandırılmış yollar ve arayüz dili de dahil olmak üzere tüm Android emülatör seçenekleri varsayılan değerlerine sıfırlansın mı? Profiller, oyun dosyaları ve oyun başına seçenekler korunacaktır."</string>
+  <string name="reset_game_confirmation">"Bu başlık için tüm Android seçenek geçersiz kılmaları kaldırılsın mı? Genel ayarlar kullanılacaktır. Oyun dosyaları saklanacaktır."</string>
+  <string name="state_on">"Açık"</string>
+  <string name="state_off">"Kapalı"</string>
+</resources>

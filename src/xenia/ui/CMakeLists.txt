@@ -1,4 +1,5 @@
 add_library(xenia-ui STATIC)
+# Platform-independent display settings and ImGui panels are shared with Android.
 xe_platform_sources(xenia-ui ${CMAKE_CURRENT_SOURCE_DIR})
 # Demo files are standalone executables in XENIA_BUILD_MISC; windowed_app_main_*
 # files are added explicitly per-target. wx files are excluded on Android (no
@@ -13,6 +14,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
     "${CMAKE_CURRENT_SOURCE_DIR}/*_wx.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wx_locale.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/wx_locale.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/icon_decode.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/icon_decode.h"
   )
   list(APPEND _ui_exclude ${_wx_exclude})
 endif()

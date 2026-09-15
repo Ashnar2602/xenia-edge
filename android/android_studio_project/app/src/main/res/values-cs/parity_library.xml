@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Najít soubor hry</string>
+    <string name="wrong_game_release">Vyberte soubor stejného titulu a verze.</string>
+    <string name="install_cancelled">Instalace zrušena</string>
+</resources>

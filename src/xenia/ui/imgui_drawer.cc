@@ -32,7 +32,7 @@
 #include <ShlObj_core.h>
 #endif
 
-#if XE_PLATFORM_LINUX
+#if XE_PLATFORM_GNU_LINUX
 #include <fontconfig/fontconfig.h>
 #endif
 
@@ -423,7 +423,7 @@ bool ImGuiDrawer::LoadWindowsFont(ImGuiIO& io, ImFontConfig& font_config,
   return true;
 #endif
 
-#if XE_PLATFORM_LINUX
+#if XE_PLATFORM_GNU_LINUX
   // On Linux, use fontconfig to find the system's default sans-serif font
   FcConfig* config = FcInitLoadConfigAndFonts();
   if (!config) {
@@ -503,7 +503,7 @@ bool ImGuiDrawer::LoadJapaneseFont(ImGuiIO& io, float font_size) {
   return true;
 #endif
 
-#if XE_PLATFORM_LINUX
+#if XE_PLATFORM_GNU_LINUX
   // On Linux, find and merge CJK font using fontconfig
   FcConfig* config = FcInitLoadConfigAndFonts();
   if (!config) {
@@ -683,12 +683,17 @@ void ImGuiDrawer::Draw(UIDrawContext& ui_draw_context) {
   io.DisplaySize.x = window_->GetActualPhysicalWidth() * physical_to_logical;
   io.DisplaySize.y = window_->GetActualPhysicalHeight() * physical_to_logical;
 
-  // Scale based on display resolution (baseline: 1280x720) and font_size cvar
+  // Android logical coordinates already use density-independent pixels.
+#if XE_PLATFORM_ANDROID
+  float resolution_scale = 1.2f;
+#else
+  // Scale based on display resolution (baseline: 1280x720).
   constexpr float kBaseWidth = 1280.f;
   constexpr float kBaseHeight = 720.f;
-  constexpr float kBaseFontSize = 14.f;
   float resolution_scale =
       std::fminf(io.DisplaySize.x / kBaseWidth, io.DisplaySize.y / kBaseHeight);
+#endif
+  constexpr float kBaseFontSize = 14.f;
   float font_size_scale =
       std::max(static_cast<float>(cvars::font_size), 8.f) / kBaseFontSize;
   float combined_scale = resolution_scale * font_size_scale;
@@ -756,7 +761,7 @@ void ImGuiDrawer::Draw(UIDrawContext& ui_draw_context) {
 
   if (reset_mouse_position_after_next_frame_) {
     reset_mouse_position_after_next_frame_ = false;
-    io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+    io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
   }
 
   // Detaching is deferred if the last dialog is removed during drawing, perform
@@ -947,13 +952,13 @@ void ImGuiDrawer::OnTouchEvent(TouchEvent& e) {
   UpdateMousePosition(e.x(), e.y());
   if (action == TouchEvent::Action::kUp ||
       action == TouchEvent::Action::kCancel) {
-    io.MouseDown[0] = false;
+    io.AddMouseButtonEvent(0, false);
     touch_pointer_id_ = TouchEvent::kPointerIDNone;
     // Make sure that after a touch, the ImGui mouse isn't hovering over
     // anything.
     reset_mouse_position_after_next_frame_ = true;
   } else {
-    io.MouseDown[0] = true;
+    io.AddMouseButtonEvent(0, true);
     reset_mouse_position_after_next_frame_ = false;
   }
 }

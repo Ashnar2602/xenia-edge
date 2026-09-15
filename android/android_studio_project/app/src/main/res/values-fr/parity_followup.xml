@@ -1,0 +1,9 @@
+<resources>
+    <string name="reset_all_options">Réinitialiser les options de l’émulateur</string>
+    <string name="reset_global_confirmation">Rétablir toutes les options Android par défaut, y compris les chemins configurés et la langue ? Les profils, les fichiers des jeux et les options propres à chaque jeu seront conservés.</string>
+    <string name="reset_game_confirmation">Supprimer toutes les options Android personnalisées pour ce titre ? Les paramètres généraux seront utilisés. Les fichiers du jeu seront conservés.</string>
+    <string name="profile_online_xuid">XUID en ligne</string>
+    <string name="profile_online_domain">Domaine en ligne</string>
+    <string name="state_on">Activé</string>
+    <string name="state_off">Désactivé</string>
+</resources>

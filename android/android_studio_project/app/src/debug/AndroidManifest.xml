@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity android:name="jp.xenia.emulator.ProfileTestActivity"
+            android:exported="false" android:process=":profiletest"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+    </application>
+</manifest>

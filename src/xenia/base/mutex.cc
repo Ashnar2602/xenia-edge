@@ -28,7 +28,11 @@ namespace {
 // with no syscall and is unique among live threads. It is only ever compared
 // for equality here, to detect recursive acquisition by the current owner.
 inline uint64_t xe_current_thread_id() {
+#if XE_PLATFORM_ANDROID
+  return static_cast<uint64_t>(pthread_self());
+#else
   return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pthread_self()));
+#endif
 }
 }  // namespace
 #endif

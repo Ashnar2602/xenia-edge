@@ -35,6 +35,11 @@ class AndroidWindow : public Window {
   bool OnActivitySurfaceMotionEvent(jobject event);
   void OnActivitySurfaceChanged() { OnSurfaceChanged(true); }
   void PaintActivitySurface(bool force_paint) { OnPaint(force_paint); }
+  void DispatchKey(int key, int unicode, bool down, int repeat, int modifiers);
+  void UpdateFocus(bool focused) {
+    WindowDestructionReceiver receiver(this);
+    OnFocusUpdate(focused, receiver);
+  }
 
  protected:
   uint32_t GetLatestDpiImpl() const override;

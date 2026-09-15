@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">尋找遊戲檔案</string>
+    <string name="wrong_game_release">請選擇相同遊戲及版本的檔案。</string>
+    <string name="install_cancelled">安裝已取消</string>
+</resources>

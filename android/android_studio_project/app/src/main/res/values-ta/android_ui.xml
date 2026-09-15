@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"எமுலேட்டர் தரவை மாற்றும் முன் கேம் அல்லது நிர்வாகத் திரையை மூடவும்."</string>
+  <string name="no_controller">"உடல் கட்டுப்படுத்தி இல்லை"</string>
+  <string name="postprocessing">"பிந்தைய செயலாக்கம்"</string>
+  <string name="performance">"செயல்திறன்"</string>
+  <string name="debug_tools">"பிழைத்திருத்த அமைப்புகள்"</string>
+  <string name="screenshot">"ஸ்கிரீன்ஷாட் எடுக்கவும்"</string>
+  <string name="screenshot_failed">"விளையாட்டின் படத்தைப் பிடிக்க முடியவில்லை."</string>
+  <string name="screenshot_saved">"ஸ்கிரீன்ஷாட் சேமிக்கப்பட்டது. அமைப்புகள் → கோப்புகளை நிர்வகி → screenshots என்பதில் அதைக் கண்டறியவும்."</string>
+  <string name="clear_gpu_cache">"GPU தற்காலிக சேமிப்புகளை அழிக்கவும்"</string>
+  <string name="profiler">"செயல்திறன் பகுப்பாய்வியைக் காட்டு / மறை"</string>
+  <string name="profiles">"சுயவிவரங்கள்"</string>
+  <string name="edit_profile">"சுயவிவரத்தைத் திருத்தவும்"</string>
+  <string name="player_number">"வீரர் %1$d"</string>
+  <string name="content">"DLC மற்றும் தலைப்பு புதுப்பிப்புகள்"</string>
+  <string name="statistics">"புள்ளிவிவரங்கள் மற்றும் பொருந்தக்கூடிய தன்மை"</string>
+  <string name="desktop_compatibility">"டெஸ்க்டாப் பொருந்தக்கூடிய அறிக்கை"</string>
+  <string-array name="compat_states">
+    <item>"தெரியாதது"</item>
+    <item>"விளையாட முடியாதது"</item>
+    <item>"தொடங்குகிறது"</item>
+    <item>"விளையாட்டு இயங்குகிறது"</item>
+    <item>"விளையாடக்கூடியது"</item>
+  </string-array>
+  <string name="working">"செயலாக்குகிறது…"</string>
+  <string name="operation_error">"செயல்பாட்டை முடிக்க முடியவில்லை: %1$s"</string>
+  <string name="nothing_here">"உள்ளீடுகள் எதுவும் இல்லை."</string>
+  <string name="manage_files">"கோப்புகளை நிர்வகிக்கவும்"</string>
+  <string name="add_content">"DLC அல்லது தலைப்பு புதுப்பிப்பைச் சேர்க்கவும்"</string>
+  <string name="detach_content">"குறிப்பை அகற்று"</string>
+  <string name="content_link_explanation">"தொகுப்புகள் அவற்றின் அசல் இடத்திலிருந்து நேரடியாகப் படிக்கப்படுகின்றன. அவற்றை அங்கேயே வைத்திருங்கள். ஒரு குறிப்பை அகற்றினால் அசல் கோப்பு அப்படியே இருக்கும்."</string>
+  <string name="global_options">"பொதுவான விருப்பங்கள்"</string>
+  <string name="global_explanation">"எல்லா கேம்களுக்கும் இயல்புநிலை. ஒரு விளையாட்டுக்கான விருப்பங்கள் முன்னுரிமை பெறுகின்றன. மாற்றங்கள் அடுத்த வெளியீட்டில் பொருந்தும்."</string>
+  <string name="default_value">"இயல்புநிலை"</string>
+  <string name="add_games">"கேம்களைச் சேர்க்கவும்"</string>
+  <string name="single_game">"ஒற்றை விளையாட்டு"</string>
+  <string name="game_folder">"கோப்புறை"</string>
+  <string name="game_options">"விளையாட்டு விருப்பங்கள்"</string>
+  <string name="options_explanation">"இந்த தலைப்புக்கு மேலெழுதப்பட்டது. அடுத்த முறை கேம் தொடங்கும் போது மாற்றங்கள் பொருந்தும்."</string>
+  <string name="options_custom">"இந்த விளையாட்டு"</string>
+  <string name="options_inherited">"பொது அமைப்பு"</string>
+  <string name="options_base">"பொது மதிப்பு: %1$s"</string>
+  <string name="options_error">"விருப்பங்களைப் படிக்கவோ சேமிக்கவோ முடியவில்லை: %1$s"</string>
+  <string name="options_no_title">"தலைப்பு ஐடியைப் படிக்க முடியவில்லை. ஒரு விளையாட்டு விருப்பங்களுக்கு சரியான தலைப்பு ஐடி தேவை."</string>
+  <string name="profile_select">"பிளேயர் 1 க்கான சுயவிவரத்தைத் தேர்ந்தெடுக்கவும்"</string>
+  <string name="profile_explanation">"உள்ளூர் பிளேயர் சுயவிவரத்தை உருவாக்கவும், இதனால் கேம்கள் உள்நுழைந்து உங்கள் முன்னேற்றத்தைச் சேமிக்க முடியும். அடுத்த முறை நீங்கள் விளையாடும்போது அது தானாகவே உள்நுழையும்."</string>
+  <string name="profile_migration">"உள்ளூர் பிளேயர் சுயவிவரத்தை உருவாக்கி, டெஸ்க்டாப்பில் உள்ளதைப் போல, ஏற்கனவே உள்ள மரபுச் சேமிப்புகளை அதனுடன் இணைக்கவும். அடுத்த முறை நீங்கள் விளையாடும்போது அது தானாகவே உள்நுழையும்."</string>
+  <string name="profile_invalid">"1–15 எழுத்துக்கள் (A–Z), எண்கள் அல்லது ஒற்றை இடைவெளிகளைப் பயன்படுத்தவும். ஒரு எழுத்தில் தொடங்கி ஒரு எழுத்து அல்லது எண்ணுடன் முடிக்கவும்."</string>
+  <string name="profile_error">"சுயவிவரத்தை உருவாக்கவோ ஏற்றவோ முடியவில்லை. இலவச சேமிப்பகத்தைச் சரிபார்த்து, மீண்டும் முயலவும்."</string>
+  <string name="library">"விளையாட்டுத் தொகுப்பு"</string>
+  <string name="recent">"சமீபத்திய"</string>
+  <string name="your_games">"உங்கள் விளையாட்டுகள்"</string>
+  <string name="recent_games">"சமீபத்தில் விளையாடியது"</string>
+  <string name="library_subtitle">"உங்கள் Xbox 360 கேம்கள், சேமிப்பகத்திலிருந்து நேரடியாகத் திறக்கப்பட்டது."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"கோப்புறையைச் சேர்க்கவும்"</string>
+  <string name="import_explanation">"அதன் தரவுக் கோப்புகள் உட்பட முழு XEX அல்லது GOD கேம் கோப்புறையைத் தேர்ந்தெடுக்கவும். Xenia அசல்களை நேரடியாகப் படிக்கிறது. கோப்புகள் எதுவும் நகலெடுக்கப்படவில்லை."</string>
+  <string name="choose_folder">"கோப்புறையைத் தேர்ந்தெடுக்கவும்"</string>
+  <string name="empty_library">"உங்கள் நூலகம் இங்கே தொடங்குகிறது"</string>
+  <string name="no_results">"பொருந்தக்கூடிய விளையாட்டுகள் இல்லை"</string>
+  <string name="empty_hint">"ISO / ZAR அல்லது முழுமையான கேம் கோப்புறையைச் சேர்க்கவும்.\nஉங்கள் கேம்கள் இங்கே தோன்றும்."</string>
+  <string name="play">"▶  விளையாடு"</string>
+  <string name="play_named">"%1$s விளையாடு"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d விளையாட்டு"</item>
+    <item quantity="other">"%d விளையாட்டுகள்"</item>
+  </plurals>
+  <string name="video">"வீடியோ"</string>
+  <string name="resolution">"ரெண்டரிங் தீர்மானம்"</string>
+  <string name="fps_limit">"பிரேம் வீத வரம்பு"</string>
+  <string name="controls">"கட்டுப்பாடுகள்"</string>
+  <string name="touch_controls">"திரையில் கட்டுப்படுத்தி"</string>
+  <string name="controller_hint">"தொடு கட்டுப்பாடுகள் மற்றும் நான்கு புளூடூத் / USB கேம்பேடுகள், ஆதரிக்கப்படும் இடங்களில் அதிர்வு."</string>
+  <string name="preview_title">"Android முன்னோட்டம்"</string>
+  <string name="preview_description">"விளையாட்டு இணக்கத்தன்மை இன்னும் சோதிக்கப்படுகிறது. அடுத்த விளையாட்டு அமர்வுக்கு வீடியோ அமைப்புகள் பொருந்தும்."</string>
+  <string name="project">"GitHub இல் Xenia Edge"</string>
+  <string name="file_unavailable">"கோப்பு கிடைக்கவில்லை. அதன் அசல் இடத்திலிருந்து அதை மீண்டும் தேர்ந்தெடுக்கவும்."</string>
+  <string name="no_executables">"இந்தக் கோப்புறையில் XEX, ELF, ISO, ZAR அல்லது STFS/GOD தலைப்பு எதுவும் இல்லை."</string>
+  <string name="import_cancelled">"இறக்குமதி ரத்து செய்யப்பட்டது."</string>
+  <string name="importing">"கோப்புறையை ஸ்கேன் செய்கிறது…"</string>
+  <string name="import_progress">"ஸ்கேன் செய்கிறது · %2$s"</string>
+  <string name="cannot_open">"விளையாட்டைச் சேர்க்க முடியவில்லை"</string>
+  <string name="image_formats">"ISO அல்லது ZAR ஐத் தேர்ந்தெடுக்கவும். XEX மற்றும் GOD க்கு, முழுமையான கேம் கோப்புறையைச் சேர்க்கவும்."</string>
+  <string name="menu">"மெனு"</string>
+  <string name="preparing_game">"கேம் தயாராகிறது…"</string>
+  <string name="preparing_video">"வீடியோ தயாராகிறது…"</string>
+  <string name="loading_game">"கேமை ஏற்றுகிறது…"</string>
+  <string name="launch_error">"Xenia இந்தத் தலைப்பை வெளியிட முடியவில்லை (0x%1$08X). வடிவம் மற்றும் விளையாட்டு கோப்புகளை சரிபார்க்கவும். தொழில்நுட்ப விவரங்கள் Logcat இல் உள்ளன."</string>
+  <string name="cannot_launch">"விளையாட்டைத் தொடங்க முடியவில்லை"</string>
+  <string name="back_library">"விளையாட்டுத் தொகுப்பிற்குத் திரும்பு"</string>
+  <string name="close_session">"இந்த அமர்வை குறுக்கிடவா?"</string>
+  <string name="interrupt_loading">"விளையாட்டு இன்னும் ஏற்றப்படுகிறது அல்லது மூடுகிறது. நீங்கள் காத்திருக்கலாம் அல்லது இந்த அமர்வில் குறுக்கிட்டு நூலகத்திற்குத் திரும்பலாம்."</string>
+  <string name="close_current_first">"மற்றொரு தலைப்பைத் திறப்பதற்கு முன் மெனுவிலிருந்து தற்போதைய கேமை மூடவும்."</string>
+  <string name="resume">"விளையாட்டை மீண்டும் தொடங்கவும்"</string>
+  <string name="toggle_controls">"தொடு கட்டுப்பாடுகளைக் காட்டு / மறை"</string>
+  <string name="storage_access">"விளையாட்டு கோப்புகளுக்கான அணுகல்"</string>
+  <string name="storage_explanation">"கேம்களை நகலெடுக்காமல், சாதன சேமிப்பிடம் அல்லது SD கார்டில் இருந்து நேரடியாக கேம்களைத் திறக்க, Xenia க்கு \"அனைத்து கோப்புகளுக்கான அணுகலை\" இயக்கவும்."</string>
+  <string name="open_settings">"அமைப்புகளைத் திறக்கவும்"</string>
+  <string name="local_storage_required">"சாதனம் அல்லது SD கார்டில் உள்ள உள்ளூர் கோப்பைத் தேர்ந்தெடுக்கவும். கிளவுட் மற்றும் விர்ச்சுவல் வழங்குநர்களை நேரடியாக திறக்க முடியாது."</string>
+  <string name="game_information">"தகவல்"</string>
+  <string name="info_unavailable">"கிடைக்கவில்லை"</string>
+  <string name="info_title_id">"தலைப்பு ஐடி"</string>
+  <string name="info_media_id">"மீடியா ஐடி"</string>
+  <string name="info_base_version">"அடிப்படை பதிப்பு"</string>
+  <string name="info_disc">"வட்டு"</string>
+  <string name="info_disc_number">"%2$d இல் %1$d"</string>
+  <string name="info_not_verified">"சரிபார்க்கப்படவில்லை"</string>
+  <string name="info_format">"வடிவம்"</string>
+  <string name="info_size">"கோப்பு அளவு"</string>
+  <string name="info_path">"இடம்"</string>
+  <string name="info_loading">"தலைப்பு தகவலைப் படிக்கிறது…"</string>
+  <string name="info_no_metadata">"இந்தக் கோப்பில் படிக்கக்கூடிய தலைப்பு மெட்டாடேட்டா எதுவும் இல்லை."</string>
+  <string name="automatic_controller">"தானியங்கி"</string>
+  <string name="profile_image">"சுயவிவரப் படம்"</string>
+  <string name="choose_image">"படத்தை தேர்வு செய்யவும்"</string>
+  <string name="invalid_image">"தவறான படம்"</string>
+  <string name="preloading_shaders">"ஷேடர்களை முன்கூட்டியே ஏற்றுகிறது…"</string>
+  <string name="patches_applied">"இணைப்புகள் பயன்படுத்தப்பட்டன"</string>
+  <string name="plugins_loaded">"செருகுநிரல்கள் ஏற்றப்பட்டன"</string>
+  <string name="build_commit">"கட்டமைப்பைக் காண்க"</string>
+  <string name="interface_language">"இடைமுக மொழி"</string>
+  <string name="system_language">"கணினி மொழி"</string>
+  <string name="global_only_option">"உலகளாவிய அமைப்புகளில் இந்த விருப்பத்தை மாற்றவும்."</string>
+  <string name="controller_type">"கட்டுப்படுத்தி வகை"</string>
+  <string name="physical_keyboard">"விசைப்பலகை"</string>
+  <string name="time_scale">"எமுலேஷன் வேகம்"</string>
+  <string name="time_half">"அரை தற்போதைய வேகம்"</string>
+  <string name="time_double">"இரட்டை தற்போதைய வேகம்"</string>
+  <string name="time_reset">"இயல்பான வேகம்"</string>
+  <string name="toggle_vibration">"அதிர்வை நிலைமாற்று"</string>
+  <string name="sort_games">"விளையாட்டுகளை வரிசைப்படுத்துங்கள்"</string>
+  <string name="rename_game">"வெளியீட்டை மறுபெயரிடவும்"</string>
+  <string name="invalid_name">"ஒரு பெயரை உள்ளிடவும்"</string>
+  <string name="manage_discs">"வட்டுகளை நிர்வகிக்கவும்"</string>
+  <string name="default_disc">"இயல்புநிலை வட்டாகப் பயன்படுத்தவும்"</string>
+  <string name="plugins">"செருகுநிரல்களை நிர்வகிக்கவும்"</string>
+  <string name="install_content">"உள்ளடக்க தொகுப்புகளை இறக்குமதி செய்யவும்"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nபதிப்பு %1$s\nVulkan · ARM64\nBSD உரிமம் — Xenia பங்களிப்பாளர்கள்"</string>
+  <string-array name="controller_types">
+    <item>"தானியங்கி"</item>
+    <item>"கேம்பேட்"</item>
+    <item>"சக்கரம்"</item>
+    <item>"ஆர்கேட் ஸ்டிக்"</item>
+    <item>"விமான ஸ்டிக்"</item>
+    <item>"டான்ஸ் பேட்"</item>
+    <item>"கிட்டார்"</item>
+    <item>"டிரம் கிட்"</item>
+    <item>"ஆர்கேட் பேட்"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"தலைப்பு A–Z"</item>
+    <item>"தலைப்பு Z-A"</item>
+    <item>"முதியவர் முதலில் விளையாடினார்"</item>
+    <item>"கடைசியாக முதலில் விளையாடியது"</item>
+    <item>"இணக்கத்தன்மை ↑"</item>
+    <item>"இணக்கத்தன்மை ↓"</item>
+  </string-array>
+  <string name="mutable_content">"சுயவிவரங்கள் மற்றும் சேமிக்கிறது"</string>
+  <string name="mutable_content_explanation">"இந்தத் தொகுப்புகள் எழுதக்கூடிய சுயவிவரத்தைக் கொண்டிருக்கின்றன அல்லது தரவைச் சேமிக்கின்றன. அவற்றை இறக்குமதி செய்ய ஆப்ஸ் சேமிப்பகத்தில் பிரித்தெடுக்க வேண்டும். கேம்கள், DLC மற்றும் புதுப்பிப்புகள் தொடர்ந்து இணைக்கப்பட்டுள்ளன. அசல்கள் பாதுகாக்கப்படுகின்றன மற்றும் ஏற்கனவே உள்ள தரவு மாற்றப்படாது."</string>
+  <string name="extract_data">"சுயவிவரத்தைப் பிரித்தெடுக்கவும்/தரவைச் சேமிக்கவும்"</string>
+  <string name="unsupported_game">"ISO, ZAR, XEX, ELF அல்லது STFS/GOD விளையாட்டைத் தேர்வு செய்யவும்."</string>
+  <string name="stop_confirmation">"விளையாட்டை நிறுத்தவா? சேமிக்கப்படாத முன்னேற்றம் இழக்கப்படும்."</string>
+  <string name="virtual_controller">"திரையில் கட்டுப்படுத்தி"</string>
+  <string name="disconnect_controller">"துண்டிக்கப்பட்டது"</string>
+  <string name="remap_controller">"கட்டுப்படுத்தி மேப்பிங்"</string>
+  <string name="reset_mappings">"இயல்புநிலை வரைபடங்களை மீட்டமைக்கவும்"</string>
+  <string name="mapping_key">"Android விசை குறியீடு"</string>
+  <string name="mapping_axis">"Android அச்சு (எதிர்மறை = தலைகீழ்)"</string>
+  <string name="press_controller_button">"ஒதுக்க இயற்பியல் பொத்தானை அழுத்தவும்."</string>
+  <string name="invert_axis">"தலைகீழ் அச்சு"</string>
+  <string name="portal_failed">"USB போர்ட்டலுடன் இணைக்க முடியவில்லை."</string>
+  <string name="open_trace">"Vulkan தடத்தைத் திறக்கவும்"</string>
+  <string name="trace_failed">"GPU ட்ரேஸைத் திறக்க முடியவில்லை."</string>
+  <string name="reset_all_options">"முன்மாதிரி விருப்பங்களை மீட்டமைக்கவும்"</string>
+  <string name="reset_global_confirmation">"உள்ளமைக்கப்பட்ட பாதைகள் மற்றும் இடைமுக மொழி உட்பட அனைத்து Android முன்மாதிரி விருப்பங்களையும் அவற்றின் இயல்புநிலைகளுக்கு மீட்டமைக்கவா? சுயவிவரங்கள், கேம் கோப்புகள் மற்றும் ஒவ்வொரு கேம் விருப்பங்களும் வைக்கப்படும்."</string>
+  <string name="reset_game_confirmation">"இந்த தலைப்புக்கான அனைத்து Android விருப்பத்தேர்வுகளையும் அகற்றவா? பொதுவான அமைப்புகள் பயன்படுத்தப்படும். விளையாட்டு கோப்புகள் சேமிக்கப்படும்."</string>
+  <string name="state_on">"இயக்கம்"</string>
+  <string name="state_off">"நிறுத்தம்"</string>
+</resources>

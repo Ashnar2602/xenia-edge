@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Sluit het spel- of beheerscherm voordat u de emulatorgegevens wijzigt."</string>
+  <string name="no_controller">"Geen fysieke controller"</string>
+  <string name="postprocessing">"Nabewerking"</string>
+  <string name="performance">"Prestaties"</string>
+  <string name="debug_tools">"Foutopsporingsinstellingen"</string>
+  <string name="screenshot">"Maak een schermafdruk"</string>
+  <string name="screenshot_failed">"Kan het spelbeeld niet vastleggen."</string>
+  <string name="screenshot_saved">"Schermafbeelding opgeslagen. Zoek het in Instellingen → Bestanden beheren → screenshots."</string>
+  <string name="clear_gpu_cache">"Wis GPU-caches"</string>
+  <string name="profiler">"Profiler tonen / verbergen"</string>
+  <string name="profiles">"Profielen"</string>
+  <string name="edit_profile">"Profiel bewerken"</string>
+  <string name="player_number">"Speler %1$d"</string>
+  <string name="patches">"Patches"</string>
+  <string name="content">"DLC en titelupdates"</string>
+  <string name="saves">"Bespaart"</string>
+  <string name="statistics">"Statistieken en compatibiliteit"</string>
+  <string name="desktop_compatibility">"Desktopcompatibiliteitsrapport"</string>
+  <string-array name="compat_states">
+    <item>"Onbekend"</item>
+    <item>"Onspeelbaar"</item>
+    <item>"Start"</item>
+    <item>"In het spel"</item>
+    <item>"Speelbaar"</item>
+  </string-array>
+  <string name="working">"Bezig…"</string>
+  <string name="operation_error">"Kan de bewerking niet voltooien: %1$s"</string>
+  <string name="nothing_here">"Geen vermeldingen beschikbaar."</string>
+  <string name="manage_files">"Beheer bestanden"</string>
+  <string name="add_content">"Voeg DLC of titelupdate toe"</string>
+  <string name="detach_content">"Referentie verwijderen"</string>
+  <string name="content_link_explanation">"Pakketten worden rechtstreeks vanaf hun oorspronkelijke locatie gelezen. Houd ze daar. Als u een referentie verwijdert, blijft het originele bestand intact."</string>
+  <string name="global_options">"Algemene opties"</string>
+  <string name="global_explanation">"Standaardinstellingen voor alle games. Opties per spel hebben voorrang. Wijzigingen zijn van toepassing bij de volgende lancering."</string>
+  <string name="default_value">"Standaard"</string>
+  <string name="add_games">"Voeg spellen toe"</string>
+  <string name="single_game">"Enkel spel"</string>
+  <string name="game_folder">"Map"</string>
+  <string name="game_options">"Spelopties"</string>
+  <string name="options_explanation">"Overschrijvingen voor deze titel. Wijzigingen zijn van toepassing de volgende keer dat het spel start."</string>
+  <string name="options_custom">"Dit spel"</string>
+  <string name="options_inherited">"Algemene instelling"</string>
+  <string name="options_base">"Algemene waarde: %1$s"</string>
+  <string name="options_error">"Kan opties niet lezen of opslaan: %1$s"</string>
+  <string name="options_no_title">"De titel-ID kon niet worden gelezen. Voor opties per game is een geldig titel-ID vereist."</string>
+  <string name="profile_select">"Kies een profiel voor speler 1"</string>
+  <string name="profile_explanation">"Maak een lokaal spelersprofiel zodat games zich kunnen aanmelden en uw voortgang kunnen opslaan. De volgende keer dat je speelt, wordt er automatisch ingelogd."</string>
+  <string name="profile_migration">"Maak een lokaal spelersprofiel en koppel bestaande oude opgeslagen bestanden eraan, net als op de desktop. De volgende keer dat je speelt, wordt er automatisch ingelogd."</string>
+  <string name="profile_invalid">"Gebruik 1–15 letters (A–Z), cijfers of enkele spaties. Begin met een letter en eindig met een letter of cijfer."</string>
+  <string name="profile_error">"Kan het profiel niet maken of laden. Controleer de vrije opslagruimte en probeer het opnieuw."</string>
+  <string name="library">"Bibliotheek"</string>
+  <string name="recent">"Recent"</string>
+  <string name="your_games">"Jouw spellen"</string>
+  <string name="recent_games">"Recent gespeeld"</string>
+  <string name="library_subtitle">"Je Xbox 360-games, rechtstreeks vanuit de opslag geopend."</string>
+  <string name="open_image">"＋ISO/ZAR"</string>
+  <string name="import_folder">"Map toevoegen"</string>
+  <string name="import_explanation">"Kies de volledige XEX- of GOD-gamemap, inclusief de gegevensbestanden. Xenia leest de originelen rechtstreeks. Er worden geen bestanden gekopieerd."</string>
+  <string name="choose_folder">"Kies map"</string>
+  <string name="empty_library">"Uw bibliotheek begint hier"</string>
+  <string name="no_results">"Geen bijpassende spellen"</string>
+  <string name="empty_hint">"Voeg een ISO/ZAR of een volledige gamemap toe.\nJe games worden hier weergegeven."</string>
+  <string name="play">"▶  Spelen"</string>
+  <string name="play_named">"%1$s spelen"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d spel"</item>
+    <item quantity="other">"%d spellen"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Weergaveresolutie"</string>
+  <string name="fps_limit">"Framesnelheidlimiet"</string>
+  <string name="controls">"BEDIENINGEN"</string>
+  <string name="touch_controls">"Bediening op het scherm"</string>
+  <string name="controller_hint">"Aanraakbediening en maximaal vier Bluetooth/USB-gamepads, met trillingen waar ondersteund."</string>
+  <string name="preview_title">"Android-voorbeeld"</string>
+  <string name="preview_description">"De compatibiliteit van games wordt nog getest. Video-instellingen zijn van toepassing op de volgende gamesessie."</string>
+  <string name="project">"Xenia Edge op GitHub"</string>
+  <string name="file_unavailable">"Het bestand is niet beschikbaar. Selecteer het opnieuw vanaf de oorspronkelijke locatie."</string>
+  <string name="no_executables">"Er is geen XEX-, ELF-, ISO-, ZAR- of STFS/GOD-titel gevonden in deze map."</string>
+  <string name="import_cancelled">"Importeren geannuleerd."</string>
+  <string name="importing">"Map scannen…"</string>
+  <string name="import_progress">"Scannen · %2$s"</string>
+  <string name="cannot_open">"Kan spel niet toevoegen"</string>
+  <string name="image_formats">"Selecteer een ISO of ZAR. Voor XEX en GOD voegt u de volledige spelmap toe."</string>
+  <string name="menu">"Menukaart"</string>
+  <string name="preparing_game">"Spel voorbereiden…"</string>
+  <string name="preparing_video">"Video voorbereiden…"</string>
+  <string name="loading_game">"Spel laden…"</string>
+  <string name="launch_error">"Xenia kan deze titel (0x%1$08X) niet lanceren. Controleer het formaat en de spelbestanden. Technische details staan ​​in Logcat."</string>
+  <string name="cannot_launch">"Kan het spel niet starten"</string>
+  <string name="back_library">"Terug naar bibliotheek"</string>
+  <string name="close_session">"Deze sessie onderbreken?"</string>
+  <string name="interrupt_loading">"Het spel wordt nog steeds geladen of gesloten. U kunt wachten of deze sessie onderbreken en terugkeren naar de bibliotheek."</string>
+  <string name="close_current_first">"Sluit het huidige spel via het menu voordat u een andere titel opent."</string>
+  <string name="resume">"Hervat het spel"</string>
+  <string name="toggle_controls">"Toon/verberg aanraakbedieningen"</string>
+  <string name="storage_access">"Toegang tot gamebestanden"</string>
+  <string name="storage_explanation">"Schakel “Toegang tot alle bestanden” in zodat Xenia games rechtstreeks vanuit de apparaatopslag of een SD-kaart kan openen, zonder ze te kopiëren."</string>
+  <string name="open_settings">"Instellingen openen"</string>
+  <string name="local_storage_required">"Selecteer een lokaal bestand op het apparaat of de SD-kaart. Cloud- en virtuele providers kunnen niet rechtstreeks worden geopend."</string>
+  <string name="game_information">"Informatie"</string>
+  <string name="info_unavailable">"Niet beschikbaar"</string>
+  <string name="info_title_id">"Titel-ID"</string>
+  <string name="info_media_id">"Media-ID"</string>
+  <string name="info_base_version">"Basisversie"</string>
+  <string name="info_disc">"Schijf"</string>
+  <string name="info_disc_number">"%1$d van %2$d"</string>
+  <string name="info_not_verified">"Niet geverifieerd"</string>
+  <string name="info_format">"Formaat"</string>
+  <string name="info_size">"Bestandsgrootte"</string>
+  <string name="info_path">"Locatie"</string>
+  <string name="info_loading">"Titelinformatie lezen..."</string>
+  <string name="info_no_metadata">"Er zijn geen leesbare titelmetagegevens beschikbaar in dit bestand."</string>
+  <string name="automatic_controller">"Automatisch"</string>
+  <string name="profile_image">"Profielafbeelding"</string>
+  <string name="choose_image">"Kies afbeelding"</string>
+  <string name="invalid_image">"Ongeldige afbeelding"</string>
+  <string name="preloading_shaders">"Shaders vooraf laden…"</string>
+  <string name="patches_applied">"Patches aangebracht"</string>
+  <string name="plugins_loaded">"Plug-ins geladen"</string>
+  <string name="build_commit">"Bekijk de bouwverplichting"</string>
+  <string name="interface_language">"Interfacetaal"</string>
+  <string name="system_language">"Systeem taal"</string>
+  <string name="global_only_option">"Wijzig deze optie in de algemene instellingen."</string>
+  <string name="controller_type">"Type controller"</string>
+  <string name="physical_keyboard">"Toetsenbord"</string>
+  <string name="time_scale">"Emulatiesnelheid"</string>
+  <string name="time_half">"Halve huidige snelheid"</string>
+  <string name="time_double">"Dubbele huidige snelheid"</string>
+  <string name="time_reset">"Normale snelheid"</string>
+  <string name="toggle_vibration">"Schakel trillingen in"</string>
+  <string name="sort_games">"Sorteer spellen"</string>
+  <string name="rename_game">"Versie hernoemen"</string>
+  <string name="invalid_name">"Voer een naam in"</string>
+  <string name="manage_discs">"Beheer schijven"</string>
+  <string name="disc_label">"Schijf %1$d"</string>
+  <string name="default_disc">"Gebruik als standaardschijf"</string>
+  <string name="plugins">"Beheer plug-ins"</string>
+  <string name="install_content">"Importeer inhoudpakketten"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nVersie %1$s\nVulkan · ARM64\nBSD-licentie — Xenia-bijdragers"</string>
+  <string-array name="controller_types">
+    <item>"Automatisch"</item>
+    <item>"Gamepad"</item>
+    <item>"Stuurwiel"</item>
+    <item>"Arcade-stick"</item>
+    <item>"Vluchtstick"</item>
+    <item>"Dansmat"</item>
+    <item>"Gitaar"</item>
+    <item>"Drumstel"</item>
+    <item>"Arcade-pad"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Titel A – Z"</item>
+    <item>"Titel Z–A"</item>
+    <item>"Oudste speelde eerst"</item>
+    <item>"Laatst gespeeld eerst"</item>
+    <item>"Compatibiliteit ↑"</item>
+    <item>"Compatibiliteit ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profielen en opslaan"</string>
+  <string name="mutable_content_explanation">"Deze pakketten bevatten een beschrijfbaar profiel of opslaan van gegevens. Om ze te importeren is extractie in app-opslag vereist. Games, DLC en updates blijven op hun plaats. Originelen blijven behouden en bestaande gegevens worden nooit vervangen."</string>
+  <string name="extract_data">"Profiel extraheren/gegevens opslaan"</string>
+  <string name="unsupported_game">"Kies een ISO-, ZAR-, XEX-, ELF- of STFS/GOD-game."</string>
+  <string name="stop_confirmation">"Het spel stoppen? Niet-opgeslagen voortgang gaat verloren."</string>
+  <string name="virtual_controller">"Bediening op het scherm"</string>
+  <string name="disconnect_controller">"Verbinding verbroken"</string>
+  <string name="remap_controller">"Controllertoewijzingen"</string>
+  <string name="reset_mappings">"Standaardtoewijzingen herstellen"</string>
+  <string name="mapping_key">"Android-sleutelcode"</string>
+  <string name="mapping_axis">"Android-as (negatief = omgekeerd)"</string>
+  <string name="press_controller_button">"Druk op de fysieke knop om toe te wijzen."</string>
+  <string name="invert_axis">"As omkeren"</string>
+  <string name="portal_failed">"Kan geen verbinding maken met de USB-poort."</string>
+  <string name="open_trace">"Open Vulkan-trace"</string>
+  <string name="trace_failed">"Kan de GPU-trace niet openen."</string>
+  <string name="reset_all_options">"Emulatoropties opnieuw instellen"</string>
+  <string name="reset_global_confirmation">"Alle Android-emulatoropties resetten naar hun standaardwaarden, inclusief geconfigureerde paden en interfacetaal? Profielen, gamebestanden en opties per game blijven behouden."</string>
+  <string name="reset_game_confirmation">"Alle Android-optie-overschrijvingen voor deze titel verwijderen? Er worden algemene instellingen gebruikt. Spelbestanden worden bewaard."</string>
+  <string name="state_on">"Aan"</string>
+  <string name="state_off">"Uit"</string>
+</resources>

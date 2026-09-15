@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Hanapin ang file ng laro</string>
+    <string name="wrong_game_release">Pumili ng file para sa parehong laro at bersyon.</string>
+    <string name="install_cancelled">Kinansela ang pag-install</string>
+</resources>

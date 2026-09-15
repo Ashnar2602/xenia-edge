@@ -22,6 +22,36 @@ on:
 # `contents: write` intact.
 
 jobs:
+  android:
+    name: Android
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    permissions:
+      contents: read
+    uses: ./.github/workflows/android.yml
+    secrets:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+  # Android failures do not delay or prevent the existing desktop release.
+  release-android:
+    name: Attach Android APK
+    needs: [android, release]
+    if: needs.android.outputs.signed == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: xenia_edge_android
+      - name: Attach verified APK to the matching desktop release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "${GITHUB_SHA::7}" xenia_edge_android.apk --clobber
+
   # One build job for every ref, each granted `actions: write` so any branch can
   # populate the sccache cache. Cache writes cover only third_party (stable
   # across branches), keeping per-branch entries small and isolated. Fork PRs

@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Az emulátor adatainak módosítása előtt zárja be a játék vagy a felügyeleti képernyőt."</string>
+  <string name="no_controller">"Nincs fizikai vezérlő"</string>
+  <string name="postprocessing">"Utófeldolgozás"</string>
+  <string name="performance">"Teljesítmény"</string>
+  <string name="debug_tools">"Hibakeresési beállítások"</string>
+  <string name="screenshot">"Készítsen képernyőképet"</string>
+  <string name="screenshot_failed">"Nem sikerült rögzíteni a játék képét."</string>
+  <string name="screenshot_saved">"Képernyőkép mentve. Keresse meg a Beállítások → Fájlok kezelése → screenshots menüpontban."</string>
+  <string name="clear_gpu_cache">"GPU gyorsítótárak törlése"</string>
+  <string name="profiler">"Profilozó megjelenítése / elrejtése"</string>
+  <string name="profiles">"Profilok"</string>
+  <string name="edit_profile">"Profil szerkesztése"</string>
+  <string name="player_number">"%1$d. játékos"</string>
+  <string name="content">"DLC és címfrissítések"</string>
+  <string name="statistics">"Statisztika és kompatibilitás"</string>
+  <string name="desktop_compatibility">"Asztali kompatibilitási jelentés"</string>
+  <string-array name="compat_states">
+    <item>"Ismeretlen"</item>
+    <item>"Játszhatatlan"</item>
+    <item>"Elindul"</item>
+    <item>"Játékmenet"</item>
+    <item>"Játszható"</item>
+  </string-array>
+  <string name="working">"Feldolgozás…"</string>
+  <string name="operation_error">"Nem sikerült befejezni a műveletet: %1$s"</string>
+  <string name="nothing_here">"Nincsenek bejegyzések."</string>
+  <string name="manage_files">"Fájlok kezelése"</string>
+  <string name="add_content">"Adjon hozzá DLC-t vagy címfrissítést"</string>
+  <string name="detach_content">"Referencia eltávolítása"</string>
+  <string name="content_link_explanation">"A csomagokat közvetlenül az eredeti helyükről olvassuk be. Tartsd ott őket. A hivatkozás eltávolítása az eredeti fájlt érintetlenül hagyja."</string>
+  <string name="global_options">"Általános lehetőségek"</string>
+  <string name="global_explanation">"Alapértelmezések minden játékhoz. A játékonkénti opciók élveznek elsőbbséget. A változások a következő indításkor érvényesek."</string>
+  <string name="default_value">"Alapértelmezett"</string>
+  <string name="add_games">"Játékok hozzáadása"</string>
+  <string name="single_game">"Egyetlen játék"</string>
+  <string name="game_folder">"Mappa"</string>
+  <string name="game_options">"Játéklehetőségek"</string>
+  <string name="options_explanation">"Felülbírálások ehhez a címhez. A változtatások a játék következő indításakor érvényesek."</string>
+  <string name="options_custom">"Ez a játék"</string>
+  <string name="options_inherited">"Általános beállítás"</string>
+  <string name="options_base">"Általános érték: %1$s"</string>
+  <string name="options_error">"Nem sikerült beolvasni vagy menteni a beállításokat: %1$s"</string>
+  <string name="options_no_title">"A címazonosító nem olvasható. A játékonkénti opciókhoz érvényes címazonosító szükséges."</string>
+  <string name="profile_select">"Válassz egy profilt az 1. játékos számára"</string>
+  <string name="profile_explanation">"Hozzon létre egy helyi játékosprofilt, hogy a játékok bejelentkezhessenek, és elmentsék a fejlődést. A következő játékkor automatikusan bejelentkezik."</string>
+  <string name="profile_migration">"Hozzon létre egy helyi játékosprofilt, és társítsa hozzá a meglévő régebbi mentéseket, mint az asztali számítógépeken. A következő játékkor automatikusan bejelentkezik."</string>
+  <string name="profile_invalid">"Használjon 1–15 betűt (A–Z), számokat vagy szóközöket. Kezdje egy betűvel, és fejezze be egy betűvel vagy számmal."</string>
+  <string name="profile_error">"Nem sikerült létrehozni vagy betölteni a profilt. Ellenőrizze az ingyenes tárhelyet, és próbálja újra."</string>
+  <string name="library">"Könyvtár"</string>
+  <string name="recent">"Legutóbbi"</string>
+  <string name="your_games">"A játékaid"</string>
+  <string name="recent_games">"Nemrég játszott"</string>
+  <string name="library_subtitle">"Xbox 360 játékai közvetlenül a tárhelyről nyithatók meg."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Mappa hozzáadása"</string>
+  <string name="import_explanation">"Válassza ki a teljes XEX vagy GOD játék mappát, beleértve az adatfájlokat. Xenia közvetlenül olvassa az eredetiket. Nincsenek fájlok másolva."</string>
+  <string name="choose_folder">"Válasszon mappát"</string>
+  <string name="empty_library">"A könyvtára itt kezdődik"</string>
+  <string name="no_results">"Nincsenek megfelelő játékok"</string>
+  <string name="empty_hint">"Adjon hozzá egy ISO/ZAR-t vagy egy teljes játékmappát.\nA játékai itt jelennek meg."</string>
+  <string name="play">"▶  Indítás"</string>
+  <string name="play_named">"%1$s indítása"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d játék"</item>
+    <item quantity="other">"%d játék"</item>
+  </plurals>
+  <string name="video">"VIDEÓ"</string>
+  <string name="resolution">"Renderelési felbontás"</string>
+  <string name="fps_limit">"Képkockasebesség-korlát"</string>
+  <string name="controls">"KEZELŐSZERVEK"</string>
+  <string name="touch_controls">"Képernyő-vezérlő"</string>
+  <string name="controller_hint">"Érintővezérlők és akár négy Bluetooth/USB-játékvezérlő, rezgéssel, ahol támogatott."</string>
+  <string name="preview_title">"Android előnézet"</string>
+  <string name="preview_description">"A játékkompatibilitás még tesztelés alatt áll. A videóbeállítások a következő játékmenetre vonatkoznak."</string>
+  <string name="project">"Xenia Edge a GitHubon"</string>
+  <string name="file_unavailable">"A fájl nem elérhető. Válassza ki újra az eredeti helyéről."</string>
+  <string name="no_executables">"Nem található XEX, ELF, ISO, ZAR vagy STFS/GOD cím ebben a mappában."</string>
+  <string name="import_cancelled">"Az importálás megszakítva."</string>
+  <string name="importing">"Mappa beolvasása…"</string>
+  <string name="import_progress">"Szkennelés · %2$s"</string>
+  <string name="cannot_open">"Nem sikerült hozzáadni a játékot"</string>
+  <string name="image_formats">"Válasszon ISO vagy ZAR értéket. XEX és GOD esetén add hozzá a teljes játékmappát."</string>
+  <string name="menu">"Menü"</string>
+  <string name="preparing_game">"Játék előkészítése…"</string>
+  <string name="preparing_video">"Videó előkészítése…"</string>
+  <string name="loading_game">"Játék betöltése…"</string>
+  <string name="launch_error">"Xenia nem tudta elindítani ezt a címet (0x%1$08X). Ellenőrizze a formátumot és a játékfájlokat. A műszaki részletek a Logcatban találhatók."</string>
+  <string name="cannot_launch">"Nem sikerült elindítani a játékot"</string>
+  <string name="back_library">"Vissza a könyvtárba"</string>
+  <string name="close_session">"Megszakítja ezt a munkamenetet?"</string>
+  <string name="interrupt_loading">"A játék még mindig betöltődik vagy bezárul. Várhat, vagy megszakíthatja ezt a munkamenetet, és visszatérhet a könyvtárba."</string>
+  <string name="close_current_first">"Zárja be az aktuális játékot a menüből, mielőtt megnyit egy másik játékot."</string>
+  <string name="resume">"A játék folytatása"</string>
+  <string name="toggle_controls">"Érintővezérlők megjelenítése/elrejtése"</string>
+  <string name="storage_access">"Hozzáférés a játékfájlokhoz"</string>
+  <string name="storage_explanation">"Engedélyezze az „Összes fájl hozzáférést” a Xenia számára, hogy közvetlenül az eszköz tárhelyéről vagy SD-kártyájáról nyissa meg a játékokat, anélkül, hogy átmásolná azokat."</string>
+  <string name="open_settings">"Nyissa meg a beállításokat"</string>
+  <string name="local_storage_required">"Válasszon egy helyi fájlt az eszközön vagy az SD-kártyán. A felhő- és virtuális szolgáltatók közvetlenül nem nyithatók meg."</string>
+  <string name="game_information">"Információ"</string>
+  <string name="info_unavailable">"Nem elérhető"</string>
+  <string name="info_title_id">"Címazonosító"</string>
+  <string name="info_media_id">"Médiaazonosító"</string>
+  <string name="info_base_version">"Alap verzió"</string>
+  <string name="info_disc">"Disc"</string>
+  <string name="info_disc_number">"%1$d/%2$d"</string>
+  <string name="info_not_verified">"Nincs ellenőrizve"</string>
+  <string name="info_format">"Formátum"</string>
+  <string name="info_size">"Fájlméret"</string>
+  <string name="info_path">"Helyszín"</string>
+  <string name="info_loading">"Címadatok olvasása…"</string>
+  <string name="info_no_metadata">"Ebben a fájlban nem érhetők el olvasható címmetaadatok."</string>
+  <string name="automatic_controller">"Automatikus"</string>
+  <string name="profile_image">"Profilkép"</string>
+  <string name="choose_image">"Válasszon képet"</string>
+  <string name="invalid_image">"Érvénytelen kép"</string>
+  <string name="preloading_shaders">"Shaderek előtöltése…"</string>
+  <string name="patches_applied">"Patchek felhelyezve"</string>
+  <string name="plugins_loaded">"Beépülő modulok betöltve"</string>
+  <string name="build_commit">"Építési véglegesítés megtekintése"</string>
+  <string name="interface_language">"Interfész nyelve"</string>
+  <string name="system_language">"Rendszer nyelve"</string>
+  <string name="global_only_option">"Módosítsa ezt a lehetőséget a globális beállításokban."</string>
+  <string name="controller_type">"Vezérlő típusa"</string>
+  <string name="physical_keyboard">"Billentyűzet"</string>
+  <string name="time_scale">"Emulációs sebesség"</string>
+  <string name="time_half">"Az aktuális sebesség fele"</string>
+  <string name="time_double">"Dupla áram sebesség"</string>
+  <string name="time_reset">"Normál sebesség"</string>
+  <string name="toggle_vibration">"Rezgés váltása"</string>
+  <string name="sort_games">"Játékok rendezése"</string>
+  <string name="rename_game">"Kiadás átnevezése"</string>
+  <string name="invalid_name">"Adjon meg egy nevet"</string>
+  <string name="manage_discs">"Lemezek kezelése"</string>
+  <string name="default_disc">"Használja alapértelmezett lemezként"</string>
+  <string name="plugins">"Beépülő modulok kezelése"</string>
+  <string name="install_content">"Tartalomcsomagok importálása"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\n%1$s\nVulkan verzió · ARM64\nBSD licenc – Xenia közreműködők"</string>
+  <string-array name="controller_types">
+    <item>"Automatikus"</item>
+    <item>"Gamepad"</item>
+    <item>"Kormány"</item>
+    <item>"Arcade kar"</item>
+    <item>"Repülő kar"</item>
+    <item>"Táncszőnyeg"</item>
+    <item>"Gitár"</item>
+    <item>"Dobszerelés"</item>
+    <item>"Árkád pad"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Cím A–Z"</item>
+    <item>"Cím Z–A"</item>
+    <item>"A legidősebb játszott először"</item>
+    <item>"Legutóbb játszott először"</item>
+    <item>"Kompatibilitás ↑"</item>
+    <item>"Kompatibilitás ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profilok és mentések"</string>
+  <string name="mutable_content_explanation">"Ezek a csomagok írható profilt vagy mentett adatokat tartalmaznak. Importálásukhoz ki kell bontani őket az alkalmazástárba. A játékok, a DLC-k és a frissítések a helyükön maradnak. Az eredeti példányokat megőrzi, és a meglévő adatokat soha nem cseréli le."</string>
+  <string name="extract_data">"Profil kibontása/adatok mentése"</string>
+  <string name="unsupported_game">"Válasszon egy ISO, ZAR, XEX, ELF vagy STFS/GOD játékot."</string>
+  <string name="stop_confirmation">"Leállítja a játékot? A nem mentett haladás elveszik."</string>
+  <string name="virtual_controller">"Képernyő-vezérlő"</string>
+  <string name="disconnect_controller">"Lekapcsolva"</string>
+  <string name="remap_controller">"Vezérlő leképezések"</string>
+  <string name="reset_mappings">"Az alapértelmezett leképezések visszaállítása"</string>
+  <string name="mapping_key">"Android kulcskód"</string>
+  <string name="mapping_axis">"Android tengely (negatív = fordított)"</string>
+  <string name="press_controller_button">"Nyomja meg a fizikai gombot a hozzárendeléshez."</string>
+  <string name="invert_axis">"Tengely megfordítása"</string>
+  <string name="portal_failed">"Nem sikerült csatlakozni az USB-portálhoz."</string>
+  <string name="open_trace">"Nyissa meg a Vulkan nyomkövetést"</string>
+  <string name="trace_failed">"Nem sikerült megnyitni a GPU nyomkövetést."</string>
+  <string name="reset_all_options">"Állítsa vissza az emulátor beállításait"</string>
+  <string name="reset_global_confirmation">"Visszaállítja az Android emulátor összes beállítását az alapértelmezett értékre, beleértve a konfigurált elérési utat és a felület nyelvét? A profilok, a játékfájlok és a játékonkénti opciók megmaradnak."</string>
+  <string name="reset_game_confirmation">"Eltávolítja az összes Android-beállítás felülírását ehhez a címhez? Általános beállítások lesznek használatban. A játékfájlok megőrződnek."</string>
+  <string name="state_on">"Be"</string>
+  <string name="state_off">"Ki"</string>
+</resources>

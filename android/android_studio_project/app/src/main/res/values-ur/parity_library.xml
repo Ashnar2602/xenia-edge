@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">گیم کی فائل تلاش کریں</string>
+    <string name="wrong_game_release">اسی گیم اور ورژن کی فائل منتخب کریں۔</string>
+    <string name="install_cancelled">انسٹالیشن منسوخ کر دی گئی</string>
+</resources>

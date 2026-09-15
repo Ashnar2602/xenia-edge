@@ -188,6 +188,9 @@ target_include_directories(glslang-spirv PUBLIC glslang)
 # (Windows-on-ARM runs x64 fine via Prism, and macOS handles its own
 # x86_64↔arm64 via Rosetta — both directions are unaffected).
 set(_xe_use_host_shader_cc FALSE)
+if(ANDROID)
+  set(_xe_use_host_shader_cc TRUE)
+endif()
 if(WIN32 AND CMAKE_CROSSCOMPILING AND XE_TARGET_AARCH64
     AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
   set(_xe_use_host_shader_cc TRUE)
@@ -427,6 +430,20 @@ if(MSVC)
   target_compile_options(xenia-shader-cc PRIVATE /EHsc)
 endif()
 
+elseif(ANDROID)
+
+set(XENIA_HOST_SHADER_CC "" CACHE FILEPATH "Native xenia-shader-cc executable")
+if(NOT EXISTS "${XENIA_HOST_SHADER_CC}")
+  message(FATAL_ERROR
+    "Android needs a native shader compiler. Build tools/build with the host "
+    "toolchain, then set XENIA_HOST_SHADER_CC to its xenia-shader-cc executable.")
+endif()
+add_executable(xenia-shader-cc IMPORTED GLOBAL)
+set_target_properties(xenia-shader-cc PROPERTIES
+  IMPORTED_CONFIGURATIONS Release
+  IMPORTED_LOCATION "${XENIA_HOST_SHADER_CC}"
+  IMPORTED_LOCATION_RELEASE "${XENIA_HOST_SHADER_CC}")
+
 else()  # _xe_use_host_shader_cc: x64→ARM64 cross-compile, use native build's binary
 
 # Native x64 build lives at <repo>/build/ (xenia-build.py: get_build_dir(None)).
@@ -576,6 +593,31 @@ target_link_libraries(zarchive PUBLIC zstd)
 # ==============================================================================
 # zlib-ng
 # ==============================================================================
+if(ANDROID)
+  # zlib's CMake renames generated headers in its source directory. Desktop
+  # builds keep those headers there, so configure a copy of the tracked sources
+  # to leave existing desktop builds intact and avoid using their host headers.
+  execute_process(COMMAND git ls-files
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/zlib-ng"
+    OUTPUT_VARIABLE _xe_zlib_files RESULT_VARIABLE _xe_zlib_result
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT _xe_zlib_result EQUAL 0)
+    message(FATAL_ERROR "Could not enumerate the pinned zlib-ng sources")
+  endif()
+  string(REPLACE "\n" ";" _xe_zlib_files "${_xe_zlib_files}")
+  set(_xe_zlib_source "${CMAKE_CURRENT_BINARY_DIR}/zlib-ng-src")
+  foreach(_file IN LISTS _xe_zlib_files)
+    configure_file("zlib-ng/${_file}" "${_xe_zlib_source}/${_file}" COPYONLY)
+  endforeach()
+  set(ZLIB_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+  set(WITH_GTEST OFF CACHE BOOL "" FORCE)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  set(ZLIB_COMPAT OFF CACHE BOOL "" FORCE)
+  set(CMAKE_C_STANDARD 11)
+  add_subdirectory("${_xe_zlib_source}" zlib-ng EXCLUDE_FROM_ALL)
+  add_library(zlib-ng ALIAS zlib)
+  set(CMAKE_C_STANDARD 17)
+else()
 # Generate headers if missing
 set(_zlibng_needs_configure FALSE)
 foreach(_hdr zlib-ng.h zconf-ng.h zlib_name_mangling-ng.h gzread.c)
@@ -659,6 +701,7 @@ else()
   endif()
 endif()
 target_include_directories(zlib-ng PUBLIC zlib-ng)
+endif()
 
 # ==============================================================================
 # libusb (Windows only)
@@ -850,6 +893,11 @@ endfunction()
 # Shared FFmpeg settings applied to each libav* target (defines, include
 # paths, platform-specific link deps, warning suppression, C linkage).
 function(ffmpeg_common target)
+  if(ANDROID)
+    # FFmpeg is embedded in the APK's shared library. Its assembly addresses
+    # internal tables directly, so those C symbols must not be preemptible.
+    set_target_properties(${target} PROPERTIES C_VISIBILITY_PRESET hidden)
+  endif()
   target_compile_definitions(${target} PRIVATE
     HAVE_AV_CONFIG_H
     _USE_MATH_DEFINES
@@ -1533,4 +1581,15 @@ if(APPLE)
     set_target_properties(xenia-third-party-metal-shader-converter PROPERTIES
       IMPORTED_LOCATION_${_xe_cfg_u} "${_xe_msc_dylib}")
   endforeach()
+endif()
+
+# Match libusb's upstream android/jni/libusb.mk; use descriptors granted by UsbManager.
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  add_library(libusb STATIC libusb/libusb/core.c libusb/libusb/descriptor.c
+    libusb/libusb/hotplug.c libusb/libusb/io.c libusb/libusb/strerror.c libusb/libusb/sync.c
+    libusb/libusb/os/linux_usbfs.c libusb/libusb/os/events_posix.c
+    libusb/libusb/os/threads_posix.c libusb/libusb/os/linux_netlink.c)
+  target_include_directories(libusb PUBLIC libusb/libusb PRIVATE libusb/android libusb/libusb/os)
+  target_link_libraries(libusb PUBLIC log)
+  set_target_properties(libusb PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()

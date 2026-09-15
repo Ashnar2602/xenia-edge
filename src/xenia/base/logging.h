@@ -12,6 +12,7 @@
 
 #include <cstdarg>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 #include "third_party/fmt/include/fmt/format.h"
@@ -75,6 +76,9 @@ class DebugPrintLogSink final : public LogSink {
 // Must be called on startup.
 void InitializeLogging(const std::string_view app_name);
 void ShutdownLogging();
+#if XE_PLATFORM_ANDROID
+void EnableAndroidFileLogging(const std::filesystem::path& root);
+#endif
 void FlushLog();
 
 // Flushes all log sinks immediately.

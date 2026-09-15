@@ -9,24 +9,30 @@
 
 #include <memory>
 
+#include "xenia/base/logging.h"
 #include "xenia/ui/file_picker.h"
+#include "xenia/ui/windowed_app_context_android.h"
 
 namespace xe {
 namespace ui {
 
-// TODO(Triang3l): An asynchronous file picker with a callback, starting an
-// activity for an ACTION_OPEN_DOCUMENT or an ACTION_OPEN_DOCUMENT_TREE intent.
-// This intent, however, provides a content URI, not the file path directly.
-// Accessing the file via the Storage Access Framework doesn't require the
-// READ_EXTERNAL_STORAGE permission, unlike opening a file by its path directly.
-// A file descriptor can be opened for the URI using
-// Context.getContentResolver().openFileDescriptor (it will return a
-// ParcelFileDescriptor, and a FileDescriptor can be obtained using its
-// getFileDescriptor() method).
-
+// Android activities deliver selected local paths without blocking the UI
+// thread.
 class AndroidFilePicker : public FilePicker {
  public:
-  bool Show(Window* parent_window) override { return false; }
+  bool Show(Window* parent_window) override {
+    XELOGE("Android file selection requires ShowAsync");
+    return false;
+  }
+  void ShowAsync(Window* window, Callback callback) override {
+    if (!window) {
+      callback({});
+      return;
+    }
+    static_cast<AndroidWindowedAppContext&>(window->app_context())
+        .PickFiles(int(mode_), int(type_), multi_selection_,
+                   std::move(callback));
+  }
 };
 
 std::unique_ptr<FilePicker> FilePicker::Create() {

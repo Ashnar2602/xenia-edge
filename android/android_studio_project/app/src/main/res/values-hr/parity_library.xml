@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Pronađi datoteku igre</string>
+    <string name="wrong_game_release">Odaberite datoteku istog naslova i verzije.</string>
+    <string name="install_cancelled">Instalacija je otkazana</string>
+</resources>

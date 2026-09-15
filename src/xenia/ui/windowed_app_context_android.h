@@ -18,6 +18,7 @@
 #include <array>
 #include <memory>
 
+#include "xenia/ui/file_picker.h"
 #include "xenia/ui/windowed_app_context.h"
 
 namespace xe {
@@ -43,12 +44,16 @@ class AndroidWindowedAppContext final : public WindowedAppContext {
   };
 
   WindowedApp* app() const { return app_.get(); }
+  void PickFiles(int mode, int type, bool multiple,
+                 FilePicker::Callback callback);
+  void FilesSelected(std::vector<std::filesystem::path> paths);
 
   void NotifyUILoopOfPendingFunctions() override;
 
   void PlatformQuitFromUIThread() override;
 
   JNIEnv* ui_thread_jni_env() const { return ui_thread_jni_env_; }
+  jobject activity() const { return activity_; }
 
   uint32_t GetPixelDensity() const {
     return configuration_ ? uint32_t(AConfiguration_getDensity(configuration_))
@@ -160,6 +165,7 @@ class AndroidWindowedAppContext final : public WindowedAppContext {
   AndroidWindow* activity_window_ = nullptr;
 
   std::unique_ptr<WindowedApp> app_;
+  FilePicker::Callback file_callback_;
 };
 
 }  // namespace ui

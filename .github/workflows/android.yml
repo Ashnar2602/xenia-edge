@@ -1,0 +1,86 @@
+name: Android
+
+on:
+  workflow_call:
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+    outputs:
+      signed:
+        value: ${{ jobs.android.outputs.signed }}
+
+jobs:
+  android:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      signed: ${{ steps.sign.outputs.signed }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install pinned Android tools
+        run: |
+          & "$env:ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.bat" 'platforms;android-35' 'build-tools;35.0.0' 'ndk;29.0.14206865' 'cmake;3.22.1'
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Build release APK
+        run: |
+          $env:ORG_GRADLE_PROJECT_xeniaVersionCode = git show -s --format=%ct
+          $env:ORG_GRADLE_PROJECT_xeniaVersionName = git rev-parse --short HEAD
+          python android/build.py --config Release --jobs 4
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & android/android_studio_project/gradlew.bat -p android/android_studio_project --console=plain lintGithubRelease "-PxeniaHostShaderCompiler=$env:GITHUB_WORKSPACE/build/host-tools/Release/xenia-shader-cc.exe" -PxeniaBuildJobs=4
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Upload unsigned build for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: xenia_edge_android_unsigned
+          path: android/android_studio_project/app/build/outputs/apk/github/release/*-unsigned.apk
+          if-no-files-found: error
+      - name: Sign upstream release
+        id: sign
+        if: github.repository == 'has207/xenia-edge' && github.event_name == 'push' && github.ref == 'refs/heads/edge'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if (!$env:ANDROID_KEYSTORE_BASE64) {
+            'Signing is not configured; the unsigned build remains available as a CI artifact.' >> $env:GITHUB_STEP_SUMMARY
+            exit 0
+          }
+          if (!$env:ANDROID_KEYSTORE_PASSWORD -or !$env:ANDROID_KEY_ALIAS -or !$env:ANDROID_KEY_PASSWORD) {
+            throw 'All four Android signing secrets must be configured.'
+          }
+          $keystore = Join-Path $env:RUNNER_TEMP 'xenia-android-release.jks'
+          try {
+            [IO.File]::WriteAllBytes($keystore,[Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+            & "$env:ANDROID_HOME/build-tools/35.0.0/apksigner.bat" sign --ks $keystore --ks-key-alias $env:ANDROID_KEY_ALIAS --ks-pass env:ANDROID_KEYSTORE_PASSWORD --key-pass env:ANDROID_KEY_PASSWORD --out xenia_edge_android.apk android/android_studio_project/app/build/outputs/apk/github/release/app-github-release-unsigned.apk
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            & "$env:ANDROID_HOME/build-tools/35.0.0/apksigner.bat" verify xenia_edge_android.apk
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            'signed=true' >> $env:GITHUB_OUTPUT
+          } finally {
+            Remove-Item -LiteralPath $keystore -ErrorAction SilentlyContinue
+          }
+      - name: Upload signed release
+        if: steps.sign.outputs.signed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xenia_edge_android
+          path: xenia_edge_android.apk
+          if-no-files-found: error

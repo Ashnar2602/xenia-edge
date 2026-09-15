@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Tutup layar game atau manajemen sebelum mengubah data emulator."</string>
+  <string name="no_controller">"Tidak ada pengontrol fisik"</string>
+  <string name="postprocessing">"Pasca pemrosesan"</string>
+  <string name="performance">"Kinerja"</string>
+  <string name="debug_tools">"Pengaturan debug"</string>
+  <string name="screenshot">"Ambil tangkapan layar"</string>
+  <string name="screenshot_failed">"Tidak dapat mengambil gambar game."</string>
+  <string name="screenshot_saved">"Tangkapan layar disimpan. Temukan di Pengaturan → Kelola file → screenshots."</string>
+  <string name="clear_gpu_cache">"Hapus cache GPU"</string>
+  <string name="profiler">"Tampilkan / sembunyikan profiler"</string>
+  <string name="profiles">"Profil"</string>
+  <string name="edit_profile">"Sunting profil"</string>
+  <string name="player_number">"Pemain %1$d"</string>
+  <string name="content">"Pembaruan DLC dan judul"</string>
+  <string name="statistics">"Statistik dan kompatibilitas"</string>
+  <string name="desktop_compatibility">"Laporan kompatibilitas desktop"</string>
+  <string-array name="compat_states">
+    <item>"Tidak Diketahui"</item>
+    <item>"Tidak Dapat Dimainkan"</item>
+    <item>"Dapat Dijalankan"</item>
+    <item>"Dalam permainan"</item>
+    <item>"Dapat Dimainkan"</item>
+  </string-array>
+  <string name="working">"Memproses…"</string>
+  <string name="operation_error">"Tidak dapat menyelesaikan operasi: %1$s"</string>
+  <string name="nothing_here">"Tidak ada entri yang tersedia."</string>
+  <string name="manage_files">"Kelola file"</string>
+  <string name="add_content">"Tambahkan DLC atau pembaruan judul"</string>
+  <string name="detach_content">"Hapus referensi"</string>
+  <string name="content_link_explanation">"Paket dibaca langsung dari lokasi aslinya. Simpan di sana. Menghapus referensi akan membuat file asli tetap utuh."</string>
+  <string name="global_options">"Opsi umum"</string>
+  <string name="global_explanation">"Default untuk semua game. Opsi per game diutamakan. Perubahan berlaku pada peluncuran berikutnya."</string>
+  <string name="default_value">"Bawaan"</string>
+  <string name="add_games">"Tambahkan permainan"</string>
+  <string name="single_game">"Permainan tunggal"</string>
+  <string name="game_folder">"Map"</string>
+  <string name="game_options">"Pilihan permainan"</string>
+  <string name="options_explanation">"Penggantian untuk judul ini. Perubahan berlaku saat permainan dimulai lagi."</string>
+  <string name="options_custom">"Permainan ini"</string>
+  <string name="options_inherited">"Pengaturan umum"</string>
+  <string name="options_base">"Nilai umum: %1$s"</string>
+  <string name="options_error">"Tidak dapat membaca atau menyimpan opsi: %1$s"</string>
+  <string name="options_no_title">"ID judul tidak dapat dibaca. Opsi per game memerlukan ID judul yang valid."</string>
+  <string name="profile_select">"Pilih profil untuk pemain 1"</string>
+  <string name="profile_explanation">"Buat profil pemain lokal sehingga game dapat masuk dan menyimpan kemajuan Anda. Ini akan masuk secara otomatis saat Anda bermain lagi."</string>
+  <string name="profile_migration">"Buat profil pemain lokal dan kaitkan penyimpanan lama yang ada dengannya, seperti di desktop. Ini akan masuk secara otomatis saat Anda bermain lagi."</string>
+  <string name="profile_invalid">"Gunakan 1–15 huruf (A–Z), angka, atau spasi tunggal. Dimulai dengan huruf dan diakhiri dengan huruf atau angka."</string>
+  <string name="profile_error">"Tidak dapat membuat atau memuat profil. Periksa penyimpanan gratis dan coba lagi."</string>
+  <string name="library">"Pustaka game"</string>
+  <string name="recent">"Baru-baru ini"</string>
+  <string name="your_games">"Permainan Anda"</string>
+  <string name="recent_games">"Baru-baru ini diputar"</string>
+  <string name="library_subtitle">"Game Xbox 360 Anda, dibuka langsung dari penyimpanan."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Tambahkan map"</string>
+  <string name="import_explanation">"Pilih folder game XEX atau GOD lengkap, termasuk file datanya. Xenia langsung membaca aslinya. Tidak ada file yang disalin."</string>
+  <string name="choose_folder">"Pilih map"</string>
+  <string name="empty_library">"Pustaka game Anda dimulai di sini"</string>
+  <string name="no_results">"Tidak ada permainan yang cocok"</string>
+  <string name="empty_hint">"Tambahkan ISO/ZAR atau folder game lengkap.\nGame Anda akan muncul di sini."</string>
+  <string name="play">"▶  Mainkan"</string>
+  <string name="play_named">"Mainkan %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d permainan"</item>
+    <item quantity="other">"%d permainan"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Merender resolusi"</string>
+  <string name="fps_limit">"Batas kecepatan bingkai"</string>
+  <string name="controls">"KONTROL"</string>
+  <string name="touch_controls">"Pengontrol di layar"</string>
+  <string name="controller_hint">"Kontrol sentuh dan hingga empat gamepad Bluetooth / USB, dengan getaran jika didukung."</string>
+  <string name="preview_title">"Pratinjau Android"</string>
+  <string name="preview_description">"Kompatibilitas game masih diuji. Pengaturan video berlaku untuk sesi permainan berikutnya."</string>
+  <string name="project">"Xenia Edge di GitHub"</string>
+  <string name="file_unavailable">"File tidak tersedia. Pilih lagi dari lokasi aslinya."</string>
+  <string name="no_executables">"Tidak ada judul XEX, ELF, ISO, ZAR atau STFS/GOD yang ditemukan di folder ini."</string>
+  <string name="import_cancelled">"Impor dibatalkan."</string>
+  <string name="importing">"Memindai folder…"</string>
+  <string name="import_progress">"Memindai · %2$s"</string>
+  <string name="cannot_open">"Tidak dapat menambahkan permainan"</string>
+  <string name="image_formats">"Pilih ISO atau ZAR. Untuk XEX dan GOD, tambahkan folder game lengkap."</string>
+  <string name="menu">"Tidak bisa"</string>
+  <string name="preparing_game">"Mempersiapkan permainan…"</string>
+  <string name="preparing_video">"Mempersiapkan video…"</string>
+  <string name="loading_game">"Memuat permainan…"</string>
+  <string name="launch_error">"Xenia tidak dapat meluncurkan judul ini (0x%1$08X). Periksa format dan file game. Detail teknis ada di Logcat."</string>
+  <string name="cannot_launch">"Tidak dapat memulai permainan"</string>
+  <string name="back_library">"Kembali ke pustaka game"</string>
+  <string name="close_session">"Interupsi sesi ini?"</string>
+  <string name="interrupt_loading">"Game masih memuat atau menutup. Anda dapat menunggu, atau menghentikan sesi ini dan kembali ke pustaka game."</string>
+  <string name="close_current_first">"Tutup game saat ini dari menu sebelum membuka judul lain."</string>
+  <string name="resume">"Lanjutkan permainan"</string>
+  <string name="toggle_controls">"Tampilkan / sembunyikan kontrol sentuh"</string>
+  <string name="storage_access">"Akses ke file permainan"</string>
+  <string name="storage_explanation">"Aktifkan “Akses semua file” agar Xenia dapat membuka game langsung dari penyimpanan perangkat atau kartu SD, tanpa menyalinnya."</string>
+  <string name="open_settings">"Buka pengaturan"</string>
+  <string name="local_storage_required">"Pilih file lokal di perangkat atau kartu SD. Penyedia cloud dan virtual tidak dapat dibuka secara langsung."</string>
+  <string name="game_information">"Informasi"</string>
+  <string name="info_unavailable">"Tidak tersedia"</string>
+  <string name="info_title_id">"ID Judul"</string>
+  <string name="info_media_id">"ID Media"</string>
+  <string name="info_base_version">"Versi dasar"</string>
+  <string name="info_disc">"Disk"</string>
+  <string name="info_disc_number">"%1$d dari %2$d"</string>
+  <string name="info_not_verified">"Tidak terverifikasi"</string>
+  <string name="info_format">"Format"</string>
+  <string name="info_size">"Ukuran berkas"</string>
+  <string name="info_path">"Lokasi"</string>
+  <string name="info_loading">"Membaca informasi judul…"</string>
+  <string name="info_no_metadata">"Tidak ada metadata judul yang dapat dibaca tersedia dalam file ini."</string>
+  <string name="automatic_controller">"Otomatis"</string>
+  <string name="profile_image">"Gambar profil"</string>
+  <string name="choose_image">"Pilih gambar"</string>
+  <string name="invalid_image">"Gambar tidak valid"</string>
+  <string name="preloading_shaders">"Memuat shader terlebih dahulu…"</string>
+  <string name="patches_applied">"Tambalan diterapkan"</string>
+  <string name="plugins_loaded">"Plugin dimuat"</string>
+  <string name="build_commit">"Lihat komit pembangunan"</string>
+  <string name="interface_language">"Bahasa antarmuka"</string>
+  <string name="system_language">"Bahasa sistem"</string>
+  <string name="global_only_option">"Ubah opsi ini di pengaturan global."</string>
+  <string name="controller_type">"Tipe pengontrol"</string>
+  <string name="physical_keyboard">"papan ketik"</string>
+  <string name="time_scale">"Kecepatan emulasi"</string>
+  <string name="time_half">"Setengah kecepatan saat ini"</string>
+  <string name="time_double">"Kecepatan arus ganda"</string>
+  <string name="time_reset">"Kecepatan biasa"</string>
+  <string name="toggle_vibration">"Alihkan getaran"</string>
+  <string name="sort_games">"Urutkan permainan"</string>
+  <string name="rename_game">"Ganti nama rilis"</string>
+  <string name="invalid_name">"Masukkan nama"</string>
+  <string name="manage_discs">"Kelola disk"</string>
+  <string name="disc_label">"Disk %1$d"</string>
+  <string name="default_disc">"Gunakan sebagai disk default"</string>
+  <string name="plugins">"Kelola plugin"</string>
+  <string name="install_content">"Impor paket konten"</string>
+  <string name="about_description">"Proyek Penelitian Emulator Xbox 360\nVersi %1$s\nVulkan · ARM64\nLisensi BSD — Kontributor Xenia"</string>
+  <string-array name="controller_types">
+    <item>"Otomatis"</item>
+    <item>"papan permainan"</item>
+    <item>"Setir"</item>
+    <item>"Tongkat Arcade"</item>
+    <item>"Tongkat Penerbangan"</item>
+    <item>"Matras Tari"</item>
+    <item>"Gitar"</item>
+    <item>"Set Drum"</item>
+    <item>"Pad Arcade"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Judul A–Z"</item>
+    <item>"Judul Z–A"</item>
+    <item>"Yang tertua bermain lebih dulu"</item>
+    <item>"Terakhir diputar dulu"</item>
+    <item>"Kompatibilitas ↑"</item>
+    <item>"Kompatibilitas ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profil dan simpanan"</string>
+  <string name="mutable_content_explanation">"Paket-paket ini berisi profil yang dapat ditulis atau menyimpan data. Mengimpornya memerlukan ekstraksi ke penyimpanan aplikasi. Game, DLC, dan pembaruan tetap terhubung. Dokumen asli disimpan dan data yang ada tidak pernah diganti."</string>
+  <string name="extract_data">"Ekstrak profil/simpan data"</string>
+  <string name="unsupported_game">"Pilih game ISO, ZAR, XEX, ELF atau STFS/GOD."</string>
+  <string name="stop_confirmation">"Hentikan permainannya? Kemajuan yang belum disimpan akan hilang."</string>
+  <string name="virtual_controller">"Pengontrol di layar"</string>
+  <string name="disconnect_controller">"Terputus"</string>
+  <string name="remap_controller">"Pemetaan pengontrol"</string>
+  <string name="reset_mappings">"Pulihkan pemetaan default"</string>
+  <string name="mapping_key">"Kode kunci Android"</string>
+  <string name="mapping_axis">"Sumbu Android (negatif = terbalik)"</string>
+  <string name="press_controller_button">"Tekan tombol fisik untuk menetapkan."</string>
+  <string name="invert_axis">"Balikkan sumbu"</string>
+  <string name="portal_failed">"Tidak dapat terhubung ke portal USB."</string>
+  <string name="open_trace">"Buka jejak Vulkan"</string>
+  <string name="trace_failed">"Tidak dapat membuka jejak GPU."</string>
+  <string name="reset_all_options">"Setel ulang opsi emulator"</string>
+  <string name="reset_global_confirmation">"Setel ulang semua opsi emulator Android ke defaultnya, termasuk jalur yang dikonfigurasi dan bahasa antarmuka? Profil, file game, dan opsi per game akan disimpan."</string>
+  <string name="reset_game_confirmation">"Hapus semua penggantian opsi Android untuk judul ini? Pengaturan umum akan digunakan. File game akan disimpan."</string>
+  <string name="state_on">"Aktif"</string>
+  <string name="state_off">"Nonaktif"</string>
+</resources>

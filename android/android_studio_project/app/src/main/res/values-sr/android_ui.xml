@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Затворите екран игре или управљања пре него што промените податке емулатора."</string>
+  <string name="no_controller">"Нема физичког контролора"</string>
+  <string name="postprocessing">"Накнадна обрада"</string>
+  <string name="performance">"Перформансе"</string>
+  <string name="debug_tools">"Подешавања за отклањање грешака"</string>
+  <string name="screenshot">"Направите снимак екрана"</string>
+  <string name="screenshot_failed">"Није могуће снимити слику игре."</string>
+  <string name="screenshot_saved">"Снимак екрана је сачуван. Пронађите га у Подешавања → Управљај датотекама → screenshots."</string>
+  <string name="clear_gpu_cache">"Обришите ГПУ кеш меморије"</string>
+  <string name="profiler">"Прикажи / сакриј профајлер"</string>
+  <string name="profiles">"Профили"</string>
+  <string name="edit_profile">"Уреди профил"</string>
+  <string name="player_number">"Играч %1$d"</string>
+  <string name="content">"DLC и ажурирања наслова"</string>
+  <string name="statistics">"Статистика и компатибилност"</string>
+  <string name="desktop_compatibility">"Извештај о компатибилности радне површине"</string>
+  <string-array name="compat_states">
+    <item>"Непознато"</item>
+    <item>"Не може се играти"</item>
+    <item>"Покреће се"</item>
+    <item>"У игри"</item>
+    <item>"Може се играти"</item>
+  </string-array>
+  <string name="working">"Обрада…"</string>
+  <string name="operation_error">"Није могуће довршити операцију: %1$s"</string>
+  <string name="nothing_here">"Нема доступних уноса."</string>
+  <string name="manage_files">"Управљајте датотекама"</string>
+  <string name="add_content">"Додајте DLC или ажурирање наслова"</string>
+  <string name="detach_content">"Уклони референцу"</string>
+  <string name="content_link_explanation">"Пакети се читају директно са њихове оригиналне локације. Држите их тамо. Уклањањем референце оригинална датотека остаје нетакнута."</string>
+  <string name="global_options">"Опште опције"</string>
+  <string name="global_explanation">"Подразумеване вредности за све игре. Опције по игри имају предност. Промене се примењују при следећем покретању."</string>
+  <string name="default_value">"Подразумевано"</string>
+  <string name="add_games">"Додајте игре"</string>
+  <string name="single_game">"Појединачна игра"</string>
+  <string name="game_folder">"Фолдер"</string>
+  <string name="game_options">"Опције игре"</string>
+  <string name="options_explanation">"Замени за овај наслов. Промене се примењују следећи пут када игра почне."</string>
+  <string name="options_custom">"Ова игра"</string>
+  <string name="options_inherited">"Опште подешавање"</string>
+  <string name="options_base">"Општа вредност: %1$s"</string>
+  <string name="options_error">"Није могуће прочитати или сачувати опције: %1$s"</string>
+  <string name="options_no_title">"ИД наслова није могао да се прочита. Опције по игри захтевају важећи ИД наслова."</string>
+  <string name="profile_select">"Изаберите профил за играча 1"</string>
+  <string name="profile_explanation">"Направите локални профил играча како би игре могле да се пријаве и сачувају ваш напредак. Аутоматски ће се пријавити следећи пут када будете играли."</string>
+  <string name="profile_migration">"Направите локални профил играча и повежите постојеће застареле сачуване датотеке са њим, као на десктопу. Аутоматски ће се пријавити следећи пут када будете играли."</string>
+  <string name="profile_invalid">"Користите 1–15 слова (A–Z), бројеве или размаке. Почните словом и завршите словом или бројем."</string>
+  <string name="profile_error">"Није могуће креирати или учитати профил. Проверите бесплатан меморијски простор и покушајте поново."</string>
+  <string name="library">"Библиотека"</string>
+  <string name="recent">"Недавно"</string>
+  <string name="your_games">"Ваше игре"</string>
+  <string name="recent_games">"Недавно играно"</string>
+  <string name="library_subtitle">"Ваше Xbox 360 игре, отворене директно из складишта."</string>
+  <string name="open_image">"＋ ISO/ZAR"</string>
+  <string name="import_folder">"Додај фолдер"</string>
+  <string name="import_explanation">"Изаберите комплетну фасциклу игре XEX или GOD, укључујући датотеке са подацима. Xenia директно чита оригинале. Ниједна датотека се не копира."</string>
+  <string name="choose_folder">"Изаберите фасциклу"</string>
+  <string name="empty_library">"Ваша библиотека почиње овде"</string>
+  <string name="no_results">"Нема одговарајућих игара"</string>
+  <string name="empty_hint">"Додајте ISO / ZAR или цео директоријум игре.\nВаше игре ће се појавити овде."</string>
+  <string name="play">"▶  Играј"</string>
+  <string name="play_named">"Играј %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d игра"</item>
+    <item quantity="few">"%d игре"</item>
+    <item quantity="other">"%d игара"</item>
+  </plurals>
+  <string name="video">"ВИДЕО"</string>
+  <string name="resolution">"Рендеринг резолуција"</string>
+  <string name="fps_limit">"Ограничење брзине кадрова"</string>
+  <string name="controls">"КОНТРОЛЕ"</string>
+  <string name="touch_controls">"Контролер на екрану"</string>
+  <string name="controller_hint">"Контроле на додир и до четири Блуетоотх/УСБ гамепада, са вибрацијом где је подржано."</string>
+  <string name="preview_title">"Android преглед"</string>
+  <string name="preview_description">"Компатибилност игара се још увек тестира. Подешавања видеа се примењују на следећу сесију игре."</string>
+  <string name="project">"Xenia Edge на GitHub"</string>
+  <string name="file_unavailable">"Датотека је недоступна. Изаберите га поново са првобитне локације."</string>
+  <string name="no_executables">"У овом директоријуму није пронађен ниједан наслов XEX, ELF, ISO, ZAR или STFS/GOD."</string>
+  <string name="import_cancelled">"Увоз је отказан."</string>
+  <string name="importing">"Скенирање фолдера…"</string>
+  <string name="import_progress">"Скенирање · %2$s"</string>
+  <string name="cannot_open">"Није могуће додати игру"</string>
+  <string name="image_formats">"Изаберите ISO или ZAR. За XEX и GOD додајте комплетну фасциклу игре."</string>
+  <string name="menu">"Мени"</string>
+  <string name="preparing_game">"Припрема игре…"</string>
+  <string name="preparing_video">"Видео се припрема…"</string>
+  <string name="loading_game">"Учитавање игре…"</string>
+  <string name="launch_error">"Xenia није могао да покрене овај наслов (0к%1$08X). Проверите формат и датотеке игре. Технички детаљи су у Logcat."</string>
+  <string name="cannot_launch">"Није могуће покренути игру"</string>
+  <string name="back_library">"Назад у библиотеку"</string>
+  <string name="close_session">"Прекинути ову сесију?"</string>
+  <string name="interrupt_loading">"Игра се још увек учитава или затвара. Можете сачекати или прекинути ову сесију и вратити се у библиотеку."</string>
+  <string name="close_current_first">"Затворите тренутну игру из менија пре отварања другог наслова."</string>
+  <string name="resume">"Настави игру"</string>
+  <string name="toggle_controls">"Прикажи/сакриј контроле додиром"</string>
+  <string name="storage_access">"Приступ датотекама игара"</string>
+  <string name="storage_explanation">"Омогућите „Приступ свим датотекама“ за Xenia да бисте отварали игре директно са складишта уређаја или са SD картице, без њиховог копирања."</string>
+  <string name="open_settings">"Отворите подешавања"</string>
+  <string name="local_storage_required">"Изаберите локалну датотеку на уређају или SD картици. Провајдери у облаку и виртуелни не могу се отворити директно."</string>
+  <string name="game_information">"Информације"</string>
+  <string name="info_unavailable">"Недоступно"</string>
+  <string name="info_title_id">"ИД наслова"</string>
+  <string name="info_media_id">"ИД медија"</string>
+  <string name="info_base_version">"Основна верзија"</string>
+  <string name="info_disc">"Дисц"</string>
+  <string name="info_disc_number">"%1$d од %2$d"</string>
+  <string name="info_not_verified">"Није верификовано"</string>
+  <string name="info_format">"Формат"</string>
+  <string name="info_size">"Величина датотеке"</string>
+  <string name="info_path">"Локација"</string>
+  <string name="info_loading">"Читање информација о наслову…"</string>
+  <string name="info_no_metadata">"У овој датотеци нису доступни читљиви метаподаци наслова."</string>
+  <string name="automatic_controller">"Аутоматски"</string>
+  <string name="profile_image">"Слика профила"</string>
+  <string name="choose_image">"Изаберите слику"</string>
+  <string name="invalid_image">"Неважећа слика"</string>
+  <string name="preloading_shaders">"Унапред учитавају се шејдери…"</string>
+  <string name="patches_applied">"Примењене закрпе"</string>
+  <string name="plugins_loaded">"Додаци су учитани"</string>
+  <string name="build_commit">"Погледајте урезивање изградње"</string>
+  <string name="interface_language">"Језик интерфејса"</string>
+  <string name="system_language">"Системски језик"</string>
+  <string name="global_only_option">"Промените ову опцију у глобалним подешавањима."</string>
+  <string name="controller_type">"Тип контролера"</string>
+  <string name="physical_keyboard">"Тастатура"</string>
+  <string name="time_scale">"Брзина емулације"</string>
+  <string name="time_half">"Половична брзина"</string>
+  <string name="time_double">"Двострука брзина струје"</string>
+  <string name="time_reset">"Нормална брзина"</string>
+  <string name="toggle_vibration">"Укључите вибрацију"</string>
+  <string name="sort_games">"Сортирај игре"</string>
+  <string name="rename_game">"Преименуј издање"</string>
+  <string name="invalid_name">"Унесите име"</string>
+  <string name="manage_discs">"Управљајте дисковима"</string>
+  <string name="default_disc">"Користи се као подразумевани диск"</string>
+  <string name="plugins">"Управљајте додацима"</string>
+  <string name="install_content">"Увезите пакете садржаја"</string>
+  <string name="about_description">"Xbox 360 Емулатор Ресеарцх Пројецт\nВерзија %1$s\nVulkan · ARM64\nBSD лиценца — Xenia сарадника"</string>
+  <string-array name="controller_types">
+    <item>"Аутоматски"</item>
+    <item>"Гејмпад"</item>
+    <item>"Волан"</item>
+    <item>"Аркадни стик"</item>
+    <item>"Летачки џојстик"</item>
+    <item>"Плесна простирка"</item>
+    <item>"Гитара"</item>
+    <item>"Бубњеви"</item>
+    <item>"Аркадни пед"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Наслов А–З"</item>
+    <item>"Наслов З–А"</item>
+    <item>"Најстарији је играо први"</item>
+    <item>"Последњи игран први"</item>
+    <item>"Компатибилност ↑"</item>
+    <item>"Компатибилност ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Профили и чувања"</string>
+  <string name="mutable_content_explanation">"Ови пакети садрже профил на који се може писати или сачувати податке. Њихово увоз захтева екстракцију у складиште апликације. Игре, DLC и ажурирања остају повезани. Оригинали се чувају и постојећи подаци се никада не замењују."</string>
+  <string name="extract_data">"Извуците профил/сачувајте податке"</string>
+  <string name="unsupported_game">"Изаберите игру ISO, ZAR, XEX, ELF или STFS/GOD."</string>
+  <string name="stop_confirmation">"Зауставити игру? Несачувани напредак ће бити изгубљен."</string>
+  <string name="virtual_controller">"Контролер на екрану"</string>
+  <string name="disconnect_controller">"Дисцоннецтед"</string>
+  <string name="remap_controller">"Пресликавања контролера"</string>
+  <string name="reset_mappings">"Врати подразумевана мапирања"</string>
+  <string name="mapping_key">"Android код кључа"</string>
+  <string name="mapping_axis">"Android оса (негативна = обрнута)"</string>
+  <string name="press_controller_button">"Притисните физичко дугме да бисте доделили."</string>
+  <string name="invert_axis">"Инвертна оса"</string>
+  <string name="portal_failed">"Повезивање са УСБ порталом није успело."</string>
+  <string name="open_trace">"Отворите Vulkan праћење"</string>
+  <string name="trace_failed">"Није могуће отворити праћење ГПУ-а."</string>
+  <string name="reset_all_options">"Ресетујте опције емулатора"</string>
+  <string name="reset_global_confirmation">"Ресетовати све опције емулатора Android на подразумеване вредности, укључујући конфигурисане путање и језик интерфејса? Профили, датотеке игара и опције по игри ће се задржати."</string>
+  <string name="reset_game_confirmation">"Желите ли да уклоните све замене опција Android за овај наслов? Биће коришћена општа подешавања. Датотеке игре ће бити сачуване."</string>
+  <string name="state_on">"Укључено"</string>
+  <string name="state_off">"Искључено"</string>
+</resources>

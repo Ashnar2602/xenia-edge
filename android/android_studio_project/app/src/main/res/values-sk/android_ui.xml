@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Pred zmenou údajov emulátora zatvorte obrazovku hry alebo správy."</string>
+  <string name="no_controller">"Žiadny fyzický ovládač"</string>
+  <string name="postprocessing">"Post-processing"</string>
+  <string name="performance">"Výkon"</string>
+  <string name="debug_tools">"Nastavenia ladenia"</string>
+  <string name="screenshot">"Urobte snímku obrazovky"</string>
+  <string name="screenshot_failed">"Nepodarilo sa zachytiť obraz hry."</string>
+  <string name="screenshot_saved">"Snímka obrazovky bola uložená. Nájdete ho v časti Nastavenia → Spravovať súbory → screenshots."</string>
+  <string name="clear_gpu_cache">"Vymažte vyrovnávaciu pamäť GPU"</string>
+  <string name="profiler">"Zobraziť / skryť profiler"</string>
+  <string name="profiles">"Profily"</string>
+  <string name="edit_profile">"Upraviť profil"</string>
+  <string name="player_number">"Hráč %1$d"</string>
+  <string name="content">"Aktualizácie DLC a titulov"</string>
+  <string name="statistics">"Statistics and compatibility"</string>
+  <string name="desktop_compatibility">"Správa o kompatibilite s počítačmi"</string>
+  <string-array name="compat_states">
+    <item>"Neznáme"</item>
+    <item>"Nehrateľné"</item>
+    <item>"Spustí sa"</item>
+    <item>"V hre"</item>
+    <item>"Hrateľné"</item>
+  </string-array>
+  <string name="working">"Spracúva sa…"</string>
+  <string name="operation_error">"Operáciu sa nepodarilo dokončiť: %1$s"</string>
+  <string name="nothing_here">"Nie sú k dispozícii žiadne záznamy."</string>
+  <string name="manage_files">"Spravovať súbory"</string>
+  <string name="add_content">"Pridajte aktualizáciu DLC alebo titulu"</string>
+  <string name="detach_content">"Odstrániť referenciu"</string>
+  <string name="content_link_explanation">"Balíky sa čítajú priamo z ich pôvodného umiestnenia. Nechaj si ich tam. Odstránením odkazu zostane pôvodný súbor nedotknutý."</string>
+  <string name="global_options">"General options"</string>
+  <string name="global_explanation">"Predvolené hodnoty pre všetky hry. Možnosti jednotlivých hier majú prednosť. Zmeny sa prejavia pri ďalšom spustení."</string>
+  <string name="default_value">"Predvolené"</string>
+  <string name="add_games">"Pridať hry"</string>
+  <string name="single_game">"Jedna hra"</string>
+  <string name="game_folder">"Priečinok"</string>
+  <string name="game_options">"Game options"</string>
+  <string name="options_explanation">"Prepíše pre tento titul. Zmeny sa použijú pri ďalšom spustení hry."</string>
+  <string name="options_custom">"Táto hra"</string>
+  <string name="options_inherited">"Všeobecné nastavenie"</string>
+  <string name="options_base">"Všeobecná hodnota: %1$s"</string>
+  <string name="options_error">"Nepodarilo sa prečítať alebo uložiť možnosti: %1$s"</string>
+  <string name="options_no_title">"The title ID could not be read. Možnosti pre jednotlivé hry vyžadujú platné ID titulu."</string>
+  <string name="profile_select">"Vyberte profil pre hráča 1"</string>
+  <string name="profile_explanation">"Vytvorte si profil miestneho hráča, aby sa hry mohli prihlásiť a uložiť váš postup. Pri ďalšom hraní sa automaticky prihlási."</string>
+  <string name="profile_migration">"Vytvorte si profil miestneho hráča a priraďte k nemu existujúce staršie uloženia, ako na pracovnej ploche. Pri ďalšom hraní sa automaticky prihlási."</string>
+  <string name="profile_invalid">"Use 1–15 letters (A–Z), numbers or single spaces. Začnite písmenom a končia písmenom alebo číslom."</string>
+  <string name="profile_error">"Profil sa nepodarilo vytvoriť alebo načítať. Skontrolujte voľné úložisko a skúste to znova."</string>
+  <string name="library">"Knižnica"</string>
+  <string name="recent">"Nedávne"</string>
+  <string name="your_games">"Vaše hry"</string>
+  <string name="recent_games">"Nedávno hrané"</string>
+  <string name="library_subtitle">"Vaše hry pre Xbox 360, otvorené priamo z úložiska."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Pridať priečinok"</string>
+  <string name="import_explanation">"Vyberte si celý priečinok hry XEX alebo GOD vrátane jeho dátových súborov. Xenia číta originály priamo. Neskopírujú sa žiadne súbory."</string>
+  <string name="choose_folder">"Vyberte priečinok"</string>
+  <string name="empty_library">"Vaša knižnica začína tu"</string>
+  <string name="no_results">"Žiadne zodpovedajúce hry"</string>
+  <string name="empty_hint">"Pridajte priečinok ISO/ZAR alebo celý priečinok hry.\nVaše hry sa zobrazia tu."</string>
+  <string name="play">"▶  Hrať"</string>
+  <string name="play_named">"Hrať %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d hra"</item>
+    <item quantity="few">"%d hry"</item>
+    <item quantity="many">"%d hry"</item>
+    <item quantity="other">"%d hier"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Rendering resolution"</string>
+  <string name="fps_limit">"Limit snímkovej frekvencie"</string>
+  <string name="controls">"OVLÁDANIE"</string>
+  <string name="touch_controls">"Ovládač na obrazovke"</string>
+  <string name="controller_hint">"Dotykové ovládanie a až štyri Bluetooth / USB gamepady s podporou vibrácií."</string>
+  <string name="preview_title">"Ukážka systému Android"</string>
+  <string name="preview_description">"Kompatibilita hier sa stále testuje. Nastavenia videa sa použijú na nasledujúcu hernú reláciu."</string>
+  <string name="project">"Xenia Edge na GitHub"</string>
+  <string name="file_unavailable">"Súbor je nedostupný. Vyberte ho znova z jeho pôvodného umiestnenia."</string>
+  <string name="no_executables">"V tomto priečinku sa nenašiel žiadny titul XEX, ELF, ISO, ZAR alebo STFS/GOD."</string>
+  <string name="import_cancelled">"Import bol zrušený."</string>
+  <string name="importing">"Skenuje sa priečinok…"</string>
+  <string name="import_progress">"Skenovanie · %2$s"</string>
+  <string name="cannot_open">"Hru sa nepodarilo pridať"</string>
+  <string name="image_formats">"Vyberte ISO alebo ZAR. Pre XEX a GOD pridajte celý priečinok hry."</string>
+  <string name="menu">"Menu"</string>
+  <string name="preparing_game">"Príprava hry…"</string>
+  <string name="preparing_video">"Pripravuje sa video…"</string>
+  <string name="loading_game">"Načítava sa hra…"</string>
+  <string name="launch_error">"Xenia nemohla spustiť tento titul (0x%1$08X). Skontrolujte formát a herné súbory. Technické detaily sú v Logcat."</string>
+  <string name="cannot_launch">"Hru sa nepodarilo spustiť"</string>
+  <string name="back_library">"Späť do knižnice"</string>
+  <string name="close_session">"Prerušiť túto reláciu?"</string>
+  <string name="interrupt_loading">"Hra sa stále načítava alebo zatvára. Môžete počkať alebo túto reláciu prerušiť a vrátiť sa do knižnice."</string>
+  <string name="close_current_first">"Pred otvorením ďalšieho titulu zatvorte aktuálnu hru z ponuky."</string>
+  <string name="resume">"Obnoviť hru"</string>
+  <string name="toggle_controls">"Zobraziť/skryť dotykové ovládacie prvky"</string>
+  <string name="storage_access">"Prístup k herným súborom"</string>
+  <string name="storage_explanation">"Povoľte Xenia „Prístup ku všetkým súborom“, aby mohla otvárať hry priamo z úložiska zariadenia alebo SD karty bez ich kopírovania."</string>
+  <string name="open_settings">"Otvorte nastavenia"</string>
+  <string name="local_storage_required">"Vyberte lokálny súbor v zariadení alebo na SD karte. Cloudových a virtuálnych poskytovateľov nemožno otvoriť priamo."</string>
+  <string name="game_information">"Informácie"</string>
+  <string name="info_unavailable">"nedostupné"</string>
+  <string name="info_title_id">"ID titulu"</string>
+  <string name="info_media_id">"ID média"</string>
+  <string name="info_base_version">"Základná verzia"</string>
+  <string name="info_disc">"disk"</string>
+  <string name="info_disc_number">"%1$d z %2$d"</string>
+  <string name="info_not_verified">"Neoverené"</string>
+  <string name="info_format">"Formátovať"</string>
+  <string name="info_size">"Veľkosť súboru"</string>
+  <string name="info_path">"Poloha"</string>
+  <string name="info_loading">"Čítajú sa informácie o názve…"</string>
+  <string name="info_no_metadata">"V tomto súbore nie sú dostupné žiadne čitateľné metadáta názvu."</string>
+  <string name="automatic_controller">"Automaticky"</string>
+  <string name="profile_image">"Profilový obrázok"</string>
+  <string name="choose_image">"Vyberte obrázok"</string>
+  <string name="invalid_image">"Neplatný obrázok"</string>
+  <string name="preloading_shaders">"Prednačítavanie shaderov…"</string>
+  <string name="patches_applied">"Aplikované záplaty"</string>
+  <string name="plugins_loaded">"Pluginy načítané"</string>
+  <string name="build_commit">"Zobraziť potvrdenie zostavenia"</string>
+  <string name="interface_language">"Jazyk rozhrania"</string>
+  <string name="system_language">"Systémový jazyk"</string>
+  <string name="global_only_option">"Zmeňte túto možnosť v globálnych nastaveniach."</string>
+  <string name="controller_type">"Typ ovládača"</string>
+  <string name="physical_keyboard">"Klávesnica"</string>
+  <string name="time_scale">"Rýchlosť emulácie"</string>
+  <string name="time_half">"Polovičná rýchlosť prúdu"</string>
+  <string name="time_double">"Dvojitá rýchlosť prúdu"</string>
+  <string name="time_reset">"Normálna rýchlosť"</string>
+  <string name="toggle_vibration">"Prepnúť vibrácie"</string>
+  <string name="sort_games">"Triediť hry"</string>
+  <string name="rename_game">"Premenovať vydanie"</string>
+  <string name="invalid_name">"Zadajte meno"</string>
+  <string name="manage_discs">"Spravujte disky"</string>
+  <string name="default_disc">"Použiť ako predvolený disk"</string>
+  <string name="plugins">"Spravujte doplnky"</string>
+  <string name="install_content">"Importujte balíčky obsahu"</string>
+  <string name="about_description">"Výskumný projekt emulátora Xbox 360\nVerzia %1$s\nVulkan · ARM64\nlicencia BSD – prispievatelia Xenia"</string>
+  <string-array name="controller_types">
+    <item>"Automaticky"</item>
+    <item>"Gamepad"</item>
+    <item>"Volant"</item>
+    <item>"Arkádový joystick"</item>
+    <item>"Letecká páka"</item>
+    <item>"Tanečná podložka"</item>
+    <item>"Gitara"</item>
+    <item>"Bicia súprava"</item>
+    <item>"Arkádový panel"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Hlava A–Z"</item>
+    <item>"Hlava Z–A"</item>
+    <item>"Prvý hral najstarší"</item>
+    <item>"Naposledy hrané ako prvé"</item>
+    <item>"Kompatibilita ↑"</item>
+    <item>"Kompatibilita ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profily a uloženia"</string>
+  <string name="mutable_content_explanation">"Tieto balíky obsahujú zapisovateľný profil alebo uložené dáta. Ich import vyžaduje extrakciu do úložiska aplikácie. Hry, DLC a aktualizácie zostávajú prepojené. Originály sa zachovajú a existujúce údaje sa nikdy nenahradia."</string>
+  <string name="extract_data">"Extrahujte profil / uložte údaje"</string>
+  <string name="unsupported_game">"Vyberte si hru ISO, ZAR, XEX, ELF alebo STFS/GOD."</string>
+  <string name="stop_confirmation">"Zastaviť hru? Neuložený postup sa stratí."</string>
+  <string name="virtual_controller">"Ovládač na obrazovke"</string>
+  <string name="disconnect_controller">"Odpojené"</string>
+  <string name="remap_controller">"Mapovania ovládačov"</string>
+  <string name="reset_mappings">"Obnoviť predvolené mapovania"</string>
+  <string name="mapping_key">"Kód kľúča Android"</string>
+  <string name="mapping_axis">"Os Android (záporný = obrátený)"</string>
+  <string name="press_controller_button">"Pre priradenie stlačte fyzické tlačidlo."</string>
+  <string name="invert_axis">"Invertovať os"</string>
+  <string name="portal_failed">"Nepodarilo sa pripojiť k portálu USB."</string>
+  <string name="open_trace">"Otvorte Vulkanovu stopu"</string>
+  <string name="trace_failed">"Nepodarilo sa otvoriť sledovanie GPU."</string>
+  <string name="reset_all_options">"Obnovte možnosti emulátora"</string>
+  <string name="reset_global_confirmation">"Obnoviť všetky možnosti emulátora Android na predvolené hodnoty vrátane nakonfigurovaných ciest a jazyka rozhrania? Profily, herné súbory a možnosti pre jednotlivé hry zostanú zachované."</string>
+  <string name="reset_game_confirmation">"Chcete odstrániť všetky prepísania možností systému Android pre tento titul? Použijú sa všeobecné nastavenia. Herné súbory budú uložené."</string>
+  <string name="state_on">"Zapnuté"</string>
+  <string name="state_off">"Vypnuté"</string>
+</resources>

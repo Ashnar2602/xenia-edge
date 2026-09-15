@@ -16,9 +16,7 @@
 #include "xenia/ui/imgui_gamepad_dialog.h"
 
 namespace xe {
-namespace app {
-class EmulatorWindow;
-}  // namespace app
+class Emulator;
 }  // namespace xe
 
 namespace xe {
@@ -27,8 +25,7 @@ namespace ui {
 // ImGui-based performance tuning dialog with gamepad support.
 class ImGuiPerformanceDialog : public ImGuiGamepadDialog {
  public:
-  ImGuiPerformanceDialog(ImGuiDrawer* drawer,
-                         app::EmulatorWindow* emulator_window,
+  ImGuiPerformanceDialog(ImGuiDrawer* drawer, Emulator* emulator,
                          hid::InputSystem* input_system);
 
   void CloseDialog() { Close(); }
@@ -55,7 +52,7 @@ class ImGuiPerformanceDialog : public ImGuiGamepadDialog {
   void OnEmulatedDisplayUncappedChanged(bool uncapped);
   void OnFramerateLimitChanged(int value);
 
-  app::EmulatorWindow* emulator_window_;
+  Emulator* emulator_;
   std::function<void()> on_close_callback_;
 
   // Current settings state (selected values)

@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Đóng trò chơi hoặc màn hình quản lý trước khi thay đổi dữ liệu giả lập."</string>
+  <string name="no_controller">"Không có bộ điều khiển vật lý"</string>
+  <string name="postprocessing">"Xử lý hậu kỳ"</string>
+  <string name="performance">"Hiệu suất"</string>
+  <string name="debug_tools">"Cài đặt gỡ lỗi"</string>
+  <string name="screenshot">"Chụp ảnh màn hình"</string>
+  <string name="screenshot_failed">"Không thể chụp ảnh trò chơi."</string>
+  <string name="screenshot_saved">"Đã lưu ảnh chụp màn hình. Tìm nó trong Cài đặt → Quản lý tệp → screenshots."</string>
+  <string name="clear_gpu_cache">"Xóa bộ nhớ đệm GPU"</string>
+  <string name="profiler">"Hiện / ẩn công cụ phân tích hiệu năng"</string>
+  <string name="profiles">"Hồ sơ"</string>
+  <string name="edit_profile">"Chỉnh sửa hồ sơ"</string>
+  <string name="player_number">"Người chơi %1$d"</string>
+  <string name="content">"Cập nhật DLC và tiêu đề"</string>
+  <string name="statistics">"Thống kê và khả năng tương thích"</string>
+  <string name="desktop_compatibility">"Báo cáo tương thích với máy tính để bàn"</string>
+  <string-array name="compat_states">
+    <item>"Không xác định"</item>
+    <item>"Không chơi được"</item>
+    <item>"Khởi động được"</item>
+    <item>"Vào được trò chơi"</item>
+    <item>"Chơi được"</item>
+  </string-array>
+  <string name="working">"Đang xử lý…"</string>
+  <string name="operation_error">"Không thể hoàn tất thao tác: %1$s"</string>
+  <string name="nothing_here">"Không có mục nào có sẵn."</string>
+  <string name="manage_files">"Quản lý tập tin"</string>
+  <string name="add_content">"Thêm DLC hoặc cập nhật tiêu đề"</string>
+  <string name="detach_content">"Xóa tham chiếu"</string>
+  <string name="content_link_explanation">"Các gói được đọc trực tiếp từ vị trí ban đầu của chúng. Giữ chúng ở đó. Việc xóa tham chiếu sẽ giữ nguyên tệp gốc."</string>
+  <string name="global_options">"Tùy chọn chung"</string>
+  <string name="global_explanation">"Mặc định cho tất cả các trò chơi. Tùy chọn mỗi trò chơi được ưu tiên. Những thay đổi được áp dụng vào lần ra mắt tiếp theo."</string>
+  <string name="default_value">"Mặc định"</string>
+  <string name="add_games">"Thêm trò chơi"</string>
+  <string name="single_game">"Trò chơi đơn"</string>
+  <string name="game_folder">"Thư mục"</string>
+  <string name="game_options">"Tùy chọn trò chơi"</string>
+  <string name="options_explanation">"Ghi đè cho tiêu đề này. Những thay đổi sẽ được áp dụng vào lần tiếp theo trò chơi bắt đầu."</string>
+  <string name="options_custom">"Trò chơi này"</string>
+  <string name="options_inherited">"Cài đặt chung"</string>
+  <string name="options_base">"Giá trị chung: %1$s"</string>
+  <string name="options_error">"Không thể đọc hoặc lưu tùy chọn: %1$s"</string>
+  <string name="options_no_title">"Không thể đọc được ID tiêu đề. Tùy chọn cho mỗi trò chơi yêu cầu ID tiêu đề hợp lệ."</string>
+  <string name="profile_select">"Chọn hồ sơ cho người chơi 1"</string>
+  <string name="profile_explanation">"Tạo hồ sơ người chơi cục bộ để trò chơi có thể đăng nhập và lưu tiến trình của bạn. Nó sẽ tự động đăng nhập vào lần tiếp theo bạn chơi."</string>
+  <string name="profile_migration">"Tạo hồ sơ người chơi cục bộ và liên kết các bản lưu cũ hiện có với hồ sơ đó, như trên máy tính để bàn. Nó sẽ tự động đăng nhập vào lần tiếp theo bạn chơi."</string>
+  <string name="profile_invalid">"Sử dụng 1–15 chữ cái (A–Z), số hoặc dấu cách đơn. Bắt đầu bằng một chữ cái và kết thúc bằng một chữ cái hoặc số."</string>
+  <string name="profile_error">"Không thể tạo hoặc tải hồ sơ. Hãy kiểm tra dung lượng trống và thử lại."</string>
+  <string name="library">"Thư viện"</string>
+  <string name="recent">"Gần đây"</string>
+  <string name="your_games">"Trò chơi của bạn"</string>
+  <string name="recent_games">"Đã chơi gần đây"</string>
+  <string name="library_subtitle">"Trò chơi Xbox 360 của bạn, được mở trực tiếp từ bộ lưu trữ."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Thêm thư mục"</string>
+  <string name="import_explanation">"Chọn thư mục trò chơi XEX hoặc GOD hoàn chỉnh, bao gồm các tệp dữ liệu của nó. Xenia đọc bản gốc trực tiếp. Không có tập tin nào được sao chép."</string>
+  <string name="choose_folder">"Chọn thư mục"</string>
+  <string name="empty_library">"Thư viện của bạn bắt đầu ở đây"</string>
+  <string name="no_results">"Không có trò chơi phù hợp"</string>
+  <string name="empty_hint">"Thêm ISO / ZAR hoặc thư mục trò chơi hoàn chỉnh.\nTrò chơi của bạn sẽ xuất hiện ở đây."</string>
+  <string name="play">"▶  Chơi"</string>
+  <string name="play_named">"Chơi %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d trò chơi"</item>
+    <item quantity="other">"%d trò chơi"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Độ phân giải kết xuất"</string>
+  <string name="fps_limit">"Giới hạn tốc độ khung hình"</string>
+  <string name="controls">"ĐIỀU KHIỂN"</string>
+  <string name="touch_controls">"Bộ điều khiển trên màn hình"</string>
+  <string name="controller_hint">"Điều khiển cảm ứng và tối đa bốn gamepad Bluetooth / USB, có hỗ trợ rung."</string>
+  <string name="preview_title">"Xem trước Android"</string>
+  <string name="preview_description">"Khả năng tương thích của trò chơi vẫn đang được thử nghiệm. Cài đặt video áp dụng cho phiên trò chơi tiếp theo."</string>
+  <string name="project">"Xenia Edge trên GitHub"</string>
+  <string name="file_unavailable">"Tệp không có sẵn. Chọn lại nó từ vị trí ban đầu của nó."</string>
+  <string name="no_executables">"Không tìm thấy tiêu đề XEX, ELF, ISO, ZAR hoặc STFS/GOD trong thư mục này."</string>
+  <string name="import_cancelled">"Đã hủy nhập khẩu."</string>
+  <string name="importing">"Đang quét thư mục…"</string>
+  <string name="import_progress">"Đang quét · %2$s"</string>
+  <string name="cannot_open">"Không thể thêm trò chơi"</string>
+  <string name="image_formats">"Chọn ISO hoặc ZAR. Đối với XEX và GOD, hãy thêm thư mục trò chơi hoàn chỉnh."</string>
+  <string name="menu">"Thực đơn"</string>
+  <string name="preparing_game">"Đang chuẩn bị trò chơi…"</string>
+  <string name="preparing_video">"Đang chuẩn bị video…"</string>
+  <string name="loading_game">"Đang tải trò chơi…"</string>
+  <string name="launch_error">"Xenia không thể khởi chạy tựa game này (0x%1$08X). Kiểm tra định dạng và tập tin trò chơi. Chi tiết kỹ thuật có trong Logcat."</string>
+  <string name="cannot_launch">"Không thể bắt đầu trò chơi"</string>
+  <string name="back_library">"Quay lại thư viện"</string>
+  <string name="close_session">"Làm gián đoạn phiên này?"</string>
+  <string name="interrupt_loading">"Trò chơi vẫn đang tải hoặc đóng. Bạn có thể đợi hoặc gián đoạn phiên này và quay lại thư viện."</string>
+  <string name="close_current_first">"Đóng trò chơi hiện tại từ menu trước khi mở một tựa game khác."</string>
+  <string name="resume">"Tiếp tục trò chơi"</string>
+  <string name="toggle_controls">"Hiển thị/ẩn điều khiển cảm ứng"</string>
+  <string name="storage_access">"Truy cập vào tập tin trò chơi"</string>
+  <string name="storage_explanation">"Bật “Quyền truy cập tất cả các tệp” để Xenia mở trò chơi trực tiếp từ bộ nhớ thiết bị hoặc thẻ SD mà không cần sao chép chúng."</string>
+  <string name="open_settings">"Mở cài đặt"</string>
+  <string name="local_storage_required">"Chọn tệp cục bộ trên thiết bị hoặc thẻ SD. Các nhà cung cấp đám mây và ảo không thể được mở trực tiếp."</string>
+  <string name="game_information">"Thông tin"</string>
+  <string name="info_unavailable">"Không có sẵn"</string>
+  <string name="info_title_id">"ID tiêu đề"</string>
+  <string name="info_media_id">"ID phương tiện"</string>
+  <string name="info_base_version">"Phiên bản cơ sở"</string>
+  <string name="info_disc">"Đĩa"</string>
+  <string name="info_disc_number">"%1$d trong số %2$d"</string>
+  <string name="info_not_verified">"Chưa được xác minh"</string>
+  <string name="info_format">"định dạng"</string>
+  <string name="info_size">"Kích thước tệp"</string>
+  <string name="info_path">"Vị trí"</string>
+  <string name="info_loading">"Đọc thông tin tiêu đề…"</string>
+  <string name="info_no_metadata">"Không có siêu dữ liệu tiêu đề có thể đọc được trong tệp này."</string>
+  <string name="automatic_controller">"tự động"</string>
+  <string name="profile_image">"Hình ảnh hồ sơ"</string>
+  <string name="choose_image">"Chọn hình ảnh"</string>
+  <string name="invalid_image">"Hình ảnh không hợp lệ"</string>
+  <string name="preloading_shaders">"Đang tải trước trình đổ bóng…"</string>
+  <string name="patches_applied">"Các bản vá được áp dụng"</string>
+  <string name="plugins_loaded">"Đã tải plugin"</string>
+  <string name="build_commit">"Xem cam kết xây dựng"</string>
+  <string name="interface_language">"Ngôn ngữ giao diện"</string>
+  <string name="system_language">"Ngôn ngữ hệ thống"</string>
+  <string name="global_only_option">"Thay đổi tùy chọn này trong cài đặt chung."</string>
+  <string name="controller_type">"Loại bộ điều khiển"</string>
+  <string name="physical_keyboard">"Bàn phím"</string>
+  <string name="time_scale">"Tốc độ mô phỏng"</string>
+  <string name="time_half">"Một nửa tốc độ hiện tại"</string>
+  <string name="time_double">"Tốc độ hiện tại gấp đôi"</string>
+  <string name="time_reset">"Tốc độ bình thường"</string>
+  <string name="toggle_vibration">"Chuyển đổi rung"</string>
+  <string name="sort_games">"Sắp xếp trò chơi"</string>
+  <string name="rename_game">"Đổi tên bản phát hành"</string>
+  <string name="invalid_name">"Nhập tên"</string>
+  <string name="manage_discs">"Quản lý đĩa"</string>
+  <string name="default_disc">"Sử dụng làm đĩa mặc định"</string>
+  <string name="plugins">"Quản lý plugin"</string>
+  <string name="install_content">"Nhập gói nội dung"</string>
+  <string name="about_description">"Dự án nghiên cứu trình mô phỏng Xbox 360\nPhiên bản %1$s\nVulkan · ARM64\nGiấy phép BSD — Cộng tác viên Xenia"</string>
+  <string-array name="controller_types">
+    <item>"tự động"</item>
+    <item>"Tay cầm chơi game"</item>
+    <item>"Vô lăng"</item>
+    <item>"Cần Arcade"</item>
+    <item>"Cần lái máy bay"</item>
+    <item>"Thảm nhảy"</item>
+    <item>"đàn ghi-ta"</item>
+    <item>"Bộ trống"</item>
+    <item>"Pad Arcade"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Tiêu đề A–Z"</item>
+    <item>"Tiêu đề Z–A"</item>
+    <item>"Cũ nhất chơi đầu tiên"</item>
+    <item>"Chơi lần cuối đầu tiên"</item>
+    <item>"Khả năng tương thích ↑"</item>
+    <item>"Khả năng tương thích ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Hồ sơ và lưu"</string>
+  <string name="mutable_content_explanation">"Các gói này chứa hồ sơ có thể ghi hoặc lưu dữ liệu. Việc nhập chúng yêu cầu trích xuất vào bộ nhớ ứng dụng. Trò chơi, DLC và các bản cập nhật vẫn được liên kết tại chỗ. Bản gốc được bảo tồn và dữ liệu hiện có không bao giờ được thay thế."</string>
+  <string name="extract_data">"Trích xuất hồ sơ/lưu dữ liệu"</string>
+  <string name="unsupported_game">"Chọn trò chơi ISO, ZAR, XEX, ELF hoặc STFS/GOD."</string>
+  <string name="stop_confirmation">"Dừng trò chơi? Tiến trình chưa được lưu sẽ bị mất."</string>
+  <string name="virtual_controller">"Bộ điều khiển trên màn hình"</string>
+  <string name="disconnect_controller">"Đã ngắt kết nối"</string>
+  <string name="remap_controller">"Ánh xạ bộ điều khiển"</string>
+  <string name="reset_mappings">"Khôi phục ánh xạ mặc định"</string>
+  <string name="mapping_key">"Mã khóa Android"</string>
+  <string name="mapping_axis">"Trục Android (âm = đảo ngược)"</string>
+  <string name="press_controller_button">"Nhấn nút vật lý để gán."</string>
+  <string name="invert_axis">"Trục đảo ngược"</string>
+  <string name="portal_failed">"Không thể kết nối với cổng USB."</string>
+  <string name="open_trace">"Mở dấu vết Vulkan"</string>
+  <string name="trace_failed">"Không thể mở dấu vết GPU."</string>
+  <string name="reset_all_options">"Đặt lại tùy chọn trình mô phỏng"</string>
+  <string name="reset_global_confirmation">"Đặt lại tất cả các tùy chọn trình mô phỏng Android về mặc định, bao gồm cả đường dẫn đã định cấu hình và ngôn ngữ giao diện? Hồ sơ, tệp trò chơi và tùy chọn cho mỗi trò chơi sẽ được lưu giữ."</string>
+  <string name="reset_game_confirmation">"Xóa tất cả ghi đè tùy chọn Android cho tiêu đề này? Cài đặt chung sẽ được sử dụng. Các tập tin trò chơi sẽ được lưu giữ."</string>
+  <string name="state_on">"Bật"</string>
+  <string name="state_off">"Tắt"</string>
+</resources>

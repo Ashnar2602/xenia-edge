@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"ปิดหน้าจอเกมหรือการจัดการก่อนที่จะเปลี่ยนข้อมูลโปรแกรมจำลอง"</string>
+  <string name="no_controller">"ไม่มีตัวควบคุมทางกายภาพ"</string>
+  <string name="postprocessing">"หลังการประมวลผล"</string>
+  <string name="performance">"ประสิทธิภาพ"</string>
+  <string name="debug_tools">"การตั้งค่าการแก้ไขข้อบกพร่อง"</string>
+  <string name="screenshot">"จับภาพหน้าจอ"</string>
+  <string name="screenshot_failed">"ไม่สามารถจับภาพเกมได้"</string>
+  <string name="screenshot_saved">"บันทึกภาพหน้าจอแล้ว ค้นหาได้ในการตั้งค่า → จัดการไฟล์ → screenshots"</string>
+  <string name="clear_gpu_cache">"ล้างแคช GPU"</string>
+  <string name="profiler">"แสดง / ซ่อนเครื่องมือวิเคราะห์ประสิทธิภาพ"</string>
+  <string name="profiles">"โปรไฟล์"</string>
+  <string name="edit_profile">"แก้ไขโปรไฟล์"</string>
+  <string name="player_number">"ผู้เล่น %1$d"</string>
+  <string name="content">"การอัปเดต DLC และชื่อ"</string>
+  <string name="statistics">"สถิติและความเข้ากันได้"</string>
+  <string name="desktop_compatibility">"รายงานความเข้ากันได้ของเดสก์ท็อป"</string>
+  <string-array name="compat_states">
+    <item>"ไม่ทราบ"</item>
+    <item>"เล่นไม่ได้"</item>
+    <item>"เริ่มได้"</item>
+    <item>"เข้าสู่เกมได้"</item>
+    <item>"เล่นได้"</item>
+  </string-array>
+  <string name="working">"กำลังประมวลผล…"</string>
+  <string name="operation_error">"ไม่สามารถดำเนินการให้เสร็จสิ้นได้: %1$s"</string>
+  <string name="nothing_here">"ไม่มีรายการที่มีอยู่"</string>
+  <string name="manage_files">"จัดการไฟล์"</string>
+  <string name="add_content">"เพิ่ม DLC หรือการอัปเดตชื่อ"</string>
+  <string name="detach_content">"ลบข้อมูลอ้างอิง"</string>
+  <string name="content_link_explanation">"แพ็คเกจจะถูกอ่านโดยตรงจากตำแหน่งดั้งเดิม เก็บไว้ที่นั่น การลบข้อมูลอ้างอิงจะทำให้ไฟล์ต้นฉบับไม่เสียหาย"</string>
+  <string name="global_options">"ตัวเลือกทั่วไป"</string>
+  <string name="global_explanation">"ค่าเริ่มต้นสำหรับทุกเกม ตัวเลือกต่อเกมมีความสำคัญกว่า การเปลี่ยนแปลงจะมีผลกับการเปิดตัวครั้งถัดไป"</string>
+  <string name="default_value">"ค่าเริ่มต้น"</string>
+  <string name="add_games">"เพิ่มเกม"</string>
+  <string name="single_game">"เกมเดียว"</string>
+  <string name="game_folder">"โฟลเดอร์"</string>
+  <string name="game_options">"ตัวเลือกเกม"</string>
+  <string name="options_explanation">"แทนที่สำหรับชื่อนี้ การเปลี่ยนแปลงจะมีผลในครั้งต่อไปที่เกมเริ่ม"</string>
+  <string name="options_custom">"เกมนี้"</string>
+  <string name="options_inherited">"การตั้งค่าทั่วไป"</string>
+  <string name="options_base">"ค่าทั่วไป: %1$s"</string>
+  <string name="options_error">"ไม่สามารถอ่านหรือบันทึกตัวเลือก: %1$s"</string>
+  <string name="options_no_title">"ID ชื่อไม่สามารถอ่านได้ ตัวเลือกต่อเกมต้องมีรหัสชื่อที่ถูกต้อง"</string>
+  <string name="profile_select">"เลือกโปรไฟล์สำหรับผู้เล่น 1"</string>
+  <string name="profile_explanation">"สร้างโปรไฟล์ผู้เล่นในพื้นที่เพื่อให้เกมสามารถลงชื่อเข้าใช้และบันทึกความคืบหน้าของคุณได้ มันจะลงชื่อเข้าใช้โดยอัตโนมัติในครั้งต่อไปที่คุณเล่น"</string>
+  <string name="profile_migration">"สร้างโปรไฟล์ผู้เล่นท้องถิ่นและเชื่อมโยงการบันทึกแบบเดิมที่มีอยู่กับโปรไฟล์ดังกล่าว เช่นเดียวกับบนเดสก์ท็อป มันจะลงชื่อเข้าใช้โดยอัตโนมัติในครั้งต่อไปที่คุณเล่น"</string>
+  <string name="profile_invalid">"ใช้ตัวอักษร 1–15 ตัว (A–Z) ตัวเลข หรือช่องว่างเดี่ยว ขึ้นต้นด้วยตัวอักษรและลงท้ายด้วยตัวอักษรหรือตัวเลข"</string>
+  <string name="profile_error">"ไม่สามารถสร้างหรือโหลดโปรไฟล์ได้ ตรวจสอบพื้นที่เก็บข้อมูลฟรีแล้วลองอีกครั้ง"</string>
+  <string name="library">"คลังเกม"</string>
+  <string name="recent">"ล่าสุด"</string>
+  <string name="your_games">"เกมของคุณ"</string>
+  <string name="recent_games">"เพิ่งเล่น"</string>
+  <string name="library_subtitle">"เกม Xbox 360 ของคุณเปิดโดยตรงจากที่จัดเก็บข้อมูล"</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"เพิ่มโฟลเดอร์"</string>
+  <string name="import_explanation">"เลือกโฟลเดอร์เกม XEX หรือ GOD ที่สมบูรณ์ รวมถึงไฟล์ข้อมูลด้วย Xenia อ่านต้นฉบับโดยตรง ไม่มีการคัดลอกไฟล์"</string>
+  <string name="choose_folder">"เลือกโฟลเดอร์"</string>
+  <string name="empty_library">"คลังเกมของคุณเริ่มต้นที่นี่"</string>
+  <string name="no_results">"ไม่มีเกมที่ตรงกัน"</string>
+  <string name="empty_hint">"เพิ่ม ISO / ZAR หรือโฟลเดอร์เกมที่สมบูรณ์\nเกมของคุณจะปรากฏที่นี่"</string>
+  <string name="play">"▶  เล่น"</string>
+  <string name="play_named">"เล่น %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d เกม"</item>
+    <item quantity="other">"%d เกม"</item>
+  </plurals>
+  <string name="video">"วิดีโอ"</string>
+  <string name="resolution">"ความละเอียดในการเรนเดอร์"</string>
+  <string name="fps_limit">"ขีดจำกัดอัตราเฟรม"</string>
+  <string name="controls">"การควบคุม"</string>
+  <string name="touch_controls">"ตัวควบคุมบนหน้าจอ"</string>
+  <string name="controller_hint">"ระบบควบคุมแบบสัมผัสและเกมแพด Bluetooth / USB สูงสุดสี่ตัวพร้อมระบบสั่นที่รองรับ"</string>
+  <string name="preview_title">"ตัวอย่าง Android"</string>
+  <string name="preview_description">"ความเข้ากันได้ของเกมยังอยู่ระหว่างการทดสอบ การตั้งค่าวิดีโอมีผลกับเซสชันเกมถัดไป"</string>
+  <string name="project">"Xenia Edge บน GitHub"</string>
+  <string name="file_unavailable">"ไฟล์ไม่พร้อมใช้งาน เลือกอีกครั้งจากตำแหน่งเดิม"</string>
+  <string name="no_executables">"ไม่พบชื่อ XEX, ELF, ISO, ZAR หรือ STFS/GOD ในโฟลเดอร์นี้"</string>
+  <string name="import_cancelled">"การนำเข้าถูกยกเลิก"</string>
+  <string name="importing">"กำลังสแกนโฟลเดอร์..."</string>
+  <string name="import_progress">"กำลังสแกน · %2$s"</string>
+  <string name="cannot_open">"ไม่สามารถเพิ่มเกมได้"</string>
+  <string name="image_formats">"เลือก ISO หรือ ZAR สำหรับ XEX และ GOD ให้เพิ่มโฟลเดอร์เกมที่สมบูรณ์"</string>
+  <string name="menu">"เมนู"</string>
+  <string name="preparing_game">"กำลังเตรียมเกม..."</string>
+  <string name="preparing_video">"กำลังเตรียมวิดีโอ..."</string>
+  <string name="loading_game">"กำลังโหลดเกม..."</string>
+  <string name="launch_error">"Xenia ไม่สามารถเปิดตัวชื่อนี้ได้ (0x%1$08X) ตรวจสอบรูปแบบและไฟล์เกม รายละเอียดทางเทคนิคอยู่ใน Logcat"</string>
+  <string name="cannot_launch">"ไม่สามารถเริ่มเกมได้"</string>
+  <string name="back_library">"กลับไปที่คลังเกม"</string>
+  <string name="close_session">"ขัดจังหวะเซสชันนี้ใช่ไหม"</string>
+  <string name="interrupt_loading">"เกมยังคงโหลดหรือปิดอยู่ คุณสามารถรอหรือขัดจังหวะเซสชั่นนี้แล้วกลับไปที่คลังเกมได้"</string>
+  <string name="close_current_first">"ปิดเกมปัจจุบันจากเมนูก่อนเปิดเกมอื่น"</string>
+  <string name="resume">"เล่นเกมต่อ"</string>
+  <string name="toggle_controls">"แสดง / ซ่อนระบบควบคุมแบบสัมผัส"</string>
+  <string name="storage_access">"การเข้าถึงไฟล์เกม"</string>
+  <string name="storage_explanation">"เปิดใช้งาน \"การเข้าถึงไฟล์ทั้งหมด\" สำหรับ Xenia เพื่อเปิดเกมโดยตรงจากที่เก็บข้อมูลอุปกรณ์หรือการ์ด SD โดยไม่ต้องคัดลอก"</string>
+  <string name="open_settings">"เปิดการตั้งค่า"</string>
+  <string name="local_storage_required">"เลือกไฟล์ในเครื่องบนอุปกรณ์หรือการ์ด SD ไม่สามารถเปิดผู้ให้บริการคลาวด์และเสมือนได้โดยตรง"</string>
+  <string name="game_information">"ข้อมูล"</string>
+  <string name="info_unavailable">"ไม่พร้อมใช้งาน"</string>
+  <string name="info_title_id">"รหัสชื่อเรื่อง"</string>
+  <string name="info_media_id">"รหัสสื่อ"</string>
+  <string name="info_base_version">"รุ่นพื้นฐาน"</string>
+  <string name="info_disc">"แผ่นดิสก์"</string>
+  <string name="info_disc_number">"%1$d จาก %2$d"</string>
+  <string name="info_not_verified">"ไม่ได้รับการยืนยัน"</string>
+  <string name="info_format">"รูปแบบ"</string>
+  <string name="info_size">"ขนาดไฟล์"</string>
+  <string name="info_path">"ที่ตั้ง"</string>
+  <string name="info_loading">"กำลังอ่านข้อมูลชื่อเรื่อง..."</string>
+  <string name="info_no_metadata">"ไม่มีข้อมูลเมตาของชื่อที่สามารถอ่านได้ในไฟล์นี้"</string>
+  <string name="automatic_controller">"อัตโนมัติ"</string>
+  <string name="profile_image">"รูปโปรไฟล์"</string>
+  <string name="choose_image">"เลือกรูปภาพ"</string>
+  <string name="invalid_image">"รูปภาพไม่ถูกต้อง"</string>
+  <string name="preloading_shaders">"กำลังโหลดเชเดอร์ล่วงหน้า..."</string>
+  <string name="patches_applied">"ใช้แพทช์แล้ว"</string>
+  <string name="plugins_loaded">"โหลดปลั๊กอินแล้ว"</string>
+  <string name="build_commit">"ดูการคอมมิตบิลด์"</string>
+  <string name="interface_language">"ภาษาอินเทอร์เฟซ"</string>
+  <string name="system_language">"ภาษาของระบบ"</string>
+  <string name="global_only_option">"เปลี่ยนตัวเลือกนี้ในการตั้งค่าส่วนกลาง"</string>
+  <string name="controller_type">"ประเภทตัวควบคุม"</string>
+  <string name="physical_keyboard">"คีย์บอร์ด"</string>
+  <string name="time_scale">"ความเร็วการจำลอง"</string>
+  <string name="time_half">"ความเร็วครึ่งปัจจุบัน"</string>
+  <string name="time_double">"ความเร็วกระแสสองเท่า"</string>
+  <string name="time_reset">"ความเร็วปกติ"</string>
+  <string name="toggle_vibration">"สลับการสั่น"</string>
+  <string name="sort_games">"เรียงลำดับเกม"</string>
+  <string name="rename_game">"เปลี่ยนชื่อรุ่น"</string>
+  <string name="invalid_name">"ป้อนชื่อ"</string>
+  <string name="manage_discs">"จัดการแผ่นดิสก์"</string>
+  <string name="default_disc">"ใช้เป็นแผ่นดิสก์เริ่มต้น"</string>
+  <string name="plugins">"จัดการปลั๊กอิน"</string>
+  <string name="install_content">"นำเข้าแพ็คเกจเนื้อหา"</string>
+  <string name="about_description">"โครงการวิจัย Xbox 360 Emulator\nเวอร์ชัน %1$s\nVulkan · ใบอนุญาต ARM64\nBSD — ผู้ร่วมให้ข้อมูลของ Xenia"</string>
+  <string-array name="controller_types">
+    <item>"อัตโนมัติ"</item>
+    <item>"เกมแพด"</item>
+    <item>"พวงมาลัย"</item>
+    <item>"อาร์เคดสติ๊ก"</item>
+    <item>"ฟลายต์สติ๊ก"</item>
+    <item>"แผ่นเต้น"</item>
+    <item>"กีตาร์"</item>
+    <item>"ชุดกลอง"</item>
+    <item>"อาร์เคดแพด"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"ชื่อเรื่อง A-Z"</item>
+    <item>"หัวข้อ Z–A"</item>
+    <item>"เก่าที่สุดเล่นก่อน"</item>
+    <item>"เล่นครั้งสุดท้ายก่อน"</item>
+    <item>"ความเข้ากันได้↑"</item>
+    <item>"ความเข้ากันได้ ↓"</item>
+  </string-array>
+  <string name="mutable_content">"โปรไฟล์และบันทึก"</string>
+  <string name="mutable_content_explanation">"แพ็คเกจเหล่านี้มีโปรไฟล์ที่สามารถเขียนได้หรือบันทึกข้อมูล การนำเข้าต้องมีการแตกข้อมูลลงในที่เก็บข้อมูลแอป เกม, DLC และการอัปเดตยังคงเชื่อมโยงอยู่ ต้นฉบับจะถูกเก็บรักษาไว้และข้อมูลที่มีอยู่จะไม่ถูกแทนที่"</string>
+  <string name="extract_data">"แยกโปรไฟล์/บันทึกข้อมูล"</string>
+  <string name="unsupported_game">"เลือกเกม ISO, ZAR, XEX, ELF หรือ STFS/GOD"</string>
+  <string name="stop_confirmation">"หยุดเกม? ความคืบหน้าที่ไม่ได้บันทึกจะสูญหายไป"</string>
+  <string name="virtual_controller">"ตัวควบคุมบนหน้าจอ"</string>
+  <string name="disconnect_controller">"ตัดการเชื่อมต่อแล้ว"</string>
+  <string name="remap_controller">"การแมปตัวควบคุม"</string>
+  <string name="reset_mappings">"คืนค่าการแมปเริ่มต้น"</string>
+  <string name="mapping_key">"รหัสคีย์ Android"</string>
+  <string name="mapping_axis">"แกน Android (ลบ = กลับด้าน)"</string>
+  <string name="press_controller_button">"กดปุ่มทางกายภาพเพื่อกำหนด"</string>
+  <string name="invert_axis">"กลับแกน"</string>
+  <string name="portal_failed">"ไม่สามารถเชื่อมต่อกับพอร์ทัล USB"</string>
+  <string name="open_trace">"เปิดการติดตาม Vulkan"</string>
+  <string name="trace_failed">"ไม่สามารถเปิดการติดตาม GPU"</string>
+  <string name="reset_all_options">"รีเซ็ตตัวเลือกโปรแกรมจำลอง"</string>
+  <string name="reset_global_confirmation">"รีเซ็ตตัวเลือกโปรแกรมจำลอง Android ทั้งหมดเป็นค่าเริ่มต้น รวมถึงเส้นทางที่กำหนดค่าและภาษาอินเทอร์เฟซหรือไม่ โปรไฟล์ ไฟล์เกม และตัวเลือกต่อเกมจะถูกเก็บไว้"</string>
+  <string name="reset_game_confirmation">"ลบการแทนที่ตัวเลือก Android ทั้งหมดสำหรับชื่อนี้ไหม การตั้งค่าทั่วไปจะถูกใช้ ไฟล์เกมจะถูกเก็บไว้"</string>
+  <string name="state_on">"เปิด"</string>
+  <string name="state_off">"ปิด"</string>
+</resources>

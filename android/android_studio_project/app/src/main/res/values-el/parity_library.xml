@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Εντοπισμός αρχείου παιχνιδιού</string>
+    <string name="wrong_game_release">Επιλέξτε αρχείο του ίδιου τίτλου και της ίδιας έκδοσης.</string>
+    <string name="install_cancelled">Η εγκατάσταση ακυρώθηκε</string>
+</resources>

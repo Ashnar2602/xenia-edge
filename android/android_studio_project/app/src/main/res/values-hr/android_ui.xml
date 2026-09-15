@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Zatvorite zaslon igre ili upravljanja prije promjene podataka emulatora."</string>
+  <string name="no_controller">"Nema fizičkog upravljača"</string>
+  <string name="postprocessing">"Naknadna obrada"</string>
+  <string name="performance">"Izvedba"</string>
+  <string name="debug_tools">"Postavke otklanjanja pogrešaka"</string>
+  <string name="screenshot">"Napravi snimak zaslona"</string>
+  <string name="screenshot_failed">"Nije moguće snimiti sliku igre."</string>
+  <string name="screenshot_saved">"Snimka zaslona spremljena. Pronađite ga u Postavkama → Upravljanje datotekama → screenshots."</string>
+  <string name="clear_gpu_cache">"Očisti predmemoriju GPU-a"</string>
+  <string name="profiler">"Prikaži / sakrij profiler"</string>
+  <string name="profiles">"Profili"</string>
+  <string name="edit_profile">"Uredi profil"</string>
+  <string name="player_number">"Igrač %1$d"</string>
+  <string name="content">"DLC i ažuriranja naslova"</string>
+  <string name="statistics">"Statistika i kompatibilnost"</string>
+  <string name="desktop_compatibility">"Izvješće o kompatibilnosti stolnog računala"</string>
+  <string-array name="compat_states">
+    <item>"Nepoznato"</item>
+    <item>"Neigrivo"</item>
+    <item>"Pokreće se"</item>
+    <item>"U igri"</item>
+    <item>"Igrivo"</item>
+  </string-array>
+  <string name="working">"Obrada…"</string>
+  <string name="operation_error">"Nije moguće dovršiti operaciju: %1$s"</string>
+  <string name="nothing_here">"Nema dostupnih unosa."</string>
+  <string name="manage_files">"Upravljanje datotekama"</string>
+  <string name="add_content">"Dodajte DLC ili ažuriranje naslova"</string>
+  <string name="detach_content">"Ukloni referencu"</string>
+  <string name="content_link_explanation">"Paketi se čitaju izravno s izvorne lokacije. Držite ih tamo. Uklanjanje reference ostavlja izvornu datoteku netaknutom."</string>
+  <string name="global_options">"Opće opcije"</string>
+  <string name="global_explanation">"Zadane postavke za sve igre. Opcije po igri imaju prednost. Promjene se primjenjuju pri sljedećem pokretanju."</string>
+  <string name="default_value">"Zadano"</string>
+  <string name="add_games">"Dodajte igrice"</string>
+  <string name="single_game">"Pojedinačna igra"</string>
+  <string name="game_folder">"Mapa"</string>
+  <string name="game_options">"Opcije igre"</string>
+  <string name="options_explanation">"Nadjačavanja za ovaj naslov. Promjene se primjenjuju sljedeći put kada igra počne."</string>
+  <string name="options_custom">"Ova igra"</string>
+  <string name="options_inherited">"Opća postavka"</string>
+  <string name="options_base">"Opća vrijednost: %1$s"</string>
+  <string name="options_error">"Nije moguće pročitati ili spremiti opcije: %1$s"</string>
+  <string name="options_no_title">"ID naslova nije se mogao pročitati. Opcije po igri zahtijevaju važeći ID naslova."</string>
+  <string name="profile_select">"Odaberite profil za igrača 1"</string>
+  <string name="profile_explanation">"Izradite lokalni profil igrača kako bi se igre mogle prijaviti i spremiti vaš napredak. Automatski će se prijaviti sljedeći put kada igrate."</string>
+  <string name="profile_migration">"Stvorite lokalni profil igrača i pridružite mu postojeća naslijeđena spremanja, kao na radnoj površini. Automatski će se prijaviti sljedeći put kada igrate."</string>
+  <string name="profile_invalid">"Koristite 1-15 slova (A–Z), brojeva ili pojedinačnih razmaka. Počnite slovom i završite slovom ili brojem."</string>
+  <string name="profile_error">"Nije moguće izraditi ili učitati profil. Provjerite slobodan prostor za pohranu i pokušajte ponovo."</string>
+  <string name="library">"Knjižnica"</string>
+  <string name="recent">"Nedavno"</string>
+  <string name="your_games">"Vaše igrice"</string>
+  <string name="recent_games">"Nedavno igrano"</string>
+  <string name="library_subtitle">"Vaše igre za Xbox 360, otvorene izravno iz pohrane."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Dodaj mapu"</string>
+  <string name="import_explanation">"Odaberite kompletnu mapu igre XEX ili GOD, uključujući njezine podatkovne datoteke. Xenia izravno čita izvornike. Nijedna datoteka se ne kopira."</string>
+  <string name="choose_folder">"Odaberite mapu"</string>
+  <string name="empty_library">"Vaša knjižnica počinje ovdje"</string>
+  <string name="no_results">"Nema podudarnih igara"</string>
+  <string name="empty_hint">"Dodajte ISO/ZAR ili cijelu mapu igre.\nVaše igre će se pojaviti ovdje."</string>
+  <string name="play">"▶  Igraj"</string>
+  <string name="play_named">"Igraj %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d igra"</item>
+    <item quantity="few">"%d igre"</item>
+    <item quantity="other">"%d igara"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Rezolucija renderiranja"</string>
+  <string name="fps_limit">"Ograničenje broja sličica u sekundi"</string>
+  <string name="controls">"KONTROLE"</string>
+  <string name="touch_controls">"Upravljač na zaslonu"</string>
+  <string name="controller_hint">"Kontrole na dodir i do četiri Bluetooth/USB gamepada, s vibracijom ako je podržano."</string>
+  <string name="preview_title">"Android pregled"</string>
+  <string name="preview_description">"Kompatibilnost igre još uvijek se testira. Video postavke primjenjuju se na sljedeću sesiju igre."</string>
+  <string name="project">"Xenia Edge na GitHubu"</string>
+  <string name="file_unavailable">"Datoteka nije dostupna. Ponovno je odaberite s izvorne lokacije."</string>
+  <string name="no_executables">"U ovoj mapi nije pronađen naslov XEX, ELF, ISO, ZAR ili STFS/GOD."</string>
+  <string name="import_cancelled">"Uvoz je otkazan."</string>
+  <string name="importing">"Skeniranje mape..."</string>
+  <string name="import_progress">"Skeniranje · %2$s"</string>
+  <string name="cannot_open">"Nije moguće dodati igru"</string>
+  <string name="image_formats">"Odaberite ISO ili ZAR. Za XEX i GOD dodajte kompletnu mapu igre."</string>
+  <string name="menu">"Izbornik"</string>
+  <string name="preparing_game">"Priprema igre…"</string>
+  <string name="preparing_video">"Priprema videozapisa…"</string>
+  <string name="loading_game">"Učitavanje igre…"</string>
+  <string name="launch_error">"Xenia nije mogla pokrenuti ovaj naslov (0x%1$08X). Provjerite format i datoteke igre. Tehnički detalji su u Logcatu."</string>
+  <string name="cannot_launch">"Nije moguće pokrenuti igru"</string>
+  <string name="back_library">"Natrag u knjižnicu"</string>
+  <string name="close_session">"Prekinuti ovu sesiju?"</string>
+  <string name="interrupt_loading">"Igra se još uvijek učitava ili zatvara. Možete pričekati ili prekinuti ovu sesiju i vratiti se u knjižnicu."</string>
+  <string name="close_current_first">"Zatvorite trenutnu igru ​​iz izbornika prije otvaranja drugog naslova."</string>
+  <string name="resume">"Nastavi igru"</string>
+  <string name="toggle_controls">"Prikaži/sakrij dodirne kontrole"</string>
+  <string name="storage_access">"Pristup datotekama igre"</string>
+  <string name="storage_explanation">"Omogućite \"Pristup svim datotekama\" za Xenia kako bi otvarala igre izravno iz pohrane uređaja ili SD kartice, bez njihovog kopiranja."</string>
+  <string name="open_settings">"Otvori postavke"</string>
+  <string name="local_storage_required">"Odaberite lokalnu datoteku na uređaju ili SD kartici. Cloud i virtualni pružatelji usluga ne mogu se otvoriti izravno."</string>
+  <string name="game_information">"Informacije"</string>
+  <string name="info_unavailable">"Nedostupan"</string>
+  <string name="info_title_id">"ID naslova"</string>
+  <string name="info_media_id">"ID medija"</string>
+  <string name="info_base_version">"Osnovna verzija"</string>
+  <string name="info_disc">"Disk"</string>
+  <string name="info_disc_number">"%1$d od %2$d"</string>
+  <string name="info_not_verified">"Nije provjereno"</string>
+  <string name="info_format">"Format"</string>
+  <string name="info_size">"Veličina datoteke"</string>
+  <string name="info_path">"Lokacija"</string>
+  <string name="info_loading">"Čitanje informacija o naslovu..."</string>
+  <string name="info_no_metadata">"U ovoj datoteci nisu dostupni čitljivi metapodaci naslova."</string>
+  <string name="automatic_controller">"Automatski"</string>
+  <string name="profile_image">"Profilna slika"</string>
+  <string name="choose_image">"Odaberite sliku"</string>
+  <string name="invalid_image">"Nevažeća slika"</string>
+  <string name="preloading_shaders">"Prethodno učitavanje shadera..."</string>
+  <string name="patches_applied">"Stavljene zakrpe"</string>
+  <string name="plugins_loaded">"Dodaci su učitani"</string>
+  <string name="build_commit">"Pregledajte obvezu izgradnje"</string>
+  <string name="interface_language">"Jezik sučelja"</string>
+  <string name="system_language">"Jezik sustava"</string>
+  <string name="global_only_option">"Promijenite ovu opciju u globalnim postavkama."</string>
+  <string name="controller_type">"Vrsta kontrolera"</string>
+  <string name="physical_keyboard">"Tipkovnica"</string>
+  <string name="time_scale">"Brzina emulacije"</string>
+  <string name="time_half">"Pola trenutne brzine"</string>
+  <string name="time_double">"Dvostruka brzina struje"</string>
+  <string name="time_reset">"Normalna brzina"</string>
+  <string name="toggle_vibration">"Uključi/isključi vibraciju"</string>
+  <string name="sort_games">"Razvrstaj igre"</string>
+  <string name="rename_game">"Preimenuj izdanje"</string>
+  <string name="invalid_name">"Unesite ime"</string>
+  <string name="manage_discs">"Upravljanje diskovima"</string>
+  <string name="default_disc">"Koristite kao zadani disk"</string>
+  <string name="plugins">"Upravljanje dodacima"</string>
+  <string name="install_content">"Uvoz paketa sadržaja"</string>
+  <string name="about_description">"Istraživački projekt emulatora Xbox 360\nVerzija %1$s\nVulkan · ARM64\nBSD licenca — Xenia suradnici"</string>
+  <string-array name="controller_types">
+    <item>"Automatski"</item>
+    <item>"Gamepad"</item>
+    <item>"Volan"</item>
+    <item>"Arkadni štap"</item>
+    <item>"Letački joystick"</item>
+    <item>"Plesna podloga"</item>
+    <item>"Gitara"</item>
+    <item>"Bubnjevi"</item>
+    <item>"Arkadna podloga"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Naslov A–Z"</item>
+    <item>"Naslov Z–A"</item>
+    <item>"Najstariji igrao prvi"</item>
+    <item>"Zadnji odigran prvi"</item>
+    <item>"Kompatibilnost ↑"</item>
+    <item>"Kompatibilnost ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profili i spremanje"</string>
+  <string name="mutable_content_explanation">"Ovi paketi sadrže profil za pisanje ili spremanje podataka. Njihov uvoz zahtijeva izdvajanje u pohranu aplikacije. Igre, DLC i ažuriranja ostaju povezani na mjestu. Izvornici se čuvaju, a postojeći podaci nikada se ne zamjenjuju."</string>
+  <string name="extract_data">"Ekstrakt profila/spremanje podataka"</string>
+  <string name="unsupported_game">"Odaberite ISO, ZAR, XEX, ELF ili STFS/GOD igru."</string>
+  <string name="stop_confirmation">"Zaustaviti igru? Nespremljeni napredak bit će izgubljen."</string>
+  <string name="virtual_controller">"Upravljač na zaslonu"</string>
+  <string name="disconnect_controller">"Isključeno"</string>
+  <string name="remap_controller">"Preslikavanja kontrolera"</string>
+  <string name="reset_mappings">"Vraćanje zadanih mapiranja"</string>
+  <string name="mapping_key">"Ključ za Android"</string>
+  <string name="mapping_axis">"Android os (negativno = obrnuto)"</string>
+  <string name="press_controller_button">"Pritisnite fizički gumb za dodjelu."</string>
+  <string name="invert_axis">"Invertiraj os"</string>
+  <string name="portal_failed">"Nije moguće spojiti se na USB portal."</string>
+  <string name="open_trace">"Otvori Vulkan trag"</string>
+  <string name="trace_failed">"Nije moguće otvoriti GPU praćenje."</string>
+  <string name="reset_all_options">"Resetiraj opcije emulatora"</string>
+  <string name="reset_global_confirmation">"Vratiti sve opcije Android emulatora na zadane vrijednosti, uključujući konfigurirane staze i jezik sučelja? Profili, datoteke igara i opcije po igri će se zadržati."</string>
+  <string name="reset_game_confirmation">"Ukloniti sva nadjačavanja Android opcija za ovaj naslov? Koristit će se opće postavke. Datoteke igre će se zadržati."</string>
+  <string name="state_on">"Uključeno"</string>
+  <string name="state_off">"Isključeno"</string>
+</resources>

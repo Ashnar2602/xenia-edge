@@ -2,64 +2,57 @@ plugins {
     id 'com.android.application'
 }
 
+// The official Social SDK is distributed through the Discord Developer Portal.
+// Opt in explicitly; ordinary Android and desktop builds have no SDK dependency.
+def discordSdkPath = providers.gradleProperty('xeniaDiscordSdk').orNull
+def discordSdk = discordSdkPath ? file(discordSdkPath) : null
+def androidStl = discordSdk ? '-DANDROID_STL=c++_shared' : '-DANDROID_STL=c++_static'
+if (discordSdk && (!discordSdk.isFile() || !discordSdk.name.endsWith('.aar'))) {
+    throw new GradleException('xeniaDiscordSdk must point to the official Android Social SDK AAR (1.10 or newer).')
+}
+
 android {
-    compileSdkVersion 33
-    ndkVersion '25.0.8775105'
+    namespace 'jp.xenia.emulator'
+    compileSdk 35
+    ndkVersion '29.0.14206865'
+    buildFeatures { prefab = discordSdk != null }
+    sourceSets.main.java.srcDir(discordSdk ? 'src/discord/java' : 'src/noDiscord/java')
 
     defaultConfig {
         applicationId 'jp.xenia.emulator'
-        // 24 (7.0) - Vulkan.
-        minSdkVersion 24
-        targetSdkVersion 33
-        versionCode 1
-        versionName 'Prototype'
-        externalNativeBuild {
-            ndkBuild {
-                arguments 'NDK_APPLICATION_MK:=../../../build/xenia.Application.mk',
-                        'PREMAKE_ANDROIDNDK_PLATFORMS:=Android-ARM64',
-                        'PREMAKE_ANDROIDNDK_PLATFORMS+=Android-x86_64',
-                        // ndk.jobs doesn't work as of Gradle 7.1.0.
-                        "-j${Runtime.runtime.availableProcessors()}",
-                        // Work around "Bad file descriptor" on Windows on NDK r22+.
-                        '--output-sync=none'
-                // For the app, don't build the executables designed for running from a terminal.
-                // To build the executables, run ndk-build manually.
-                targets 'xenia-app'
-            }
-        }
+        minSdk 30
+        targetSdk 35
+        versionCode providers.gradleProperty('xeniaVersionCode').getOrElse('1').toInteger()
+        versionName providers.gradleProperty('xeniaVersionName').getOrElse('Development')
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
-            abiFilters 'arm64-v8a', 'x86_64'
-            stl 'c++_static'
+            abiFilters 'arm64-v8a'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments androidStl,
+                        '-DXENIA_BUILD_TESTS=OFF', '-DXENIA_BUILD_MISC=OFF',
+                        "-DCMAKE_JOB_POOLS=xenia_compile=${providers.gradleProperty('xeniaBuildJobs').getOrElse('8')}",
+                        '-DCMAKE_JOB_POOL_COMPILE=xenia_compile',
+                        "-DXENIA_HOST_SHADER_CC=${providers.gradleProperty('xeniaHostShaderCompiler').getOrElse('')}"
+                targets 'xenia-app'
+                if (discordSdk) {
+                    arguments '-DXENIA_ANDROID_DISCORD=ON'
+                }
+                if (providers.gradleProperty('xeniaProfiler').isPresent()) {
+                    arguments "-DXENIA_ENABLE_PROFILER=${providers.gradleProperty('xeniaProfiler').get()}"
+                }
+            }
         }
     }
 
     buildTypes {
         release {
-            externalNativeBuild {
-                ndkBuild {
-                    arguments 'PREMAKE_ANDROIDNDK_CONFIGURATIONS:=Release'
-                }
-            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             applicationIdSuffix '.debug'
-            debuggable true
-            externalNativeBuild {
-                ndkBuild {
-                    arguments 'PREMAKE_ANDROIDNDK_CONFIGURATIONS:=Debug'
-                }
-            }
-        }
-        checked {
-            applicationIdSuffix '.checked'
-            debuggable true
-            externalNativeBuild {
-                ndkBuild {
-                    arguments 'PREMAKE_ANDROIDNDK_CONFIGURATIONS:=Checked'
-                }
-            }
         }
     }
 
@@ -71,8 +64,11 @@ android {
         }
         googlePlay {
             dimension 'distribution'
-            // TODO(Triang3l): Provide a signing config for core contributors only.
         }
+    }
+    if (discordSdk) {
+        sourceSets.github.manifest.srcFile 'src/discord/AndroidManifest.xml'
+        sourceSets.googlePlay.manifest.srcFile 'src/discord/AndroidManifest.xml'
     }
 
     compileOptions {
@@ -80,13 +76,39 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    // Use the JNI glue from the same SDL revision as the desktop audio backend.
+    sourceSets.main.java.srcDir '../../../third_party/SDL3/android-project/app/src/main/java'
+    lint { lintConfig = file('lint.xml') }
+
     externalNativeBuild {
-        ndkBuild {
-            path file('../../../build/xenia.wks.Android.mk')
+        cmake {
+            path file('../../../CMakeLists.txt')
+            version '3.22.1'
         }
     }
 }
 
 dependencies {
+    if (discordSdk) {
+        implementation files(discordSdk)
+        // Required by classes shipped in the AAR, even though RPC needs no OAuth UI.
+        implementation 'androidx.browser:browser:1.8.0'
+    }
     implementation 'org.jetbrains:annotations:15.0'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }
+
+// Build-time reuse of upstream translations; no translation tables in Java.
+def desktopLocaleOutput = layout.buildDirectory.dir('generated/desktop-locales')
+def desktopLocales = tasks.register('generateDesktopLocales', Exec) {
+    inputs.dir('../../../assets/locale')
+    inputs.dir('src/main/res')
+    inputs.files('../../../tools/build/android_locales.py', '../../../tools/build/compile_po.py')
+    inputs.file('../../../src/xenia/ui/profile_options.h')
+    outputs.dir(desktopLocaleOutput)
+    commandLine 'python', file('../../../tools/build/android_locales.py'), file('../../..'), desktopLocaleOutput.get().asFile
+}
+android.sourceSets.main.res.srcDir(desktopLocaleOutput)
+tasks.named('preBuild').configure { dependsOn(desktopLocales) }

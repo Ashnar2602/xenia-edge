@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Localiser le fichier du jeu</string>
+    <string name="wrong_game_release">Choisissez un fichier du même titre et de la même version.</string>
+    <string name="install_cancelled">Installation annulée</string>
+</resources>

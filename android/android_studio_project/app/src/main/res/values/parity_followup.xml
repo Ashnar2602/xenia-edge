@@ -1,0 +1,9 @@
+<resources>
+    <string name="reset_all_options">Reset emulator options</string>
+    <string name="reset_global_confirmation">Reset all Android emulator options to their defaults, including configured paths and interface language? Profiles, game files and per-game options will be kept.</string>
+    <string name="reset_game_confirmation">Remove all Android option overrides for this title? General settings will be used. Game files will be kept.</string>
+    <string name="profile_online_xuid">Online XUID</string>
+    <string name="profile_online_domain">Online domain</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+</resources>

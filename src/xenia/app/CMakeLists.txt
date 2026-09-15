@@ -1,3 +1,8 @@
+if(ANDROID)
+  include(android.cmake)
+  return()
+endif()
+
 if(WIN32)
   add_executable(xenia-app WIN32)
 elseif(APPLE)

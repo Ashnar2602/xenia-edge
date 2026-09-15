@@ -11,6 +11,7 @@
 #define XENIA_UI_FILE_PICKER_H_
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -88,6 +89,14 @@ class FilePicker {
   }
 
   virtual bool Show(Window* parent_window = nullptr) = 0;
+
+  // Mobile pickers return through an activity result instead of blocking the
+  // UI.
+  using Callback = std::function<void(std::vector<std::filesystem::path>)>;
+  virtual void ShowAsync(Window* parent_window, Callback callback) {
+    callback(Show(parent_window) ? selected_files_
+                                 : std::vector<std::filesystem::path>{});
+  }
 
  protected:
   Mode mode_;

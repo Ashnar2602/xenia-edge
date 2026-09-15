@@ -121,6 +121,9 @@ if(WIN32)
   set(XE_PLATFORM_NAME "Windows")
 elseif(APPLE)
   set(XE_PLATFORM_NAME "macOS")
+elseif(ANDROID)
+  set(XE_PLATFORM_NAME "Android")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 else()
   set(XE_PLATFORM_NAME "Linux")
 endif()
@@ -132,6 +135,20 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/obj/${XE_PLATFORM_NAME}"
 file(MAKE_DIRECTORY "${PROJECT_SOURCE_DIR}/scratch")
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+if(ANDROID)
+  if(NOT ANDROID_ABI STREQUAL "arm64-v8a")
+    message(FATAL_ERROR "The Android build currently supports arm64-v8a only")
+  endif()
+  execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -c
+      "import runpy; runpy.run_path('xenia-build.py')['generate_version_h'](r'${CMAKE_BINARY_DIR}')"
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    RESULT_VARIABLE _xe_version_result)
+  if(NOT _xe_version_result EQUAL 0)
+    message(FATAL_ERROR "Failed to generate Android version.h")
+  endif()
+endif()
 
 # Debug/Checked compile against the release CRT (/MD) since the product
 # ships against release-only system DLLs and prebuilts. Force any imported
@@ -315,7 +332,7 @@ else()
         $<$<COMPILE_LANGUAGE:CXX>:-Wno-nontrivial-memcall>
       )
     endif()
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 21)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 21 AND NOT ANDROID)
       add_compile_options(
         $<$<COMPILE_LANGUAGE:CXX>:-Wno-character-conversion>
       )
@@ -361,6 +378,8 @@ else()
       dl
       pthread
     )
+  elseif(ANDROID)
+    link_libraries(android log dl m)
   elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK3 REQUIRED gtk+-x11-3.0)
@@ -418,8 +437,14 @@ else()
     # unversioned symlink, so search the compiler-major name first; a bare
     # llvm-ar search falls back to GNU ar, which can't index ThinLTO bitcode.
     string(REGEX MATCH "^[0-9]+" _xe_clang_major "${CMAKE_CXX_COMPILER_VERSION}")
-    find_program(LLVM_AR NAMES "llvm-ar-${_xe_clang_major}" llvm-ar)
-    find_program(LLVM_RANLIB NAMES "llvm-ranlib-${_xe_clang_major}" llvm-ranlib)
+    if(ANDROID)
+      # Keep the archiver supplied by the NDK toolchain when cross-compiling.
+      set(LLVM_AR "${CMAKE_AR}")
+      set(LLVM_RANLIB "${CMAKE_RANLIB}")
+    else()
+      find_program(LLVM_AR NAMES "llvm-ar-${_xe_clang_major}" llvm-ar)
+      find_program(LLVM_RANLIB NAMES "llvm-ranlib-${_xe_clang_major}" llvm-ranlib)
+    endif()
     if(LLVM_AR)
       set(CMAKE_AR "${LLVM_AR}" CACHE FILEPATH "" FORCE)
     endif()

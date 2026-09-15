@@ -40,7 +40,8 @@ static bool GetNonCoherentMappedRange(const VulkanDevice* const vulkan_device,
                                       VkMappedMemoryRange& range_out) {
   assert_false(size != VK_WHOLE_SIZE && memory_size == VK_WHOLE_SIZE);
   assert_true(memory_size == VK_WHOLE_SIZE || offset <= memory_size);
-  assert_true(memory_size == VK_WHOLE_SIZE || size <= memory_size - offset);
+  assert_true(size == VK_WHOLE_SIZE || memory_size == VK_WHOLE_SIZE ||
+              size <= memory_size - offset);
   if (!size || (vulkan_device->memory_types().host_coherent &
                 (uint32_t(1) << memory_type))) {
     return false;

@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Tìm tệp trò chơi</string>
+    <string name="wrong_game_release">Chọn tệp của cùng trò chơi và phiên bản.</string>
+    <string name="install_cancelled">Đã hủy cài đặt</string>
+</resources>

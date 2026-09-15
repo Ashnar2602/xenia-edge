@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Hitta spelfil</string>
+    <string name="wrong_game_release">Välj en fil för samma titel och version.</string>
+    <string name="install_cancelled">Installationen avbröts</string>
+</resources>

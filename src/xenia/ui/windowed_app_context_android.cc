@@ -25,6 +25,7 @@
 #include "xenia/base/assert.h"
 #include "xenia/base/logging.h"
 #include "xenia/base/main_android.h"
+#include "xenia/base/string.h"
 #include "xenia/ui/window_android.h"
 #include "xenia/ui/windowed_app.h"
 
@@ -110,6 +111,7 @@ AndroidWindowedAppContext::JniActivityInitializeWindowedAppOnCreate(
 }
 
 void AndroidWindowedAppContext::JniActivityOnDestroy() {
+  FilesSelected({});
   if (app_) {
     app_->InvokeOnDestroy();
     app_.reset();
@@ -118,6 +120,34 @@ void AndroidWindowedAppContext::JniActivityOnDestroy() {
   // no need to notify it explicitly.
   assert_null(activity_window_);
   RequestDestruction();
+}
+
+void AndroidWindowedAppContext::PickFiles(int mode, int type, bool multiple,
+                                          FilePicker::Callback callback) {
+  assert_true(IsInUIThread());
+  if (file_callback_) {
+    callback({});
+    return;
+  }
+  file_callback_ = std::move(callback);
+  auto* env = ui_thread_jni_env_;
+  auto method = env->GetMethodID(activity_class_, "pickNativeFiles", "(IIZ)V");
+  if (method) {
+    env->CallVoidMethod(activity_, method, mode, type, jboolean(multiple));
+  }
+  if (!method || env->ExceptionCheck()) {
+    env->ExceptionClear();
+    FilesSelected({});
+  }
+}
+
+void AndroidWindowedAppContext::FilesSelected(
+    std::vector<std::filesystem::path> paths) {
+  auto callback = std::move(file_callback_);
+  file_callback_ = {};
+  if (callback) {
+    callback(std::move(paths));
+  }
 }
 
 void AndroidWindowedAppContext::JniActivityOnWindowSurfaceLayoutChange(
@@ -596,6 +626,25 @@ bool AndroidWindowedAppContext::InitializeApp(std::unique_ptr<WindowedApp> (
 }  // namespace xe
 
 extern "C" {
+
+JNIEXPORT void JNICALL
+Java_jp_xenia_emulator_WindowedAppActivity_filesSelectedNative(
+    JNIEnv* env, jobject, jlong context, jobjectArray paths) {
+  std::vector<std::filesystem::path> result;
+  for (jsize i = 0; paths && i < env->GetArrayLength(paths); ++i) {
+    auto path = static_cast<jstring>(env->GetObjectArrayElement(paths, i));
+    const auto* text = env->GetStringChars(path, nullptr);
+    if (text) {
+      result.emplace_back(xe::to_utf8(
+          std::u16string_view(reinterpret_cast<const char16_t*>(text),
+                              env->GetStringLength(path))));
+      env->ReleaseStringChars(path, text);
+    }
+    env->DeleteLocalRef(path);
+  }
+  reinterpret_cast<xe::ui::AndroidWindowedAppContext*>(context)->FilesSelected(
+      std::move(result));
+}
 
 JNIEXPORT jlong JNICALL
 Java_jp_xenia_emulator_WindowedAppActivity_initializeWindowedAppOnCreate(

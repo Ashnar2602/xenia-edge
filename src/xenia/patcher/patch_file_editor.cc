@@ -132,7 +132,8 @@ bool PatchFileEditor::Save() const {
       out << "\n";
     }
   }
-  return true;
+  out.flush();
+  return out.good();
 }
 
 bool PatchFileEditor::SetEnabled(size_t index, bool value) {

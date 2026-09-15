@@ -11,6 +11,7 @@
 #define XENIA_HID_PORTAL_HARDWARE_PORTAL_H_
 
 #include <array>
+#include <atomic>
 #include "xenia/hid/portal/portal.h"
 
 #include "third_party/libusb/libusb/libusb.h"
@@ -29,6 +30,9 @@ class HardwarePortal final : public Portal {
   ~HardwarePortal() override;
 
   virtual bool IsConnected() override;
+#if XE_PLATFORM_ANDROID
+  bool SetAndroidDevice(int fd);
+#endif
 
   virtual void OnDeviceArrival() override;
   virtual void OnDeviceRemoval() override;
@@ -44,6 +48,9 @@ class HardwarePortal final : public Portal {
   const uint8_t write_endpoint = 0x02;
   const uint16_t timeout = 100;
 
+#if XE_PLATFORM_ANDROID
+  std::atomic<bool> android_connected_{false};
+#endif
   libusb_context* context_ = nullptr;
   libusb_device_handle* handle_ = nullptr;
 };

@@ -16,9 +16,7 @@
 #include "xenia/ui/imgui_gamepad_dialog.h"
 
 namespace xe {
-namespace app {
-class EmulatorWindow;
-}  // namespace app
+class Emulator;
 }  // namespace xe
 
 namespace xe {
@@ -28,8 +26,7 @@ namespace ui {
 // Based on the original DisplayConfigDialog from upstream.
 class ImGuiPostProcessingDialog : public ImGuiGamepadDialog {
  public:
-  ImGuiPostProcessingDialog(ImGuiDrawer* drawer,
-                            app::EmulatorWindow* emulator_window,
+  ImGuiPostProcessingDialog(ImGuiDrawer* drawer, Emulator* emulator,
                             hid::InputSystem* input_system);
 
   void CloseDialog() { Close(); }
@@ -55,7 +52,7 @@ class ImGuiPostProcessingDialog : public ImGuiGamepadDialog {
   void OnCasSharpnessChanged(float value);
   void OnDitherChanged(bool value);
 
-  app::EmulatorWindow* emulator_window_;
+  Emulator* emulator_;
   std::function<void()> on_close_callback_;
 
   // Current settings state

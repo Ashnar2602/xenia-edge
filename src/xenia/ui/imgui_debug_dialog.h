@@ -19,9 +19,7 @@
 #include "xenia/ui/imgui_gamepad_dialog.h"
 
 namespace xe {
-namespace app {
-class EmulatorWindow;
-}  // namespace app
+class Emulator;
 }  // namespace xe
 
 namespace xe {
@@ -30,7 +28,7 @@ namespace ui {
 // ImGui-based debug settings dialog with gamepad support.
 class ImGuiDebugDialog : public ImGuiGamepadDialog {
  public:
-  ImGuiDebugDialog(ImGuiDrawer* drawer, app::EmulatorWindow* emulator_window,
+  ImGuiDebugDialog(ImGuiDrawer* drawer, Emulator* emulator,
                    hid::InputSystem* input_system);
 
   void CloseDialog() { Close(); }
@@ -72,7 +70,7 @@ class ImGuiDebugDialog : public ImGuiGamepadDialog {
   void ApplyLogMask();
   void ApplyScribbleHeapValue();
 
-  app::EmulatorWindow* emulator_window_;
+  Emulator* emulator_;
   std::function<void()> on_close_callback_;
 
   // Cached settings values.

@@ -47,6 +47,12 @@ bool ImGuiDialog::ShouldCloseFromGamepad() const {
 void ImGuiDialog::Draw() {
   // Draw UI.
   if (!has_close_pending_) {
+#if XE_PLATFORM_ANDROID
+    const auto& io = GetIO();
+    ImGui::SetNextWindowSizeConstraints(
+        ImVec2(100, 80), ImVec2(std::max(100.f, io.DisplaySize.x - 24),
+                                std::max(80.f, io.DisplaySize.y - 24)));
+#endif
     OnDraw(GetIO());
   }
 

@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"एमुलेटर डेटा बदलने से पहले गेम या प्रबंधन स्क्रीन बंद कर दें।"</string>
+  <string name="no_controller">"कोई भौतिक नियंत्रक नहीं"</string>
+  <string name="postprocessing">"प्रसंस्करण के बाद"</string>
+  <string name="performance">"प्रदर्शन"</string>
+  <string name="debug_tools">"डिबग सेटिंग्स"</string>
+  <string name="screenshot">"स्क्रीनशॉट लीजिए"</string>
+  <string name="screenshot_failed">"गेम छवि कैप्चर नहीं की जा सकी."</string>
+  <string name="screenshot_saved">"स्क्रीनशॉट सहेजा गया. इसे सेटिंग्स → फ़ाइलें प्रबंधित करें → screenshots में ढूंढें।"</string>
+  <string name="clear_gpu_cache">"GPU कैश साफ़ करें"</string>
+  <string name="profiler">"प्रदर्शन विश्लेषक दिखाएँ / छिपाएँ"</string>
+  <string name="profiles">"प्रोफ़ाइल"</string>
+  <string name="edit_profile">"प्रोफ़ाइल संपादित करें"</string>
+  <string name="player_number">"प्लेयर %1$d"</string>
+  <string name="content">"DLC और शीर्षक अपडेट"</string>
+  <string name="statistics">"सांख्यिकी और अनुकूलता"</string>
+  <string name="desktop_compatibility">"डेस्कटॉप संगतता रिपोर्ट"</string>
+  <string-array name="compat_states">
+    <item>"अज्ञात"</item>
+    <item>"अखेल्य"</item>
+    <item>"शुरू होता है"</item>
+    <item>"गेमप्ले"</item>
+    <item>"खेलने योग्य"</item>
+  </string-array>
+  <string name="working">"प्रक्रिया जारी है…"</string>
+  <string name="operation_error">"कार्रवाई पूरी नहीं हो सकी: %1$s"</string>
+  <string name="nothing_here">"कोई प्रविष्टियाँ उपलब्ध नहीं हैं."</string>
+  <string name="manage_files">"फ़ाइलें प्रबंधित करें"</string>
+  <string name="add_content">"DLC या शीर्षक अद्यतन जोड़ें"</string>
+  <string name="detach_content">"संदर्भ हटाएँ"</string>
+  <string name="content_link_explanation">"पैकेज सीधे उनके मूल स्थान से पढ़े जाते हैं। उन्हें वहीं रखो. किसी संदर्भ को हटाने से मूल फ़ाइल बरकरार रहती है।"</string>
+  <string name="global_options">"सामान्य विकल्प"</string>
+  <string name="global_explanation">"सभी खेलों के लिए डिफ़ॉल्ट. प्रति-गेम विकल्पों को प्राथमिकता दी जाती है। परिवर्तन अगले लॉन्च पर लागू होते हैं."</string>
+  <string name="default_value">"डिफ़ॉल्ट"</string>
+  <string name="add_games">"गेम जोड़ें"</string>
+  <string name="single_game">"एकल खेल"</string>
+  <string name="game_folder">"फ़ोल्डर"</string>
+  <string name="game_options">"खेल के विकल्प"</string>
+  <string name="options_explanation">"इस शीर्षक के लिए ओवरराइड. अगली बार खेल शुरू होने पर परिवर्तन लागू होते हैं।"</string>
+  <string name="options_custom">"यह खेल"</string>
+  <string name="options_inherited">"सामान्य सेटिंग"</string>
+  <string name="options_base">"सामान्य मान: %1$s"</string>
+  <string name="options_error">"विकल्प पढ़ या सहेज नहीं सका: %1$s"</string>
+  <string name="options_no_title">"शीर्षक आईडी पढ़ा नहीं जा सका. प्रति-गेम विकल्पों के लिए एक वैध शीर्षक आईडी की आवश्यकता होती है।"</string>
+  <string name="profile_select">"खिलाड़ी 1 के लिए एक प्रोफ़ाइल चुनें"</string>
+  <string name="profile_explanation">"एक स्थानीय खिलाड़ी प्रोफ़ाइल बनाएं ताकि गेम साइन इन कर सकें और आपकी प्रगति को सहेज सकें। अगली बार जब आप खेलेंगे तो यह स्वचालित रूप से साइन इन हो जाएगा।"</string>
+  <string name="profile_migration">"एक स्थानीय प्लेयर प्रोफ़ाइल बनाएं और मौजूदा लीगेसी सेव को डेस्कटॉप की तरह उसके साथ संबद्ध करें। अगली बार जब आप खेलेंगे तो यह स्वचालित रूप से साइन इन हो जाएगा।"</string>
+  <string name="profile_invalid">"1-15 अक्षर (A–Z), संख्याएँ या एकल रिक्त स्थान का प्रयोग करें। एक अक्षर से प्रारंभ करें और एक अक्षर या संख्या पर समाप्त करें।"</string>
+  <string name="profile_error">"प्रोफ़ाइल बना या लोड नहीं किया जा सका. निःशुल्क संग्रहण जांचें और पुनः प्रयास करें।"</string>
+  <string name="library">"गेम लाइब्रेरी"</string>
+  <string name="recent">"हाल का"</string>
+  <string name="your_games">"आपके खेल"</string>
+  <string name="recent_games">"हाल ही में खेला गया"</string>
+  <string name="library_subtitle">"आपके Xbox 360 गेम, सीधे स्टोरेज से खोले गए।"</string>
+  <string name="open_image">"＋ ISO/ZAR"</string>
+  <string name="import_folder">"फ़ोल्डर जोड़ें"</string>
+  <string name="import_explanation">"संपूर्ण XEX या GOD गेम फ़ोल्डर चुनें, जिसमें उसकी डेटा फ़ाइलें भी शामिल हैं। Xenia मूल को सीधे पढ़ता है। कोई फ़ाइल कॉपी नहीं की गई है."</string>
+  <string name="choose_folder">"फ़ोल्डर चुनें"</string>
+  <string name="empty_library">"आपकी लाइब्रेरी यहीं से शुरू होती है"</string>
+  <string name="no_results">"कोई मेल खाता खेल नहीं"</string>
+  <string name="empty_hint">"एक ISO / ZAR या संपूर्ण गेम फ़ोल्डर जोड़ें।\nआपके गेम यहां दिखाई देंगे।"</string>
+  <string name="play">"▶  खेलें"</string>
+  <string name="play_named">"%1$s खेलें"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d गेम"</item>
+    <item quantity="other">"%d गेम"</item>
+  </plurals>
+  <string name="video">"वीडियो"</string>
+  <string name="resolution">"प्रतिपादन संकल्प"</string>
+  <string name="fps_limit">"फ़्रेम दर सीमा"</string>
+  <string name="controls">"नियंत्रण"</string>
+  <string name="touch_controls">"ऑन-स्क्रीन नियंत्रक"</string>
+  <string name="controller_hint">"स्पर्श नियंत्रण और अधिकतम चार ब्लूटूथ/यूएसबी गेमपैड, जहां समर्थित हो वहां कंपन के साथ।"</string>
+  <string name="preview_title">"Android पूर्वावलोकन"</string>
+  <string name="preview_description">"गेम अनुकूलता का अभी भी परीक्षण किया जा रहा है. वीडियो सेटिंग्स अगले गेम सत्र पर लागू होती हैं।"</string>
+  <string name="project">"Xenia Edge पर GitHub"</string>
+  <string name="file_unavailable">"फ़ाइल अनुपलब्ध है. इसे इसके मूल स्थान से फिर से चुनें।"</string>
+  <string name="no_executables">"इस फ़ोल्डर में कोई XEX, ELF, ISO, ZAR या STFS/GOD शीर्षक नहीं मिला।"</string>
+  <string name="import_cancelled">"आयात रद्द कर दिया गया."</string>
+  <string name="importing">"फ़ोल्डर स्कैन कर रहा है..."</string>
+  <string name="import_progress">"स्कैनिंग · %2$s"</string>
+  <string name="cannot_open">"गेम नहीं जोड़ा जा सका"</string>
+  <string name="image_formats">"ISO या ZAR चुनें. XEX और GOD के लिए, पूरा गेम फ़ोल्डर जोड़ें।"</string>
+  <string name="menu">"मेनू"</string>
+  <string name="preparing_game">"गेम तैयार हो रहा है..."</string>
+  <string name="preparing_video">"वीडियो तैयार किया जा रहा है..."</string>
+  <string name="loading_game">"गेम लोड हो रहा है..."</string>
+  <string name="launch_error">"Xenia इस शीर्षक को लॉन्च नहीं कर सका (0x%1$08X). प्रारूप और गेम फ़ाइलों की जाँच करें। तकनीकी विवरण Logcat में हैं।"</string>
+  <string name="cannot_launch">"खेल प्रारंभ नहीं हो सका"</string>
+  <string name="back_library">"लाइब्रेरी में वापस जाएँ"</string>
+  <string name="close_session">"इस सत्र को बाधित करें?"</string>
+  <string name="interrupt_loading">"गेम अभी भी लोड हो रहा है या बंद हो रहा है. आप प्रतीक्षा कर सकते हैं, या इस सत्र को बाधित कर सकते हैं और लाइब्रेरी में लौट सकते हैं।"</string>
+  <string name="close_current_first">"कोई अन्य शीर्षक खोलने से पहले मेनू से वर्तमान गेम को बंद कर दें।"</string>
+  <string name="resume">"खेल फिर से शुरू करें"</string>
+  <string name="toggle_controls">"स्पर्श नियंत्रण दिखाएँ/छिपाएँ"</string>
+  <string name="storage_access">"खेल फ़ाइलों तक पहुंच"</string>
+  <string name="storage_explanation">"गेम को कॉपी किए बिना सीधे डिवाइस स्टोरेज या SD कार्ड से खोलने के लिए Xenia के लिए \"सभी फ़ाइलों तक पहुंच\" सक्षम करें।"</string>
+  <string name="open_settings">"सेटिंग्स खोलें"</string>
+  <string name="local_storage_required">"डिवाइस या SD कार्ड पर एक स्थानीय फ़ाइल चुनें। क्लाउड और वर्चुअल प्रदाता सीधे नहीं खोले जा सकते।"</string>
+  <string name="game_information">"जानकारी"</string>
+  <string name="info_unavailable">"अनुपलब्ध"</string>
+  <string name="info_title_id">"शीर्षक आईडी"</string>
+  <string name="info_media_id">"मीडिया आईडी"</string>
+  <string name="info_base_version">"आधार संस्करण"</string>
+  <string name="info_disc">"डिस्क"</string>
+  <string name="info_disc_number">"%2$d में से %1$d"</string>
+  <string name="info_not_verified">"सत्यापित नहीं"</string>
+  <string name="info_format">"प्रारूप"</string>
+  <string name="info_size">"फ़ाइल का आकार"</string>
+  <string name="info_path">"स्थान"</string>
+  <string name="info_loading">"शीर्षक जानकारी पढ़ रहा हूँ..."</string>
+  <string name="info_no_metadata">"इस फ़ाइल में कोई पठनीय शीर्षक मेटाडेटा उपलब्ध नहीं है।"</string>
+  <string name="automatic_controller">"स्वचालित"</string>
+  <string name="profile_image">"प्रोफ़ाइल छवि"</string>
+  <string name="choose_image">"छवि चुनें"</string>
+  <string name="invalid_image">"अमान्य छवि"</string>
+  <string name="preloading_shaders">"शेडर्स प्रीलोड हो रहे हैं..."</string>
+  <string name="patches_applied">"पैच लगाए गए"</string>
+  <string name="plugins_loaded">"प्लगइन्स लोड किए गए"</string>
+  <string name="build_commit">"बिल्ड कमिट देखें"</string>
+  <string name="interface_language">"इंटरफ़ेस भाषा"</string>
+  <string name="system_language">"सिस्टम भाषा"</string>
+  <string name="global_only_option">"इस विकल्प को वैश्विक सेटिंग में बदलें."</string>
+  <string name="controller_type">"नियंत्रक प्रकार"</string>
+  <string name="physical_keyboard">"कीबोर्ड"</string>
+  <string name="time_scale">"अनुकरण की गति"</string>
+  <string name="time_half">"आधी वर्तमान गति"</string>
+  <string name="time_double">"दोगुनी वर्तमान गति"</string>
+  <string name="time_reset">"सामान्य गति"</string>
+  <string name="toggle_vibration">"कंपन टॉगल करें"</string>
+  <string name="sort_games">"खेलों को क्रमबद्ध करें"</string>
+  <string name="rename_game">"रिलीज़ का नाम बदलें"</string>
+  <string name="invalid_name">"एक नाम दर्ज करें"</string>
+  <string name="manage_discs">"डिस्क प्रबंधित करें"</string>
+  <string name="default_disc">"डिफ़ॉल्ट डिस्क के रूप में उपयोग करें"</string>
+  <string name="plugins">"प्लगइन्स प्रबंधित करें"</string>
+  <string name="install_content">"सामग्री पैकेज आयात करें"</string>
+  <string name="about_description">"Xbox 360 एम्यूलेटर रिसर्च प्रोजेक्ट\nसंस्करण %1$s\nVulkan · ARM64\nBSD लाइसेंस — Xenia योगदानकर्ता"</string>
+  <string-array name="controller_types">
+    <item>"स्वचालित"</item>
+    <item>"गेमपैड"</item>
+    <item>"स्टीयरिंग व्हील"</item>
+    <item>"आर्केड स्टिक"</item>
+    <item>"फ्लाइट स्टिक"</item>
+    <item>"डांस पैड"</item>
+    <item>"गिटार"</item>
+    <item>"ड्रम सेट"</item>
+    <item>"आर्केड पैड"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"शीर्षक A-Z"</item>
+    <item>"शीर्षक Z-A"</item>
+    <item>"सबसे बुजुर्ग पहले खेले"</item>
+    <item>"आखिरी पहले खेला"</item>
+    <item>"अनुकूलता ↑"</item>
+    <item>"अनुकूलता ↓"</item>
+  </string-array>
+  <string name="mutable_content">"प्रोफ़ाइल और सहेजें"</string>
+  <string name="mutable_content_explanation">"इन पैकेजों में लिखने योग्य प्रोफ़ाइल या सेव डेटा होता है। उन्हें आयात करने के लिए ऐप स्टोरेज में निष्कर्षण की आवश्यकता होती है। गेम्स, DLC और अपडेट यथास्थान जुड़े रहते हैं। मूल को संरक्षित किया जाता है और मौजूदा डेटा को कभी भी प्रतिस्थापित नहीं किया जाता है।"</string>
+  <string name="extract_data">"प्रोफ़ाइल निकालें/डेटा सहेजें"</string>
+  <string name="unsupported_game">"ISO, ZAR, XEX, ELF या STFS/GOD गेम चुनें।"</string>
+  <string name="stop_confirmation">"खेल बंद करो? सहेजी न गई प्रगति खो जाएगी."</string>
+  <string name="virtual_controller">"ऑन-स्क्रीन नियंत्रक"</string>
+  <string name="disconnect_controller">"डिस्कनेक्ट किया गया"</string>
+  <string name="remap_controller">"नियंत्रक मानचित्रण"</string>
+  <string name="reset_mappings">"डिफ़ॉल्ट मैपिंग पुनर्स्थापित करें"</string>
+  <string name="mapping_key">"Android कुंजी कोड"</string>
+  <string name="mapping_axis">"Android अक्ष (ऋणात्मक = उलटा)"</string>
+  <string name="press_controller_button">"असाइन करने के लिए भौतिक बटन दबाएँ।"</string>
+  <string name="invert_axis">"अक्ष को उलटा करें"</string>
+  <string name="portal_failed">"USB पोर्टल से कनेक्ट नहीं हो सका."</string>
+  <string name="open_trace">"Vulkan ट्रेस खोलें"</string>
+  <string name="trace_failed">"GPU ट्रेस नहीं खुल सका."</string>
+  <string name="reset_all_options">"एमुलेटर विकल्प रीसेट करें"</string>
+  <string name="reset_global_confirmation">"कॉन्फ़िगर किए गए पथ और इंटरफ़ेस भाषा सहित सभी Android एमुलेटर विकल्पों को उनके डिफ़ॉल्ट पर रीसेट करें? प्रोफ़ाइल, गेम फ़ाइलें और प्रति-गेम विकल्प रखे जाएंगे।"</string>
+  <string name="reset_game_confirmation">"इस शीर्षक के लिए सभी Android विकल्प ओवरराइड हटाएं? सामान्य सेटिंग्स का उपयोग किया जाएगा. गेम फ़ाइलें रखी जाएंगी."</string>
+  <string name="state_on">"चालू"</string>
+  <string name="state_off">"बंद"</string>
+</resources>

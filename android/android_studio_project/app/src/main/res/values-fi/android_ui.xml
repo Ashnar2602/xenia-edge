@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Sulje peli- tai hallintanäyttö, ennen kuin muutat emulaattorin tietoja."</string>
+  <string name="no_controller">"Ei fyysistä ohjainta"</string>
+  <string name="postprocessing">"Jälkikäsittely"</string>
+  <string name="performance">"Suorituskyky"</string>
+  <string name="debug_tools">"Virheenkorjausasetukset"</string>
+  <string name="screenshot">"Ota kuvakaappaus"</string>
+  <string name="screenshot_failed">"Pelin kuvaa ei voitu kaapata."</string>
+  <string name="screenshot_saved">"Kuvakaappaus tallennettu. Löydät sen kohdasta Asetukset → Hallitse tiedostoja → screenshots."</string>
+  <string name="clear_gpu_cache">"Tyhjennä GPU-välimuistit"</string>
+  <string name="profiler">"Näytä / piilota suorituskykyprofilointi"</string>
+  <string name="profiles">"Profiilit"</string>
+  <string name="edit_profile">"Muokkaa profiilia"</string>
+  <string name="player_number">"Pelaaja %1$d"</string>
+  <string name="content">"DLC- ja nimipäivitykset"</string>
+  <string name="statistics">"Tilastot ja yhteensopivuus"</string>
+  <string name="desktop_compatibility">"Työpöytäyhteensopivuusraportti"</string>
+  <string-array name="compat_states">
+    <item>"Tuntematon"</item>
+    <item>"Ei pelattavissa"</item>
+    <item>"Käynnistyy"</item>
+    <item>"Peli käynnistyy"</item>
+    <item>"Pelattava"</item>
+  </string-array>
+  <string name="working">"Käsitellään…"</string>
+  <string name="operation_error">"Toimintoa ei voitu suorittaa loppuun: %1$s"</string>
+  <string name="nothing_here">"Ei merkintöjä saatavilla."</string>
+  <string name="manage_files">"Hallitse tiedostoja"</string>
+  <string name="add_content">"Lisää DLC tai otsikkopäivitys"</string>
+  <string name="detach_content">"Poista viite"</string>
+  <string name="content_link_explanation">"Paketit luetaan suoraan niiden alkuperäisestä sijainnista. Pidä ne siellä. Viitteen poistaminen jättää alkuperäisen tiedoston ennalleen."</string>
+  <string name="global_options">"Yleiset vaihtoehdot"</string>
+  <string name="global_explanation">"Oletusasetukset kaikille peleille. Pelikohtaiset vaihtoehdot ovat etusijalla. Muutokset tulevat voimaan seuraavan julkaisun yhteydessä."</string>
+  <string name="default_value">"Oletus"</string>
+  <string name="add_games">"Lisää pelejä"</string>
+  <string name="single_game">"Yksi peli"</string>
+  <string name="game_folder">"Kansio"</string>
+  <string name="game_options">"Pelivaihtoehdot"</string>
+  <string name="options_explanation">"Tämän otsikon ohitukset. Muutokset tulevat voimaan, kun peli seuraavan kerran alkaa."</string>
+  <string name="options_custom">"Tämä peli"</string>
+  <string name="options_inherited">"Yleinen asetus"</string>
+  <string name="options_base">"Yleinen arvo: %1$s"</string>
+  <string name="options_error">"Vaihtoehtoja ei voitu lukea tai tallentaa: %1$s"</string>
+  <string name="options_no_title">"Otsikkotunnusta ei voitu lukea. Pelikohtaiset vaihtoehdot edellyttävät kelvollista nimitunnusta."</string>
+  <string name="profile_select">"Valitse profiili pelaajalle 1"</string>
+  <string name="profile_explanation">"Luo paikallinen pelaajaprofiili, jotta pelit voivat kirjautua sisään ja tallentaa edistymisesi. Se kirjautuu sisään automaattisesti, kun seuraavan kerran pelaat."</string>
+  <string name="profile_migration">"Luo paikallinen pelaajaprofiili ja liitä siihen vanhat tallennukset, kuten työpöydällä. Se kirjautuu sisään automaattisesti, kun seuraavan kerran pelaat."</string>
+  <string name="profile_invalid">"Käytä 1–15 kirjainta (A–Z), numeroita tai yksittäisiä välilyöntejä. Aloita kirjaimella ja lopeta kirjaimella tai numerolla."</string>
+  <string name="profile_error">"Profiilia ei voitu luoda tai ladata. Tarkista ilmainen tallennustila ja yritä uudelleen."</string>
+  <string name="library">"Kirjasto"</string>
+  <string name="recent">"Viimeaikaiset"</string>
+  <string name="your_games">"Sinun pelisi"</string>
+  <string name="recent_games">"Äskettäin pelattu"</string>
+  <string name="library_subtitle">"Xbox 360 -pelisi avataan suoraan tallennustilasta."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Lisää kansio"</string>
+  <string name="import_explanation">"Valitse koko XEX- tai GOD-pelikansio, mukaan lukien sen datatiedostot. Xenia lukee alkuperäiset suoraan. Tiedostoja ei kopioida."</string>
+  <string name="choose_folder">"Valitse kansio"</string>
+  <string name="empty_library">"Kirjastosi alkaa tästä"</string>
+  <string name="no_results">"Ei vastaavia pelejä"</string>
+  <string name="empty_hint">"Lisää ISO/ZAR tai täydellinen pelikansio.\nPelisi näkyvät täällä."</string>
+  <string name="play">"▶  Pelaa"</string>
+  <string name="play_named">"Pelaa %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d peli"</item>
+    <item quantity="other">"%d peliä"</item>
+  </plurals>
+  <string name="video">"VIDEO"</string>
+  <string name="resolution">"Renderöinnin resoluutio"</string>
+  <string name="fps_limit">"Kuvanopeusrajoitus"</string>
+  <string name="controls">"SÄÄDÖT"</string>
+  <string name="touch_controls">"Näytön ohjain"</string>
+  <string name="controller_hint">"Kosketusohjaimet ja jopa neljä Bluetooth/USB-peliohjainta, joissa värinä, jos tuettu."</string>
+  <string name="preview_title">"Android-esikatselu"</string>
+  <string name="preview_description">"Pelien yhteensopivuutta testataan edelleen. Videoasetukset koskevat seuraavaa pelikertaa."</string>
+  <string name="project">"Xenia Edge GitHubissa"</string>
+  <string name="file_unavailable">"Tiedosto ei ole käytettävissä. Valitse se uudelleen alkuperäisestä sijainnistaan."</string>
+  <string name="no_executables">"Tästä kansiosta ei löytynyt XEX-, ELF-, ISO-, ZAR- tai STFS/GOD-otsikkoa."</string>
+  <string name="import_cancelled">"Tuonti peruutettu."</string>
+  <string name="importing">"Skannaa kansiota…"</string>
+  <string name="import_progress">"Skannaus · %2$s"</string>
+  <string name="cannot_open">"Peliä ei voitu lisätä"</string>
+  <string name="image_formats">"Valitse ISO tai ZAR. Lisää koko pelikansio XEXille ja GOD:lle."</string>
+  <string name="menu">"Valikko"</string>
+  <string name="preparing_game">"Valmistellaan peliä…"</string>
+  <string name="preparing_video">"Valmistellaan videota…"</string>
+  <string name="loading_game">"Ladataan peliä…"</string>
+  <string name="launch_error">"Xenia ei voinut julkaista tätä nimikettä (0x%1$08X). Tarkista muoto ja pelitiedostot. Tekniset tiedot löytyvät Logcatista."</string>
+  <string name="cannot_launch">"Peliä ei voitu aloittaa"</string>
+  <string name="back_library">"Takaisin kirjastoon"</string>
+  <string name="close_session">"Keskeytetäänkö tämä istunto?"</string>
+  <string name="interrupt_loading">"Peli latautuu tai sulkeutuu edelleen. Voit odottaa tai keskeyttää tämän istunnon ja palata kirjastoon."</string>
+  <string name="close_current_first">"Sulje nykyinen peli valikosta ennen uuden pelin avaamista."</string>
+  <string name="resume">"Jatka peliä"</string>
+  <string name="toggle_controls">"Näytä/piilota kosketusohjaimet"</string>
+  <string name="storage_access">"Pääsy pelitiedostoihin"</string>
+  <string name="storage_explanation">"Ota Xenia käyttöön \"Kaikki tiedostot -käyttöoikeus\", jotta voit avata pelejä suoraan laitteen tallennustilasta tai SD-kortilta kopioimatta niitä."</string>
+  <string name="open_settings">"Avaa asetukset"</string>
+  <string name="local_storage_required">"Valitse paikallinen tiedosto laitteelta tai SD-kortilta. Pilvi- ja virtuaalipalveluntarjoajia ei voi avata suoraan."</string>
+  <string name="game_information">"Tietoja"</string>
+  <string name="info_unavailable">"Ei saatavilla"</string>
+  <string name="info_title_id">"Otsikon tunnus"</string>
+  <string name="info_media_id">"Mediatunnus"</string>
+  <string name="info_base_version">"Perusversio"</string>
+  <string name="info_disc">"Disc"</string>
+  <string name="info_disc_number">"%1$d/%2$d"</string>
+  <string name="info_not_verified">"Ei vahvistettu"</string>
+  <string name="info_format">"Muoto"</string>
+  <string name="info_size">"Tiedoston koko"</string>
+  <string name="info_path">"Sijainti"</string>
+  <string name="info_loading">"Luetaan otsikon tietoja…"</string>
+  <string name="info_no_metadata">"Tässä tiedostossa ei ole luettavissa olevia otsikon metatietoja."</string>
+  <string name="automatic_controller">"Automaattinen"</string>
+  <string name="profile_image">"Profiilikuva"</string>
+  <string name="choose_image">"Valitse kuva"</string>
+  <string name="invalid_image">"Virheellinen kuva"</string>
+  <string name="preloading_shaders">"Esiladataan varjostimia…"</string>
+  <string name="patches_applied">"Laastarit kiinni"</string>
+  <string name="plugins_loaded">"Pluginit ladattu"</string>
+  <string name="build_commit">"Näytä rakentamissitoumus"</string>
+  <string name="interface_language">"Käyttöliittymän kieli"</string>
+  <string name="system_language">"Järjestelmän kieli"</string>
+  <string name="global_only_option">"Muuta tätä vaihtoehtoa yleisissä asetuksissa."</string>
+  <string name="controller_type">"Ohjaimen tyyppi"</string>
+  <string name="physical_keyboard">"Näppäimistö"</string>
+  <string name="time_scale">"Emuloinnin nopeus"</string>
+  <string name="time_half">"Puolet nykyisestä nopeudesta"</string>
+  <string name="time_double">"Kaksinkertainen nykyinen nopeus"</string>
+  <string name="time_reset">"Normaali nopeus"</string>
+  <string name="toggle_vibration">"Vaihda värinä"</string>
+  <string name="sort_games">"Lajittele pelejä"</string>
+  <string name="rename_game">"Nimeä julkaisu uudelleen"</string>
+  <string name="invalid_name">"Kirjoita nimi"</string>
+  <string name="manage_discs">"Hallitse levyjä"</string>
+  <string name="default_disc">"Käytä oletuslevynä"</string>
+  <string name="plugins">"Hallitse laajennuksia"</string>
+  <string name="install_content">"Tuo sisältöpaketteja"</string>
+  <string name="about_description">"Xbox 360 Emulator Research Project\nVersio %1$s\nVulkan · ARM64\nBSD-lisenssi – Xenia-avustajat"</string>
+  <string-array name="controller_types">
+    <item>"Automaattinen"</item>
+    <item>"Peliohjain"</item>
+    <item>"Ratti"</item>
+    <item>"Arcade-tikku"</item>
+    <item>"Lentotikku"</item>
+    <item>"Tanssimatto"</item>
+    <item>"Kitara"</item>
+    <item>"Rumpusetti"</item>
+    <item>"Arcade-ohjain"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Otsikko A–Z"</item>
+    <item>"Otsikko Z–A"</item>
+    <item>"Vanhin pelasi ensin"</item>
+    <item>"Viimeksi pelattu ensimmäisenä"</item>
+    <item>"Yhteensopivuus ↑"</item>
+    <item>"Yhteensopivuus ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Profiilit ja tallenteet"</string>
+  <string name="mutable_content_explanation">"Nämä paketit sisältävät kirjoitettavan profiilin tai tallennustietoja. Niiden tuonti vaatii purkamisen sovellusten tallennustilaan. Pelit, DLC ja päivitykset pysyvät linkitettyinä. Alkuperäiset asiakirjat säilytetään, eikä olemassa olevia tietoja koskaan korvata."</string>
+  <string name="extract_data">"Pura profiili / tallenna tiedot"</string>
+  <string name="unsupported_game">"Valitse ISO-, ZAR-, XEX-, ELF- tai STFS/GOD-peli."</string>
+  <string name="stop_confirmation">"Lopettaa peli? Tallentamaton edistyminen menetetään."</string>
+  <string name="virtual_controller">"Näytön ohjain"</string>
+  <string name="disconnect_controller">"Yhteys katkaistu"</string>
+  <string name="remap_controller">"Ohjainten kartoitukset"</string>
+  <string name="reset_mappings">"Palauta oletuskartoitukset"</string>
+  <string name="mapping_key">"Android-avainkoodi"</string>
+  <string name="mapping_axis">"Android-akseli (negatiivinen = käänteinen)"</string>
+  <string name="press_controller_button">"Määritä painamalla fyysistä painiketta."</string>
+  <string name="invert_axis">"Käänteinen akseli"</string>
+  <string name="portal_failed">"Ei voitu muodostaa yhteyttä USB-portaaliin."</string>
+  <string name="open_trace">"Avaa Vulkan-jälki"</string>
+  <string name="trace_failed">"GPU-jäljitystä ei voitu avata."</string>
+  <string name="reset_all_options">"Palauta emulaattoriasetukset"</string>
+  <string name="reset_global_confirmation">"Palautetaanko kaikki Android-emulaattoriasetukset oletusasetuksiinsa, mukaan lukien määritetyt polut ja käyttöliittymän kieli? Profiilit, pelitiedostot ja pelikohtaiset vaihtoehdot säilytetään."</string>
+  <string name="reset_game_confirmation">"Poistetaanko kaikki tämän nimikkeen Android-asetusten ohitukset? Yleisiä asetuksia käytetään. Pelitiedostot säilytetään."</string>
+  <string name="state_on">"Käytössä"</string>
+  <string name="state_off">"Pois käytöstä"</string>
+</resources>

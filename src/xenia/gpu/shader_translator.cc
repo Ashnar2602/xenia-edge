@@ -422,7 +422,8 @@ void Shader::GatherVertexFetchInformation(
     }
   }
   if (!attrib) {
-    assert_not_zero(fetch_instr.attributes.stride);
+    // A zero stride fetches the same element for every vertex. The shader
+    // backends already support this (for example, After Burner Climax).
     VertexBinding vertex_binding;
     vertex_binding.binding_index = int(vertex_bindings_.size());
     vertex_binding.fetch_constant = op.fetch_constant_index();

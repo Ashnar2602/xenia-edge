@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">விளையாட்டுக் கோப்பைக் கண்டறி</string>
+    <string name="wrong_game_release">அதே விளையாட்டு மற்றும் பதிப்பிற்கான கோப்பைத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="install_cancelled">நிறுவல் ரத்துசெய்யப்பட்டது</string>
+</resources>

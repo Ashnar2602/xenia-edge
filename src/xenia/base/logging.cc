@@ -46,12 +46,13 @@
 #if XE_PLATFORM_ANDROID
 DEFINE_bool(log_to_logcat, true, "Write log output to Android Logcat.",
             "Logging");
-#else
+#endif
 DEFINE_path(log_file, "", "Logs are written to the given file", "Logging");
 DEFINE_transient_bool(log_append, false,
                       "Append to existing log file instead of overwriting. "
                       "Used for title-to-title launches.",
                       "Logging");
+#if !XE_PLATFORM_ANDROID
 DEFINE_bool(log_to_stdout, true, "Write log output to stdout", "Logging");
 DEFINE_bool(log_to_debugprint, false, "Dump the log to DebugPrint.", "Logging");
 #endif  // XE_PLATFORM_ANDROID
@@ -251,7 +252,22 @@ class Logger {
     sinks_.push_back(std::move(sink));
   }
 
+#if XE_PLATFORM_ANDROID
+  void SetAndroidFileSink(std::unique_ptr<LogSink> sink) {
+    if (android_file_sink_) {
+      return;
+    }
+    android_file_sink_ = std::move(sink);
+    android_file_sink_ready_.store(android_file_sink_.get(),
+                                   std::memory_order_release);
+  }
+#endif
   void FlushAllSinks() {
+#if XE_PLATFORM_ANDROID
+    if (auto* sink = android_file_sink_ready_.load(std::memory_order_acquire)) {
+      sink->Flush();
+    }
+#endif
     for (const auto& sink : sinks_) {
       sink->Flush();
     }
@@ -281,10 +297,21 @@ class Logger {
   dp::sequence_barrier<dp::spin_wait_strategy> consumed_;
 
   std::vector<std::unique_ptr<LogSink>> sinks_;
+#if XE_PLATFORM_ANDROID
+  // Published after app config is loaded, without changing the writer's sink
+  // vector.
+  std::unique_ptr<LogSink> android_file_sink_;
+  std::atomic<LogSink*> android_file_sink_ready_{nullptr};
+#endif
 
   std::unique_ptr<xe::threading::Thread> write_thread_;
 
   void Write(const char* buf, size_t size) {
+#if XE_PLATFORM_ANDROID
+    if (auto* sink = android_file_sink_ready_.load(std::memory_order_acquire)) {
+      sink->Write(buf, size);
+    }
+#endif
     for (const auto& sink : sinks_) {
       sink->Write(buf, size);
     }
@@ -431,13 +458,34 @@ class Logger {
   }
 };
 
+#if XE_PLATFORM_ANDROID
+void EnableAndroidFileLogging(const std::filesystem::path& root) {
+  if (cvars::log_file.empty()) {
+    return;
+  }
+  auto path =
+      cvars::log_file.is_absolute() ? cvars::log_file : root / cvars::log_file;
+  std::error_code error;
+  std::filesystem::create_directories(path.parent_path(), error);
+  if (error) {
+    XELOGE("Cannot create log directory: {}", error.message());
+    return;
+  }
+  FILE* file = xe::filesystem::OpenFile(path, cvars::log_append ? "at" : "wt");
+  if (!file) {
+    XELOGE("Cannot open log file: {}", xe::path_to_utf8(path));
+    return;
+  }
+  logger_->SetAndroidFileSink(std::make_unique<FileLogSink>(file, true));
+}
+#endif
+
 void InitializeLogging(const std::string_view app_name) {
   auto mem = memory::AlignedAlloc<Logger>(0x10);
   logger_ = new (mem) Logger(app_name);
 
 #if XE_PLATFORM_ANDROID
-  // TODO(Triang3l): Enable file logging, but not by default as logs may be
-  // huge.
+  // Optional file logging is attached after the Android app loads its config.
   if (cvars::log_to_logcat) {
     logger_->AddLogSink(std::make_unique<AndroidLogSink>(app_name));
   }

@@ -37,6 +37,9 @@ class TraceViewer : public xe::ui::WindowedApp {
   virtual ~TraceViewer();
 
   bool OnInitialize() override;
+#if XE_PLATFORM_ANDROID
+  bool PrepareForAndroid();
+#endif
 
  protected:
   explicit TraceViewer(xe::ui::WindowedAppContext& app_context,

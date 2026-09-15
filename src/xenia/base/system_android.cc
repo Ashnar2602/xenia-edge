@@ -281,7 +281,46 @@ void LaunchWebBrowser(const std::string_view url) {
   jni_env->DeleteLocalRef(intent);
 }
 
-void LaunchFileExplorer(const std::filesystem::path& path) { assert_always(); }
+void LaunchFileExplorer(const std::filesystem::path& path) {
+  auto* env = GetAndroidThreadJniEnv();
+  auto context = GetAndroidApplicationContext();
+  if (!env || !context || !android_system_initialized_) {
+    return;
+  }
+  auto intent = env->NewObject(
+      android_system_intent_class_,
+      env->GetMethodID(android_system_intent_class_, "<init>", "()V"));
+  auto name = env->NewStringUTF("jp.xenia.emulator.FilesActivity");
+  auto set_class = env->GetMethodID(
+      android_system_intent_class_, "setClassName",
+      "(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent;");
+  auto local = env->CallObjectMethod(intent, set_class, context, name);
+  env->DeleteLocalRef(local);
+  env->DeleteLocalRef(name);
+  auto key = env->NewStringUTF("path");
+  const auto text = path.u16string();
+  auto value = env->NewString(reinterpret_cast<const jchar*>(text.data()),
+                              jsize(text.size()));
+  local = env->CallObjectMethod(
+      intent,
+      env->GetMethodID(
+          android_system_intent_class_, "putExtra",
+          "(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;"),
+      key, value);
+  env->DeleteLocalRef(local);
+  env->DeleteLocalRef(key);
+  env->DeleteLocalRef(value);
+  local = env->CallObjectMethod(intent, android_system_intent_add_flags_,
+                                android_system_intent_flag_activity_new_task_);
+  env->DeleteLocalRef(local);
+  env->CallVoidMethod(
+      context, android_system_application_context_start_activity_, intent);
+  env->DeleteLocalRef(intent);
+  if (env->ExceptionCheck()) {
+    env->ExceptionClear();
+    XELOGE("Unable to open Android file manager");
+  }
+}
 
 void ShowSimpleMessageBox(SimpleMessageBoxType type, std::string_view message) {
   // TODO(Triang3l): Likely not needed much at all. ShowSimpleMessageBox is a

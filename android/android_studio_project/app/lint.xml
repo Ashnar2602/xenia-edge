@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- SDL's Java sources include optional HID/BLE and haptic backends, but
+         this app initializes only SDL audio. Physical gamepads use Android
+         InputDevice events, without opening HID devices or scanning Bluetooth.
+         Keep these upstream files unchanged and do not request unused permissions. -->
+    <issue id="MissingPermission">
+        <ignore path="../../../third_party/SDL3/android-project/app/src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java" />
+        <ignore path="../../../third_party/SDL3/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java" />
+        <ignore path="../../../third_party/SDL3/android-project/app/src/main/java/org/libsdl/app/SDLControllerManager.java" />
+    </issue>
+    <issue id="UnspecifiedRegisterReceiverFlag">
+        <ignore path="../../../third_party/SDL3/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java" />
+    </issue>
+    <!-- All selectable languages are complete after merging desktop catalogs. -->
+    <issue id="MissingTranslation" severity="error" />
+</lint>

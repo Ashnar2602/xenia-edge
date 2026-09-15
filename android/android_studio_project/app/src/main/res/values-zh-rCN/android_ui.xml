@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"更改模拟器数据之前，请关闭游戏或管理屏幕。"</string>
+  <string name="no_controller">"无物理控制器"</string>
+  <string name="postprocessing">"后处理"</string>
+  <string name="performance">"性能"</string>
+  <string name="debug_tools">"调试设置"</string>
+  <string name="screenshot">"截图"</string>
+  <string name="screenshot_failed">"无法捕捉游戏图像。"</string>
+  <string name="screenshot_saved">"屏幕截图已保存。在“设置”→“管理文件”→“screenshots”中找到它。"</string>
+  <string name="clear_gpu_cache">"清除GPU缓存"</string>
+  <string name="profiler">"显示 / 隐藏性能分析器"</string>
+  <string name="profiles">"玩家档案"</string>
+  <string name="edit_profile">"编辑个人资料"</string>
+  <string name="player_number">"玩家%1$d"</string>
+  <string name="content">"DLC 和标题更新"</string>
+  <string name="statistics">"统计和兼容性"</string>
+  <string name="desktop_compatibility">"桌面兼容性报告"</string>
+  <string-array name="compat_states">
+    <item>"未知"</item>
+    <item>"不可玩"</item>
+    <item>"可启动"</item>
+    <item>"可进入游戏"</item>
+    <item>"可玩"</item>
+  </string-array>
+  <string name="working">"正在处理…"</string>
+  <string name="operation_error">"无法完成操作：%1$s"</string>
+  <string name="nothing_here">"没有可用的条目。"</string>
+  <string name="manage_files">"管理文件"</string>
+  <string name="add_content">"添加 DLC 或标题更新"</string>
+  <string name="detach_content">"删除参考"</string>
+  <string name="content_link_explanation">"直接从原始位置读取包。把它们留在那里。删除引用会使原始文件保持不变。"</string>
+  <string name="global_options">"一般选项"</string>
+  <string name="global_explanation">"所有游戏的默认值。每个游戏的选项优先。更改将在下次启动时应用。"</string>
+  <string name="default_value">"默认"</string>
+  <string name="add_games">"添加游戏"</string>
+  <string name="single_game">"单机游戏"</string>
+  <string name="game_folder">"文件夹"</string>
+  <string name="game_options">"游戏选项"</string>
+  <string name="options_explanation">"覆盖此标题。更改将在下次游戏开始时应用。"</string>
+  <string name="options_custom">"这个游戏"</string>
+  <string name="options_inherited">"一般设置"</string>
+  <string name="options_base">"一般值：%1$s"</string>
+  <string name="options_error">"无法读取或保存选项：%1$s"</string>
+  <string name="options_no_title">"无法读取标题 ID。每个游戏的选项都需要有效的游戏 ID。"</string>
+  <string name="profile_select">"选择玩家 1 的个人资料"</string>
+  <string name="profile_explanation">"创建本地玩家个人资料，以便游戏可以登录并保存您的进度。下次您玩时它会自动登录。"</string>
+  <string name="profile_migration">"创建本地玩家配置文件并将现有的旧版保存与其关联，就像在桌面上一样。下次您玩时它会自动登录。"</string>
+  <string name="profile_invalid">"使用 1–15 个字母 (A–Z)、数字或单个空格。以字母开头，以字母或数字结尾。"</string>
+  <string name="profile_error">"无法创建或加载配置文件。检查可用存储空间并重试。"</string>
+  <string name="library">"游戏库"</string>
+  <string name="recent">"最近"</string>
+  <string name="your_games">"你的游戏"</string>
+  <string name="recent_games">"最近玩过"</string>
+  <string name="library_subtitle">"直接从存储打开您的 Xbox 360 游戏。"</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"添加文件夹"</string>
+  <string name="import_explanation">"选择完整的 XEX 或 GOD 游戏文件夹，包括其数据文件。 Xenia直接阅读原件。不复制任何文件。"</string>
+  <string name="choose_folder">"选择文件夹"</string>
+  <string name="empty_library">"您的游戏库从这里开始"</string>
+  <string name="no_results">"没有匹配的游戏"</string>
+  <string name="empty_hint">"添加 ISO/ZAR 或完整的游戏文件夹。\n您的游戏将显示在此处。"</string>
+  <string name="play">"▶  开始游戏"</string>
+  <string name="play_named">"启动 %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d 个游戏"</item>
+    <item quantity="other">"%d 个游戏"</item>
+  </plurals>
+  <string name="video">"视频"</string>
+  <string name="resolution">"渲染分辨率"</string>
+  <string name="fps_limit">"帧率限制"</string>
+  <string name="controls">"控制装置"</string>
+  <string name="touch_controls">"屏幕控制器"</string>
+  <string name="controller_hint">"触摸控制和最多四个蓝牙/USB 游戏手柄，支持振动。"</string>
+  <string name="preview_title">"Android预览"</string>
+  <string name="preview_description">"游戏兼容性仍在测试中。视频设置适用于下一个游戏会话。"</string>
+  <string name="project">"GitHub 上的 Xenia Edge"</string>
+  <string name="file_unavailable">"该文件不可用。从原来的位置再次选择它。"</string>
+  <string name="no_executables">"在此文件夹中未找到 XEX、ELF、ISO、ZAR 或 STFS/GOD 标题。"</string>
+  <string name="import_cancelled">"导入已取消。"</string>
+  <string name="importing">"扫描文件夹..."</string>
+  <string name="import_progress">"正在扫描·%2$s"</string>
+  <string name="cannot_open">"无法添加游戏"</string>
+  <string name="image_formats">"选择 ISO 或 ZAR。对于XEX和GOD，添加完整的游戏文件夹。"</string>
+  <string name="menu">"菜单"</string>
+  <string name="preparing_game">"准备游戏…"</string>
+  <string name="preparing_video">"正在准备视频..."</string>
+  <string name="loading_game">"正在加载游戏..."</string>
+  <string name="launch_error">"Xenia 无法启动此游戏 (0x%1$08X)。检查格式和游戏文件。技术细节在 Logcat 中。"</string>
+  <string name="cannot_launch">"无法开始游戏"</string>
+  <string name="back_library">"返回游戏库"</string>
+  <string name="close_session">"中断此会话？"</string>
+  <string name="interrupt_loading">"游戏仍在加载或关闭。您可以等待，或中断此会话并返回游戏库。"</string>
+  <string name="close_current_first">"在打开另一个游戏之前，从菜单中关闭当前游戏。"</string>
+  <string name="resume">"继续游戏"</string>
+  <string name="toggle_controls">"显示/隐藏触摸控件"</string>
+  <string name="storage_access">"访问游戏文件"</string>
+  <string name="storage_explanation">"启用“所有文件访问”，Xenia 可以直接从设备存储或 SD 卡打开游戏，而无需复制它们。"</string>
+  <string name="open_settings">"打开设置"</string>
+  <string name="local_storage_required">"选择设备或SD卡上的本地文件。云和虚拟提供商无法直接打开。"</string>
+  <string name="game_information">"信息"</string>
+  <string name="info_unavailable">"不可用"</string>
+  <string name="info_title_id">"标题 ID"</string>
+  <string name="info_media_id">"媒体ID"</string>
+  <string name="info_base_version">"基础版本"</string>
+  <string name="info_disc">"光盘"</string>
+  <string name="info_disc_number">"第 %1$d 个（共 %2$d 个）"</string>
+  <string name="info_not_verified">"未验证"</string>
+  <string name="info_format">"格式"</string>
+  <string name="info_size">"文件大小"</string>
+  <string name="info_path">"地点"</string>
+  <string name="info_loading">"正在读取标题信息..."</string>
+  <string name="info_no_metadata">"此文件中没有可用的可读标题元数据。"</string>
+  <string name="automatic_controller">"自动"</string>
+  <string name="profile_image">"个人资料图片"</string>
+  <string name="choose_image">"选择图片"</string>
+  <string name="invalid_image">"图片无效"</string>
+  <string name="preloading_shaders">"预加载着色器..."</string>
+  <string name="patches_applied">"已应用补丁"</string>
+  <string name="plugins_loaded">"已加载插件"</string>
+  <string name="build_commit">"查看构建提交"</string>
+  <string name="interface_language">"界面语言"</string>
+  <string name="system_language">"系统语言"</string>
+  <string name="global_only_option">"在全局设置中更改此选项。"</string>
+  <string name="controller_type">"控制器类型"</string>
+  <string name="physical_keyboard">"键盘"</string>
+  <string name="time_scale">"仿真速度"</string>
+  <string name="time_half">"当前速度的一半"</string>
+  <string name="time_double">"双倍电流速度"</string>
+  <string name="time_reset">"正常速度"</string>
+  <string name="toggle_vibration">"切换振动"</string>
+  <string name="sort_games">"排序游戏"</string>
+  <string name="rename_game">"重命名版本"</string>
+  <string name="invalid_name">"输入姓名"</string>
+  <string name="manage_discs">"管理光盘"</string>
+  <string name="default_disc">"用作默认光盘"</string>
+  <string name="plugins">"管理插件"</string>
+  <string name="install_content">"导入内容包"</string>
+  <string name="about_description">"Xbox 360 模拟器研究项目\n版本 %1$s\nVulkan · ARM64\nBSD 许可证 - Xenia 贡献者"</string>
+  <string-array name="controller_types">
+    <item>"自动"</item>
+    <item>"游戏手柄"</item>
+    <item>"方向盘"</item>
+    <item>"街机摇杆"</item>
+    <item>"飞行摇杆"</item>
+    <item>"跳舞毯"</item>
+    <item>"吉他"</item>
+    <item>"架子鼓"</item>
+    <item>"街机控制板"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"标题 A-Z"</item>
+    <item>"标题 Z–A"</item>
+    <item>"最老的先玩"</item>
+    <item>"最后播放的第一个"</item>
+    <item>"兼容性↑"</item>
+    <item>"兼容性↓"</item>
+  </string-array>
+  <string name="mutable_content">"配置文件和保存"</string>
+  <string name="mutable_content_explanation">"这些包包含可写配置文件或保存数据。导入它们需要提取到应用程序存储中。游戏、DLC 和更新保持关联。原始数据将被保留，现有数据永远不会被替换。"</string>
+  <string name="extract_data">"提取配置文件/保存数据"</string>
+  <string name="unsupported_game">"选择 ISO、ZAR、XEX、ELF 或 STFS/GOD 游戏。"</string>
+  <string name="stop_confirmation">"停止游戏？未保存的进度将会丢失。"</string>
+  <string name="virtual_controller">"屏幕控制器"</string>
+  <string name="disconnect_controller">"已断开连接"</string>
+  <string name="remap_controller">"控制器映射"</string>
+  <string name="reset_mappings">"恢复默认映射"</string>
+  <string name="mapping_key">"Android键代码"</string>
+  <string name="mapping_axis">"Android 轴（负=倒置）"</string>
+  <string name="press_controller_button">"按物理按钮进行分配。"</string>
+  <string name="invert_axis">"反转轴"</string>
+  <string name="portal_failed">"无法连接到 USB 门户。"</string>
+  <string name="open_trace">"打开 Vulkan 跟踪"</string>
+  <string name="trace_failed">"无法打开 GPU 跟踪。"</string>
+  <string name="reset_all_options">"重置模拟器选项"</string>
+  <string name="reset_global_confirmation">"将所有 Android 模拟器选项重置为默认值，包括配置的路径和界面语言？配置文件、游戏文件和每个游戏的选项将被保留。"</string>
+  <string name="reset_game_confirmation">"删除该游戏的所有 Android 选项覆盖吗？将使用常规设置。游戏文件将被保留。"</string>
+  <string name="state_on">"开"</string>
+  <string name="state_off">"关"</string>
+</resources>

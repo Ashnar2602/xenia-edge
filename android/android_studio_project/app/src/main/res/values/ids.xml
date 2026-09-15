@@ -1,0 +1,12 @@
+<resources>
+    <item type="id" name="library_settings" />
+    <item type="id" name="library_add_games" />
+    <item type="id" name="options_search" />
+    <item type="id" name="options_list" />
+    <item type="id" name="options_reset_all" />
+    <item type="id" name="option_value" />
+    <item type="id" name="profile_gamertag" />
+    <item type="id" name="game_loading" />
+    <item type="id" name="game_menu" />
+    <item name="game_info_scroll" type="id" />
+</resources>

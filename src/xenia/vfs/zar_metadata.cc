@@ -37,7 +37,8 @@ bool EqualsIgnoreCase(std::string_view a, std::string_view b) {
 
 // Recursively search for default.xex in the archive.
 ZArchiveNodeHandle FindDefaultXex(ZArchiveReader* reader,
-                                  const std::string& dir_path, int max_depth) {
+                                  const std::string& dir_path, int max_depth,
+                                  size_t& budget) {
   if (max_depth <= 0) {
     return ZARCHIVE_INVALID_NODE;
   }
@@ -48,7 +49,8 @@ ZArchiveNodeHandle FindDefaultXex(ZArchiveReader* reader,
   }
 
   uint32_t entry_count = reader->GetDirEntryCount(dir_handle);
-  for (uint32_t i = 0; i < entry_count; i++) {
+  for (uint32_t i = 0; i < entry_count && budget; i++) {
+    --budget;
     ZArchiveReader::DirEntry entry;
     if (!reader->GetDirEntry(dir_handle, i, entry)) {
       continue;
@@ -71,7 +73,7 @@ ZArchiveNodeHandle FindDefaultXex(ZArchiveReader* reader,
       subdir_path += std::string(entry.name);
 
       ZArchiveNodeHandle result =
-          FindDefaultXex(reader, subdir_path, max_depth - 1);
+          FindDefaultXex(reader, subdir_path, max_depth - 1, budget);
       if (result != ZARCHIVE_INVALID_NODE) {
         return result;
       }
@@ -83,6 +85,46 @@ ZArchiveNodeHandle FindDefaultXex(ZArchiveReader* reader,
 
 }  // namespace
 
+std::vector<uint8_t> ReadZarExecutable(const std::filesystem::path& path,
+                                       size_t limit, bool header_only) {
+  std::unique_ptr<ZArchiveReader> reader(ZArchiveReader::OpenFromFile(path));
+  if (!reader) {
+    return {};
+  }
+  size_t budget = 65536;
+  auto handle = FindDefaultXex(reader.get(), "", 2, budget);
+  if (handle == ZARCHIVE_INVALID_NODE || !reader->IsFile(handle)) {
+    return {};
+  }
+  auto size = reader->GetFileSize(handle);
+  if (size < 24) {
+    return {};
+  }
+  if (header_only) {
+    uint8_t header[24];
+    if (reader->ReadFromFile(handle, 0, sizeof(header), header) !=
+        sizeof(header)) {
+      return {};
+    }
+    uint32_t header_size = (uint32_t(header[8]) << 24) |
+                           (uint32_t(header[9]) << 16) |
+                           (uint32_t(header[10]) << 8) | header[11];
+    if (header_size < 24 || header_size > size ||
+        header_size > 16 * 1024 * 1024) {
+      return {};
+    }
+    size = header_size;
+  }
+  if (size > limit) {
+    return {};
+  }
+  std::vector<uint8_t> data(size);
+  if (reader->ReadFromFile(handle, 0, size, data.data()) != size) {
+    return {};
+  }
+  return data;
+}
+
 std::optional<XexMetadata> ExtractZarMetadata(
     const std::filesystem::path& path) {
   std::unique_ptr<ZArchiveReader> reader(ZArchiveReader::OpenFromFile(path));
@@ -90,9 +132,10 @@ std::optional<XexMetadata> ExtractZarMetadata(
     return std::nullopt;
   }
 
-  ZArchiveNodeHandle handle = FindDefaultXex(reader.get(), "/", 2);
+  size_t budget = 65536;
+  ZArchiveNodeHandle handle = FindDefaultXex(reader.get(), "/", 2, budget);
   if (handle == ZARCHIVE_INVALID_NODE) {
-    handle = FindDefaultXex(reader.get(), "", 2);
+    handle = FindDefaultXex(reader.get(), "", 2, budget);
   }
   if (handle == ZARCHIVE_INVALID_NODE || !reader->IsFile(handle)) {
     return std::nullopt;

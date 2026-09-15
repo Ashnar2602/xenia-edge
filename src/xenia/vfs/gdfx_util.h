@@ -97,11 +97,12 @@ namespace detail {
 inline std::optional<GdfxFileLocation> GdfxFindFileInDirectory(
     const uint8_t* image_data, size_t image_size, size_t game_offset,
     const uint8_t* dir_buffer, size_t dir_size, uint16_t entry_ordinal,
-    const char* target_name, size_t target_len, int depth) {
-  if (depth > 100) {
+    const char* target_name, size_t target_len, int depth, size_t& budget) {
+  if (depth > 100 || !budget) {
     return std::nullopt;
   }
 
+  --budget;
   size_t entry_offset = static_cast<size_t>(entry_ordinal) * 4;
   if (entry_offset + 14 > dir_size) {
     return std::nullopt;
@@ -122,9 +123,9 @@ inline std::optional<GdfxFileLocation> GdfxFindFileInDirectory(
   const char* name = reinterpret_cast<const char*>(p + 14);
 
   if (node_l != 0) {
-    auto result = GdfxFindFileInDirectory(image_data, image_size, game_offset,
-                                          dir_buffer, dir_size, node_l,
-                                          target_name, target_len, depth + 1);
+    auto result = GdfxFindFileInDirectory(
+        image_data, image_size, game_offset, dir_buffer, dir_size, node_l,
+        target_name, target_len, depth + 1, budget);
     if (result) {
       return result;
     }
@@ -139,9 +140,9 @@ inline std::optional<GdfxFileLocation> GdfxFindFileInDirectory(
   }
 
   if (node_r != 0) {
-    auto result = GdfxFindFileInDirectory(image_data, image_size, game_offset,
-                                          dir_buffer, dir_size, node_r,
-                                          target_name, target_len, depth + 1);
+    auto result = GdfxFindFileInDirectory(
+        image_data, image_size, game_offset, dir_buffer, dir_size, node_r,
+        target_name, target_len, depth + 1, budget);
     if (result) {
       return result;
     }
@@ -166,9 +167,10 @@ inline std::optional<GdfxFileLocation> GdfxFindFile(
   const uint8_t* root_buffer = data + root_offset;
   size_t filename_len = std::strlen(filename);
 
+  size_t budget = partition.root_size / 4;
   return detail::GdfxFindFileInDirectory(data, size, partition.game_offset,
                                          root_buffer, partition.root_size, 0,
-                                         filename, filename_len, 0);
+                                         filename, filename_len, 0, budget);
 }
 
 }  // namespace vfs

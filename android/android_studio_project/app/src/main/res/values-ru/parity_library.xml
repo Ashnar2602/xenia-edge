@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">Найти файл игры</string>
+    <string name="wrong_game_release">Выберите файл той же игры и версии.</string>
+    <string name="install_cancelled">Установка отменена</string>
+</resources>

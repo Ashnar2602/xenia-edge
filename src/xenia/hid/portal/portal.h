@@ -42,7 +42,10 @@ class Portal {
                                 int32_t& read_count) = 0;
   virtual X_STATUS WriteInternal(std::span<uint8_t> data) = 0;
 
+ protected:
   xe_mutex lock_;
+
+ private:
   X_STATUS previous_status_ = 0;
 };
 

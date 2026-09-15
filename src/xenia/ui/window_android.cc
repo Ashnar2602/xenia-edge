@@ -25,6 +25,23 @@
 namespace xe {
 namespace ui {
 
+void AndroidWindow::DispatchKey(int key, int unicode, bool down, int repeat,
+                                int modifiers) {
+  WindowDestructionReceiver receiver(this);
+  KeyEvent event(this, VirtualKey(key), repeat + 1, repeat != 0, modifiers & 1,
+                 modifiers & 2, modifiers & 4, modifiers & 8);
+  if (down) {
+    OnKeyDown(event, receiver);
+  } else {
+    OnKeyUp(event, receiver);
+  }
+  if (down && unicode && !receiver.IsWindowDestroyed()) {
+    KeyEvent character(this, VirtualKey(unicode), 1, false, modifiers & 1,
+                       modifiers & 2, modifiers & 4, modifiers & 8);
+    OnKeyChar(character, receiver);
+  }
+}
+
 std::unique_ptr<Window> Window::Create(WindowedAppContext& app_context,
                                        const std::string_view title,
                                        uint32_t desired_logical_width,

@@ -10,7 +10,6 @@
 #include "xenia/ui/imgui_performance_dialog.h"
 
 #include "third_party/imgui/imgui.h"
-#include "xenia/app/emulator_window.h"
 #include "xenia/base/cvar.h"
 #include "xenia/config.h"
 #include "xenia/emulator.h"
@@ -26,11 +25,10 @@ DECLARE_string(occlusion_query);
 namespace xe {
 namespace ui {
 
-ImGuiPerformanceDialog::ImGuiPerformanceDialog(
-    ImGuiDrawer* drawer, app::EmulatorWindow* emulator_window,
-    hid::InputSystem* input_system)
-    : ImGuiGamepadDialog(drawer, input_system),
-      emulator_window_(emulator_window) {
+ImGuiPerformanceDialog::ImGuiPerformanceDialog(ImGuiDrawer* drawer,
+                                               Emulator* emulator,
+                                               hid::InputSystem* input_system)
+    : ImGuiGamepadDialog(drawer, input_system), emulator_(emulator) {
   LoadCurrentSettings();
 
   // Initialize highlight positions to match current selections
@@ -86,7 +84,7 @@ void ImGuiPerformanceDialog::ShowNotification(const std::string& title,
 }
 
 void ImGuiPerformanceDialog::OnReadbackResolveChanged(int value) {
-  auto emulator = emulator_window_->emulator();
+  auto emulator = emulator_;
   if (!emulator) {
     return;
   }
@@ -122,34 +120,33 @@ void ImGuiPerformanceDialog::OnReadbackResolveChanged(int value) {
 
 void ImGuiPerformanceDialog::OnReadbackResolveSyncChanged(bool enabled) {
   cvars::readback_resolve_sync = enabled;
-  config::SaveGameConfigSetting(emulator_window_->emulator(), "GPU",
-                                "readback_resolve_sync", enabled);
+  config::SaveGameConfigSetting(emulator_, "GPU", "readback_resolve_sync",
+                                enabled);
   ShowNotification("Readback Resolve Sync", enabled ? "Enabled" : "Disabled");
 }
 
 void ImGuiPerformanceDialog::OnMemexportEnableChanged(bool enabled) {
   gpu::SaveGPUSetting(gpu::GPUSetting::MemexportEnable, enabled);
-  config::SaveGameConfigSetting(emulator_window_->emulator(), "GPU",
-                                "memexport_enable", enabled);
+  config::SaveGameConfigSetting(emulator_, "GPU", "memexport_enable", enabled);
   ShowNotification("Memory Export", enabled ? "Enabled" : "Disabled");
 }
 
 void ImGuiPerformanceDialog::OnMemexportAwaitFencesChanged(bool enabled) {
   gpu::SaveGPUSetting(gpu::GPUSetting::MemexportAwaitFences, enabled);
-  config::SaveGameConfigSetting(emulator_window_->emulator(), "GPU",
-                                "memexport_await_fences", enabled);
+  config::SaveGameConfigSetting(emulator_, "GPU", "memexport_await_fences",
+                                enabled);
   ShowNotification("Memexport Fence Wait", enabled ? "Enabled" : "Disabled");
 }
 
 void ImGuiPerformanceDialog::OnEmulatedDisplayUncappedChanged(bool uncapped) {
   SetGuestDisplayRefreshCap(!uncapped);
-  config::SaveGameConfigSetting(emulator_window_->emulator(), "GPU",
-                                "guest_display_refresh_cap", !uncapped);
+  config::SaveGameConfigSetting(emulator_, "GPU", "guest_display_refresh_cap",
+                                !uncapped);
   ShowNotification("Emulated Display", uncapped ? "Uncapped" : "Capped");
 }
 
 void ImGuiPerformanceDialog::OnOcclusionQueryChanged(int value) {
-  auto emulator = emulator_window_->emulator();
+  auto emulator = emulator_;
   if (!emulator) {
     return;
   }
@@ -194,8 +191,7 @@ void ImGuiPerformanceDialog::OnFramerateLimitChanged(int value) {
   }
   framerate_limit_ = value;
   SetFramerateLimit(static_cast<uint32_t>(value));
-  config::SaveGameConfigSetting(emulator_window_->emulator(), "GPU",
-                                "framerate_limit",
+  config::SaveGameConfigSetting(emulator_, "GPU", "framerate_limit",
                                 static_cast<uint32_t>(value));
   ShowNotification("Frame Rate Limit",
                    value == 0 ? "Unlimited" : std::to_string(value) + " FPS");

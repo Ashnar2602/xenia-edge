@@ -7,9 +7,9 @@
  ******************************************************************************
  */
 #include "xenia/ui/profile_dialogs.h"
-#include "xenia/app/emulator_window.h"
 #include "xenia/base/png_utils.h"
 #include "xenia/base/system.h"
+#include "xenia/emulator.h"
 #include "xenia/kernel/util/shim_utils.h"
 #include "xenia/kernel/xam/xam_ui.h"
 #include "xenia/ui/file_picker.h"
@@ -23,16 +23,14 @@ namespace xe {
 namespace app {
 
 void ProfileConfigDialog::LoadProfileIcon() {
-  if (!emulator_window_) {
+  if (!emulator_) {
     return;
   }
 
   for (uint8_t user_index = 0; user_index < XUserMaxUserCount; user_index++) {
-    const auto profile = emulator_window_->emulator()
-                             ->kernel_state()
-                             ->xam_state()
-                             ->profile_manager()
-                             ->GetProfile(user_index);
+    const auto profile =
+        emulator_->kernel_state()->xam_state()->profile_manager()->GetProfile(
+            user_index);
 
     if (!profile) {
       continue;
@@ -42,14 +40,12 @@ void ProfileConfigDialog::LoadProfileIcon() {
 }
 
 void ProfileConfigDialog::LoadProfileIcon(const uint64_t xuid) {
-  if (!emulator_window_) {
+  if (!emulator_) {
     return;
   }
 
-  const auto profile_manager = emulator_window_->emulator()
-                                   ->kernel_state()
-                                   ->xam_state()
-                                   ->profile_manager();
+  const auto profile_manager =
+      emulator_->kernel_state()->xam_state()->profile_manager();
   if (!profile_manager) {
     return;
   }
@@ -74,16 +70,13 @@ void ProfileConfigDialog::LoadProfileIcon(const uint64_t xuid) {
 }
 
 void ProfileConfigDialog::OnDraw(ImGuiIO& io) {
-  if (!emulator_window_->emulator() ||
-      !emulator_window_->emulator()->kernel_state() ||
-      !emulator_window_->emulator()->kernel_state()->xam_state()) {
+  if (!emulator_ || !emulator_->kernel_state() ||
+      !emulator_->kernel_state()->xam_state()) {
     return;
   }
 
-  auto profile_manager = emulator_window_->emulator()
-                             ->kernel_state()
-                             ->xam_state()
-                             ->profile_manager();
+  auto profile_manager =
+      emulator_->kernel_state()->xam_state()->profile_manager();
   if (!profile_manager) {
     return;
   }
@@ -244,8 +237,7 @@ void ProfileConfigDialog::OnDraw(ImGuiIO& io) {
   ImGui::Spacing();
 
   if (ImGui::Button("Create Profile")) {
-    new kernel::xam::ui::CreateProfileUI(emulator_window_->imgui_drawer(),
-                                         emulator_window_->emulator());
+    new kernel::xam::ui::CreateProfileUI(imgui_drawer(), emulator_);
   }
 
   ImGui::PopStyleVar(1);

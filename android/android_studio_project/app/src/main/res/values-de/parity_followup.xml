@@ -1,0 +1,9 @@
+<resources>
+    <string name="reset_all_options">Emulatoroptionen zurücksetzen</string>
+    <string name="reset_global_confirmation">Alle Android-Emulatoroptionen einschließlich konfigurierter Pfade und Sprache auf die Standardwerte zurücksetzen? Profile, Spieldateien und spielspezifische Optionen bleiben erhalten.</string>
+    <string name="reset_game_confirmation">Alle angepassten Android-Optionen für diesen Titel entfernen? Die allgemeinen Einstellungen werden verwendet. Spieldateien bleiben erhalten.</string>
+    <string name="profile_online_xuid">Online-XUID</string>
+    <string name="profile_online_domain">Online-Domäne</string>
+    <string name="state_on">Ein</string>
+    <string name="state_off">Aus</string>
+</resources>

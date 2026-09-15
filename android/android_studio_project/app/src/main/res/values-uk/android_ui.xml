@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Android-specific translations. Sources and validation: docs/android-localization.md. -->
+  <string name="data_busy">"Перед зміною даних емулятора закрийте екран гри або керування."</string>
+  <string name="no_controller">"Немає фізичного контролера"</string>
+  <string name="postprocessing">"Постобробка"</string>
+  <string name="performance">"Продуктивність"</string>
+  <string name="debug_tools">"Параметри налагодження"</string>
+  <string name="screenshot">"Зробити скріншот"</string>
+  <string name="screenshot_failed">"Не вдалося зробити зображення гри."</string>
+  <string name="screenshot_saved">"Скріншот збережено. Знайдіть його в Налаштуваннях → Керування файлами → screenshots."</string>
+  <string name="clear_gpu_cache">"Очистити кеш GPU"</string>
+  <string name="profiler">"Показати / приховати профілювальник"</string>
+  <string name="profiles">"Профілі"</string>
+  <string name="edit_profile">"Редагувати профіль"</string>
+  <string name="player_number">"Гравець %1$d"</string>
+  <string name="content">"DLC і оновлення назв"</string>
+  <string name="statistics">"Статистика та сумісність"</string>
+  <string name="desktop_compatibility">"Звіт про сумісність робочого столу"</string>
+  <string-array name="compat_states">
+    <item>"Невідомо"</item>
+    <item>"Неіграбельна"</item>
+    <item>"Запускається"</item>
+    <item>"Запускається гра"</item>
+    <item>"Іграбельна"</item>
+  </string-array>
+  <string name="working">"Обробка…"</string>
+  <string name="operation_error">"Не вдалося завершити операцію: %1$s"</string>
+  <string name="nothing_here">"Немає записів."</string>
+  <string name="manage_files">"Керувати файлами"</string>
+  <string name="add_content">"Додайте DLC або оновіть назву"</string>
+  <string name="detach_content">"Видалити посилання"</string>
+  <string name="content_link_explanation">"Пакети зчитуються безпосередньо з їх початкового розташування. Тримайте їх там. Видалення посилання залишає вихідний файл без змін."</string>
+  <string name="global_options">"Загальні параметри"</string>
+  <string name="global_explanation">"Стандартні для всіх ігор. Параметри для кожної гри мають пріоритет. Зміни застосовуються під час наступного запуску."</string>
+  <string name="default_value">"За замовчуванням"</string>
+  <string name="add_games">"Додати ігри"</string>
+  <string name="single_game">"Одиночна гра"</string>
+  <string name="game_folder">"Папка"</string>
+  <string name="game_options">"Варіанти гри"</string>
+  <string name="options_explanation">"Перевизначення для цієї назви. Зміни застосовуються під час наступного запуску гри."</string>
+  <string name="options_custom">"Ця гра"</string>
+  <string name="options_inherited">"Загальне налаштування"</string>
+  <string name="options_base">"Загальне значення: %1$s"</string>
+  <string name="options_error">"Не вдалося прочитати чи зберегти параметри: %1$s"</string>
+  <string name="options_no_title">"Не вдалося прочитати ідентифікатор заголовка. Параметри для кожної гри вимагають дійсного ідентифікатора назви."</string>
+  <string name="profile_select">"Виберіть профіль для гравця 1"</string>
+  <string name="profile_explanation">"Створіть локальний профіль гравця, щоб ігри могли входити в систему та зберігати ваш прогрес. Він автоматично ввійде під час наступної гри."</string>
+  <string name="profile_migration">"Створіть локальний профіль гравця та пов’яжіть із ним існуючі застарілі збереження, як на комп’ютері. Він автоматично ввійде під час наступної гри."</string>
+  <string name="profile_invalid">"Використовуйте 1–15 літер (A–Z), цифр або одинарних пробілів. Починається з букви і закінчується буквою або цифрою."</string>
+  <string name="profile_error">"Не вдалося створити або завантажити профіль. Перевірте вільну пам’ять і повторіть спробу."</string>
+  <string name="library">"Бібліотека"</string>
+  <string name="recent">"Останні"</string>
+  <string name="your_games">"Ваші ігри"</string>
+  <string name="recent_games">"Нещодавно грав"</string>
+  <string name="library_subtitle">"Ваші ігри для Xbox 360, відкриті безпосередньо зі сховища."</string>
+  <string name="open_image">"＋ ISO / ZAR"</string>
+  <string name="import_folder">"Додати папку"</string>
+  <string name="import_explanation">"Виберіть повну папку гри XEX або GOD, включно з її файлами даних. Xenia читає оригінали безпосередньо. Файли не копіюються."</string>
+  <string name="choose_folder">"Виберіть папку"</string>
+  <string name="empty_library">"Ваша бібліотека починається тут"</string>
+  <string name="no_results">"Немає відповідних ігор"</string>
+  <string name="empty_hint">"Додайте ISO/ZAR або повну папку гри.\nВаші ігри з’являться тут."</string>
+  <string name="play">"▶  Грати"</string>
+  <string name="play_named">"Грати в %1$s"</string>
+  <plurals name="game_count">
+    <item quantity="one">"%d гра"</item>
+    <item quantity="few">"%d гри"</item>
+    <item quantity="many">"%d ігор"</item>
+    <item quantity="other">"%d гри"</item>
+  </plurals>
+  <string name="video">"ВІДЕО"</string>
+  <string name="resolution">"Роздільна здатність візуалізації"</string>
+  <string name="fps_limit">"Обмеження частоти кадрів"</string>
+  <string name="controls">"УПРАВЛІННЯ"</string>
+  <string name="touch_controls">"Екранний контролер"</string>
+  <string name="controller_hint">"Сенсорне керування та до чотирьох геймпадів Bluetooth/USB із вібрацією, де підтримується."</string>
+  <string name="preview_title">"Попередній перегляд Android"</string>
+  <string name="preview_description">"Сумісність гри ще перевіряється. Налаштування відео застосовуються до наступної ігрової сесії."</string>
+  <string name="project">"Xenia Edge на GitHub"</string>
+  <string name="file_unavailable">"Файл недоступний. Виберіть його знову з початкового розташування."</string>
+  <string name="no_executables">"У цій папці не знайдено заголовків XEX, ELF, ISO, ZAR або STFS/GOD."</string>
+  <string name="import_cancelled">"Імпорт скасовано."</string>
+  <string name="importing">"Сканування папки…"</string>
+  <string name="import_progress">"Сканування · %2$s"</string>
+  <string name="cannot_open">"Не вдалося додати гру"</string>
+  <string name="image_formats">"Виберіть ISO або ZAR. Для XEX і GOD додайте повну папку гри."</string>
+  <string name="menu">"Меню"</string>
+  <string name="preparing_game">"Підготовка гри…"</string>
+  <string name="preparing_video">"Підготовка відео…"</string>
+  <string name="loading_game">"Завантаження гри…"</string>
+  <string name="launch_error">"Xenia не вдалося запустити цю назву (0x%1$08X). Перевірте формат і файли гри. Технічні деталі наведено в Logcat."</string>
+  <string name="cannot_launch">"Не вдалося розпочати гру"</string>
+  <string name="back_library">"Назад до бібліотеки"</string>
+  <string name="close_session">"Перервати цей сеанс?"</string>
+  <string name="interrupt_loading">"Гра все ще завантажується або закривається. Ви можете почекати або перервати цей сеанс і повернутися до бібліотеки."</string>
+  <string name="close_current_first">"Закрийте поточну гру з меню, перш ніж відкривати іншу назву."</string>
+  <string name="resume">"Відновити гру"</string>
+  <string name="toggle_controls">"Показати/приховати сенсорне керування"</string>
+  <string name="storage_access">"Доступ до файлів гри"</string>
+  <string name="storage_explanation">"Увімкніть «Доступ до всіх файлів» для Xenia, щоб відкривати ігри безпосередньо з пам’яті пристрою або карти SD, не копіюючи їх."</string>
+  <string name="open_settings">"Відкрийте налаштування"</string>
+  <string name="local_storage_required">"Виберіть локальний файл на пристрої або SD-карті. Хмарні та віртуальні провайдери неможливо відкрити безпосередньо."</string>
+  <string name="game_information">"Інформація"</string>
+  <string name="info_unavailable">"Недоступний"</string>
+  <string name="info_title_id">"ID заголовка"</string>
+  <string name="info_media_id">"ID медіа"</string>
+  <string name="info_base_version">"Базова версія"</string>
+  <string name="info_disc">"Диск"</string>
+  <string name="info_disc_number">"%1$d з %2$d"</string>
+  <string name="info_not_verified">"Не перевірено"</string>
+  <string name="info_format">"Формат"</string>
+  <string name="info_size">"Розмір файлу"</string>
+  <string name="info_path">"Розташування"</string>
+  <string name="info_loading">"Читання інформації про назву…"</string>
+  <string name="info_no_metadata">"У цьому файлі відсутні доступні для читання метадані назви."</string>
+  <string name="automatic_controller">"Автоматичний"</string>
+  <string name="profile_image">"Зображення профілю"</string>
+  <string name="choose_image">"Виберіть зображення"</string>
+  <string name="invalid_image">"Недійсне зображення"</string>
+  <string name="preloading_shaders">"Попереднє завантаження шейдерів…"</string>
+  <string name="patches_applied">"Нанесені патчі"</string>
+  <string name="plugins_loaded">"Плагіни завантажено"</string>
+  <string name="build_commit">"Переглянути фіксацію збірки"</string>
+  <string name="interface_language">"Мова інтерфейсу"</string>
+  <string name="system_language">"Системна мова"</string>
+  <string name="global_only_option">"Змініть цей параметр у глобальних налаштуваннях."</string>
+  <string name="controller_type">"Тип контролера"</string>
+  <string name="physical_keyboard">"Клавіатура"</string>
+  <string name="time_scale">"Швидкість емуляції"</string>
+  <string name="time_half">"Половина поточної швидкості"</string>
+  <string name="time_double">"Подвійна швидкість струму"</string>
+  <string name="time_reset">"Нормальна швидкість"</string>
+  <string name="toggle_vibration">"Увімкнути вібрацію"</string>
+  <string name="sort_games">"Сортування ігор"</string>
+  <string name="rename_game">"Перейменувати випуск"</string>
+  <string name="invalid_name">"Введіть назву"</string>
+  <string name="manage_discs">"Керувати дисками"</string>
+  <string name="default_disc">"Використовувати як диск за замовчуванням"</string>
+  <string name="plugins">"Керувати плагінами"</string>
+  <string name="install_content">"Імпорт пакетів вмісту"</string>
+  <string name="about_description">"Дослідницький проект емулятора Xbox 360\nВерсія %1$s\nVulkan · ARM64\nліцензія BSD — учасники Xenia"</string>
+  <string-array name="controller_types">
+    <item>"Автоматичний"</item>
+    <item>"Геймпад"</item>
+    <item>"Кермо"</item>
+    <item>"Аркадний стік"</item>
+    <item>"Авіасимуляторний джойстик"</item>
+    <item>"Танцювальний килимок"</item>
+    <item>"Гітара"</item>
+    <item>"Барабанна установка"</item>
+    <item>"Аркадний пед"</item>
+  </string-array>
+  <string-array name="game_sorts">
+    <item>"Назва A–Z"</item>
+    <item>"Назва Z–A"</item>
+    <item>"Першим грав найстарший"</item>
+    <item>"Останній грав першим"</item>
+    <item>"Сумісність ↑"</item>
+    <item>"Сумісність ↓"</item>
+  </string-array>
+  <string name="mutable_content">"Профілі та збереження"</string>
+  <string name="mutable_content_explanation">"Ці пакунки містять доступний для запису профіль або дані збереження. Щоб імпортувати їх, потрібно розпакувати їх у сховище програми. Ігри, DLC та оновлення залишаються пов’язаними. Оригінали зберігаються, а наявні дані ніколи не замінюються."</string>
+  <string name="extract_data">"Видобути профіль/зберегти дані"</string>
+  <string name="unsupported_game">"Виберіть гру ISO, ZAR, XEX, ELF або STFS/GOD."</string>
+  <string name="stop_confirmation">"Зупинити гру? Незбережений прогрес буде втрачено."</string>
+  <string name="virtual_controller">"Екранний контролер"</string>
+  <string name="disconnect_controller">"Відключено"</string>
+  <string name="remap_controller">"Відображення контролерів"</string>
+  <string name="reset_mappings">"Відновити зіставлення за замовчуванням"</string>
+  <string name="mapping_key">"Код ключа Android"</string>
+  <string name="mapping_axis">"Вісь Android (мінус = перевернута)"</string>
+  <string name="press_controller_button">"Натисніть фізичну кнопку, щоб призначити."</string>
+  <string name="invert_axis">"Інвертувати вісь"</string>
+  <string name="portal_failed">"Не вдалося підключитися до USB-порталу."</string>
+  <string name="open_trace">"Відкрийте трасування Vulkan"</string>
+  <string name="trace_failed">"Не вдалося відкрити трасування GPU."</string>
+  <string name="reset_all_options">"Скинути параметри емулятора"</string>
+  <string name="reset_global_confirmation">"Відновити всі параметри емулятора Android до стандартних значень, зокрема налаштовані шляхи та мову інтерфейсу? Профілі, ігрові файли та параметри гри будуть збережені."</string>
+  <string name="reset_game_confirmation">"Видалити всі зміни параметрів Android для цієї назви? Будуть використані загальні налаштування. Файли гри будуть збережені."</string>
+  <string name="state_on">"Увімкнено"</string>
+  <string name="state_off">"Вимкнено"</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="locate_game">یافتن فایل بازی</string>
+    <string name="wrong_game_release">فایلی با همان عنوان و نسخه انتخاب کنید.</string>
+    <string name="install_cancelled">نصب لغو شد</string>
+</resources>
