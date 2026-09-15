@@ -484,14 +484,6 @@ void FlushLog() {
   logger_->FlushAllSinks();
 }
 
-static int g_saved_loglevel = static_cast<int>(LogLevel::Disabled);
-void logging::ToggleLogLevel() {
-  auto swap = g_saved_loglevel;
-
-  g_saved_loglevel = cvars::log_level;
-  cvars::log_level = swap;
-}
-
 bool logging::ShouldLog(LogLevel log_level, uint32_t log_mask) {
   return static_cast<int32_t>(log_level) <= cvars::log_level &&
          (log_mask & cvars::log_mask) == 0;

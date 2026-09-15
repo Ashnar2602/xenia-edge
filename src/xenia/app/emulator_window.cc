@@ -179,12 +179,6 @@ DECLARE_string(apu);
 DECLARE_bool(guide_button);
 DECLARE_string(config);
 
-DECLARE_bool(clear_memory_page_state);
-DECLARE_bool(memexport_enable);
-DECLARE_bool(memexport_await_fences);
-
-DECLARE_string(readback_resolve);
-
 DEFINE_transient_bool(return_to_ui, false,
                       "Return to UI process when game exits. Set automatically "
                       "when launching from UI.",
@@ -192,9 +186,6 @@ DEFINE_transient_bool(return_to_ui, false,
 
 DEFINE_bool(fullscreen, false, "Whether to launch the emulator in fullscreen.",
             "Display");
-
-DEFINE_bool(controller_hotkeys, false, "Hotkeys for Xbox and PS controllers.",
-            "General");
 
 DEFINE_string(
     postprocess_antialiasing, "",
@@ -521,12 +512,12 @@ std::unique_ptr<EmulatorWindow> EmulatorWindow::Create(
 }
 
 EmulatorWindow::~EmulatorWindow() {
-  // Stop the hotkey listener and wait for it to exit; it touches members of
+  // Stop the gamepad poll thread and wait for it to exit; it touches members of
   // this window and Thread::reset() does not join.
-  hotkeys_listener_running_ = false;
-  if (Gamepad_HotKeys_Listener) {
-    xe::threading::Wait(Gamepad_HotKeys_Listener.get(), false);
-    Gamepad_HotKeys_Listener.reset();
+  gamepad_poll_running_ = false;
+  if (gamepad_poll_thread_) {
+    xe::threading::Wait(gamepad_poll_thread_.get(), false);
+    gamepad_poll_thread_.reset();
   }
 
   // Notify the ImGui drawer that the immediate drawer is being destroyed.
@@ -738,13 +729,13 @@ void EmulatorWindow::OnEmulatorInitialized() {
     SetFullscreen(true);
   }
 
-  // Create a thread to listen for controller hotkeys. Also started when
-  // hid=sdl so SDL controller input keeps being pumped.
-  if (cvars::controller_hotkeys || cvars::hid == "sdl") {
-    hotkeys_listener_running_ = true;
-    Gamepad_HotKeys_Listener =
-        threading::Thread::Create({}, [&] { GamepadHotKeys(); });
-    Gamepad_HotKeys_Listener->set_name("Gamepad HotKeys Listener");
+  // Poll controllers for the guide button and game list navigation, which also
+  // keeps SDL controller input pumped.
+  if (cvars::hid == "sdl") {
+    gamepad_poll_running_ = true;
+    gamepad_poll_thread_ =
+        threading::Thread::Create({}, [&] { PollGamepads(); });
+    gamepad_poll_thread_->set_name("Gamepad Poll");
   }
 
   // Register callback for title-to-title launches from the kernel
@@ -3124,257 +3115,15 @@ void EmulatorWindow::SetInitializingShaderStorage(bool initializing) {
   UpdateTitle();
 }
 
-// Notes:
-// SDL supports the guide button.
-//
-// Assumes titles do not use the guide button.
-// For titles that do such as dashboards these titles could be excluded based on
-// their title ID.
-//
-// Steam:
-// If guide button focus is enabled steam will open.
-// Steam uses BACK + GUIDE to open an On-Screen keyboard, which no hotkey uses.
-const std::map<int, EmulatorWindow::ControllerHotKey> controller_hotkey_map = {
-    // Must use the Guide Button for all pass through hotkeys
-    {X_INPUT_GAMEPAD_A | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ReadbackResolve,
-         "A + Guide = Toggle Readback Resolve", true)},
-    {X_INPUT_GAMEPAD_B | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ToggleLogging,
-         "B + Guide = Toggle between loglevel set in config and the 'Disabled' "
-         "loglevel.",
-         true, true)},
-    {X_INPUT_GAMEPAD_Y | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ToggleFullscreen,
-         "Y + Guide = Toggle Fullscreen", true)},
-    {X_INPUT_GAMEPAD_X | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ClearMemoryPageState,
-         "X + Guide = Toggle Clear Memory Page State", true)},
-
-    {X_INPUT_GAMEPAD_RIGHT_SHOULDER | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ClearGPUCache,
-         "Right Shoulder + Guide = Clear GPU Cache", true)},
-    {X_INPUT_GAMEPAD_LEFT_SHOULDER | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ToggleControllerVibration,
-         "Left Shoulder + Guide = Toggle Controller Vibration", true)},
-
-    // CPU Time Scalar with no rumble feedback
-    {X_INPUT_GAMEPAD_DPAD_DOWN | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::CpuTimeScalarSetHalf,
-         "D-PAD Down + Guide = Half CPU Scalar")},
-    {X_INPUT_GAMEPAD_DPAD_UP | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::CpuTimeScalarSetDouble,
-         "D-PAD Up + Guide = Double CPU Scalar")},
-    {X_INPUT_GAMEPAD_DPAD_RIGHT | X_INPUT_GAMEPAD_GUIDE,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::CpuTimeScalarReset,
-         "D-PAD Right + Guide = Reset CPU Scalar")},
-
-    // non-pass through hotkeys
-    {X_INPUT_GAMEPAD_Y, EmulatorWindow::ControllerHotKey(
-                            EmulatorWindow::ButtonFunctions::ToggleFullscreen,
-                            "Y = Toggle Fullscreen", true, false)},
-    {X_INPUT_GAMEPAD_BACK | X_INPUT_GAMEPAD_START,
-     EmulatorWindow::ControllerHotKey(
-         EmulatorWindow::ButtonFunctions::ToggleLogging,
-         "Back + Start = Toggle between loglevel set in config and the "
-         "'Disabled' loglevel.",
-         false, false)}};
-
-EmulatorWindow::ControllerHotKey EmulatorWindow::ProcessControllerHotkey(
-    int buttons) {
-  // Default return value
-  EmulatorWindow::ControllerHotKey Unknown_hotkey = {};
-
-  // Track guide button state for edge detection (must be before early return)
-  static bool prev_guide_pressed = false;
-
-  if (buttons == 0) {
-    prev_guide_pressed = false;
-    return Unknown_hotkey;
-  }
-
-  if (disable_hotkeys_.load()) {
-    return Unknown_hotkey;
-  }
-
-  // Hotkey cool-down to prevent toggling too fast
-  constexpr std::chrono::milliseconds delay(75);
-
-  // When controller_hotkeys is disabled, use guide button alone to toggle
-  // context menu (with edge detection to prevent repeated toggling)
-  if (!cvars::controller_hotkeys && cvars::guide_button) {
-    bool guide_pressed = (buttons == X_INPUT_GAMEPAD_GUIDE);
-
-    if (guide_pressed && !prev_guide_pressed) {
-      app_context().CallInUIThread([this]() { ToggleContextMenu(false); });
-      prev_guide_pressed = true;
-      return Unknown_hotkey;
-    }
-    prev_guide_pressed = guide_pressed;
-  }
-
-  auto it = controller_hotkey_map.find(buttons);
-  if (it == controller_hotkey_map.end()) {
-    return Unknown_hotkey;
-  }
-
-  // Do not activate hotkeys that are not intended for activation during
-  // gameplay
-  if (emulator_->is_title_open()) {
-    // If non-pass through (menu hoykeys) or hotkeys disabled then return
-    if (!it->second.title_passthru || !cvars::controller_hotkeys) {
-      return Unknown_hotkey;
-    }
-  }
-
-  std::string notificationTitle = "";
-  std::string notificationDesc = "";
-
-  EmulatorWindow::ControllerHotKey button_combination = it->second;
-
-  switch (button_combination.function) {
-    case ButtonFunctions::ToggleFullscreen:
-      app_context().CallInUIThread([this]() { ToggleFullscreen(); });
-
-      // Extra Sleep
-      xe::threading::Sleep(delay);
-      break;
-    case ButtonFunctions::ClearMemoryPageState:
-      ToggleGPUSetting(GPUSetting::ClearMemoryPageState);
-
-      // Assume the user wants ClearCaches as well
-      if (cvars::clear_memory_page_state) {
-        GpuClearCaches();
-      }
-
-      notificationTitle = "Toggle Clear Memory Page State";
-      notificationDesc =
-          cvars::clear_memory_page_state ? "Enabled" : "Disabled";
-
-      // Extra Sleep
-      xe::threading::Sleep(delay);
-      break;
-    case ButtonFunctions::ReadbackResolve:
-      CycleReadbackResolve();
-
-      notificationTitle = "Readback Resolve Mode";
-      notificationDesc = cvars::readback_resolve;
-
-      // Extra Sleep
-      xe::threading::Sleep(delay);
-      break;
-    case ButtonFunctions::CpuTimeScalarSetHalf:
-      CpuTimeScalarSetHalf();
-
-      notificationTitle = "Time Scalar";
-      notificationDesc =
-          fmt::format("Decreased to {}", Clock::guest_time_scalar());
-      break;
-    case ButtonFunctions::CpuTimeScalarSetDouble:
-      CpuTimeScalarSetDouble();
-
-      notificationTitle = "Time Scalar";
-      notificationDesc =
-          fmt::format("Increased to {}", Clock::guest_time_scalar());
-      break;
-    case ButtonFunctions::CpuTimeScalarReset:
-      CpuTimeScalarReset();
-
-      notificationTitle = "Time Scalar";
-      notificationDesc = fmt::format("Reset to {}", Clock::guest_time_scalar());
-      break;
-    case ButtonFunctions::ClearGPUCache:
-      GpuClearCaches();
-
-      notificationTitle = "Clear GPU Cache";
-      notificationDesc = "Complete";
-
-      // Extra Sleep
-      xe::threading::Sleep(delay);
-      break;
-    case ButtonFunctions::ToggleControllerVibration: {
-      ToggleControllerVibration();
-
-      bool vibration = false;
-
-      auto input_sys = emulator()->input_system();
-      if (input_sys) {
-        vibration = input_sys->GetVibrationCvar();
-      }
-
-      notificationTitle = "Toggle Controller Vibration";
-      notificationDesc = vibration ? "Enabled" : "Disabled";
-
-      // Extra Sleep
-      xe::threading::Sleep(delay);
-    } break;
-    case ButtonFunctions::ToggleLogging: {
-      logging::ToggleLogLevel();
-
-      notificationTitle = "Toggle Logging";
-
-      LogLevel level = static_cast<LogLevel>(logging::internal::GetLogLevel());
-      notificationDesc = level == LogLevel::Disabled ? "Disabled" : "Enabled";
-    } break;
-    case ButtonFunctions::Unknown:
-    default:
-      break;
-  }
-
-  if (!notificationTitle.empty()) {
-    app_context_.CallInUIThread([this, notificationTitle, notificationDesc]() {
-      if (imgui_drawer()) {
-        new ui::HostNotificationWindow(imgui_drawer(), notificationTitle,
-                                       notificationDesc, 0);
-      }
-    });
-  }
-
-  xe::threading::Sleep(delay);
-
-  return it->second;
-}
-
-void EmulatorWindow::VibrateController(xe::hid::InputSystem* input_sys,
-                                       uint32_t user_index,
-                                       bool toggle_rumble) {
-  constexpr std::chrono::milliseconds rumble_duration(100);
-
-  // Hold lock while sleeping this thread for the duration of the rumble,
-  // otherwise the rumble may fail.
-  auto input_lock = input_sys->lock();
-
-  X_INPUT_VIBRATION vibration = {};
-
-  vibration.left_motor_speed = toggle_rumble ? UINT16_MAX : 0;
-  vibration.right_motor_speed = toggle_rumble ? UINT16_MAX : 0;
-
-  input_sys->SetState(user_index, &vibration);
-
-  // Vibration duration
-  if (toggle_rumble) {
-    xe::threading::Sleep(rumble_duration);
-  }
-}
-
-void EmulatorWindow::GamepadHotKeys() {
+void EmulatorWindow::PollGamepads() {
   X_INPUT_STATE state;
 
   constexpr std::chrono::milliseconds thread_delay(75);
 
   auto input_sys = emulator_->input_system();
 
-  // Last-seen button mask per user, for rising-edge detection of the activate
-  // button (which must never repeat).
+  // Last-seen button mask per user, for rising-edge detection of the guide and
+  // activate buttons (which must never repeat).
   std::array<uint16_t, XUserMaxUserCount> previous_buttons{};
 
   // A held direction repeats like a key: one move, a pause, then a steady
@@ -3387,7 +3136,7 @@ void EmulatorWindow::GamepadHotKeys() {
       nav_repeat_at{};
 
   if (input_sys) {
-    while (hotkeys_listener_running_) {
+    while (gamepad_poll_running_) {
       // Collect controller states while holding the lock
       std::array<std::pair<bool, X_INPUT_STATE>, XUserMaxUserCount>
           controller_states;
@@ -3401,15 +3150,16 @@ void EmulatorWindow::GamepadHotKeys() {
         }
       }  // Lock is released here when input_lock goes out of scope
 
-      // Process hotkeys without holding the lock
+      // Process input without holding the lock
       for (uint32_t user_index = 0; user_index < XUserMaxUserCount;
            ++user_index) {
         if (controller_states[user_index].first) {
           uint16_t buttons =
               controller_states[user_index].second.gamepad.buttons;
-          if (ProcessControllerHotkey(buttons).rumble) {
-            VibrateController(input_sys, user_index, true);
-            VibrateController(input_sys, user_index, false);
+          // Guide alone toggles the context menu, once per press.
+          if (cvars::guide_button && buttons == X_INPUT_GAMEPAD_GUIDE &&
+              previous_buttons[user_index] != X_INPUT_GAMEPAD_GUIDE) {
+            app_context_.CallInUIThread([this]() { ToggleContextMenu(false); });
           }
 
           // Game list navigation: only when no title is running. Edge-detect
@@ -3469,71 +3219,6 @@ void EmulatorWindow::GamepadHotKeys() {
       xe::threading::Sleep(thread_delay);
     }
   }
-}
-
-void EmulatorWindow::ToggleGPUSetting(gpu::GPUSetting setting) {
-  const char* cvar_name = nullptr;
-  bool new_value = false;
-
-  switch (setting) {
-    case GPUSetting::ClearMemoryPageState:
-      new_value = !cvars::clear_memory_page_state;
-      SaveGPUSetting(GPUSetting::ClearMemoryPageState, new_value);
-      cvar_name = "clear_memory_page_state";
-      break;
-    case GPUSetting::MemexportEnable:
-      new_value = !cvars::memexport_enable;
-      SaveGPUSetting(GPUSetting::MemexportEnable, new_value);
-      cvar_name = "memexport_enable";
-      break;
-    case GPUSetting::MemexportAwaitFences:
-      new_value = !cvars::memexport_await_fences;
-      SaveGPUSetting(GPUSetting::MemexportAwaitFences, new_value);
-      cvar_name = "memexport_await_fences";
-      break;
-  }
-
-  // Save to per-game config if a title is loaded
-  if (cvar_name && emulator_ && emulator_->is_title_open()) {
-    uint32_t title_id = emulator_->title_id();
-    if (title_id != 0) {
-      toml::table config_table = config::LoadGameConfig(title_id);
-
-      auto* gpu_table = config::ResolveSectionTable(config_table, "GPU");
-      if (gpu_table) {
-        gpu_table->insert_or_assign(cvar_name, new_value);
-      }
-
-      config::SaveGameConfig(title_id, config_table);
-    }
-  }
-}
-
-void EmulatorWindow::CycleReadbackResolve() {
-  auto* graphics_system = emulator_->graphics_system();
-  if (!graphics_system) {
-    return;
-  }
-  auto* command_processor = graphics_system->command_processor();
-  if (!command_processor) {
-    return;
-  }
-
-  gpu::ReadbackResolveMode current =
-      command_processor->GetReadbackResolveMode();
-  gpu::ReadbackResolveMode next;
-  switch (current) {
-    case gpu::ReadbackResolveMode::kDisabled:
-      next = gpu::ReadbackResolveMode::kFast;
-      break;
-    case gpu::ReadbackResolveMode::kFast:
-      next = gpu::ReadbackResolveMode::kAll;
-      break;
-    default:
-      next = gpu::ReadbackResolveMode::kDisabled;
-      break;
-  }
-  command_processor->SetReadbackResolveMode(next);
 }
 
 std::string EmulatorWindow::CanonicalizeFileExtension(
@@ -3886,7 +3571,6 @@ xe::X_STATUS EmulatorWindow::RunTitle(
   std::thread([this, emulator, abs_path]() {
     auto result = emulator->LaunchPath(abs_path);
     wxTheApp->CallAfter([this, result, abs_path]() {
-      disable_hotkeys_ = false;
       ClearDialogs();
       if (result) {
         XELOGE("Failed to launch target: {:08X}", result);

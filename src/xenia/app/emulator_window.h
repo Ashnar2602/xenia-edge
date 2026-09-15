@@ -61,8 +61,8 @@ class EmulatorWindow {
       Emulator* emulator, ui::WindowedAppContext& app_context, uint32_t width,
       uint32_t height);
 
-  std::unique_ptr<xe::threading::Thread> Gamepad_HotKeys_Listener;
-  std::atomic<bool> hotkeys_listener_running_ = {false};
+  std::unique_ptr<xe::threading::Thread> gamepad_poll_thread_;
+  std::atomic<bool> gamepad_poll_running_ = {false};
 
   static constexpr int64_t diff_in_ms(
       const steady_clock::time_point t1,
@@ -104,7 +104,6 @@ class EmulatorWindow {
   void ToggleConfigDialog();
   void OpenConfigDialog(const std::string& category = "");
   void ToggleControllerVibration();
-  void SetHotkeysState(bool enabled) { disable_hotkeys_ = !enabled; }
   void FileOpen();
   void FileAddGames();
 
@@ -116,42 +115,6 @@ class EmulatorWindow {
   void UpdateFsrMaxUpsamplingPassesCvar(uint32_t value);
   void UpdateCasSharpnessCvar(float value);
   void UpdateDitherCvar(bool value);
-
-  // Types of button functions for hotkeys.
-  enum class ButtonFunctions {
-    ToggleFullscreen,
-    CpuTimeScalarSetHalf,
-    CpuTimeScalarSetDouble,
-    CpuTimeScalarReset,
-    ClearGPUCache,
-    ToggleControllerVibration,
-    ClearMemoryPageState,
-    ReadbackResolve,
-    ToggleLogging,
-    Unknown
-  };
-
-  class ControllerHotKey {
-   public:
-    // If true the hotkey can be activated while a title is running, otherwise
-    // false.
-    bool title_passthru;
-
-    // If true vibrate the controller after activating the hotkey, otherwise
-    // false.
-    bool rumble;
-    std::string pretty;
-    ButtonFunctions function;
-
-    ControllerHotKey(ButtonFunctions fn = ButtonFunctions::Unknown,
-                     std::string pretty = "", bool rumble = false,
-                     bool active = true) {
-      function = fn;
-      this->pretty = pretty;
-      title_passthru = active;
-      this->rumble = rumble;
-    }
-  };
 
   // For comparisons, use GetSwapPostEffectForCvarValue instead as the default
   // fallback may be used for multiple values.
@@ -230,12 +193,7 @@ class EmulatorWindow {
   void ShowBuildCommit();
   void ShowAbout();
 
-  EmulatorWindow::ControllerHotKey ProcessControllerHotkey(int buttons);
-  void VibrateController(xe::hid::InputSystem* input_sys, uint32_t user_index,
-                         bool vibrate = true);
-  void GamepadHotKeys();
-  void ToggleGPUSetting(gpu::GPUSetting setting);
-  void CycleReadbackResolve();
+  void PollGamepads();
 
   static std::string CanonicalizeFileExtension(
       const std::filesystem::path& path);
@@ -256,7 +214,6 @@ class EmulatorWindow {
   ui::Presenter* presenter_painting_ = nullptr;
 
   bool emulator_initialized_ = false;
-  std::atomic<bool> disable_hotkeys_ = false;
 
   std::string base_title_;
   bool initializing_shader_storage_ = false;

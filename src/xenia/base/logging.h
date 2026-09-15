@@ -88,7 +88,6 @@ constexpr char kPrefixCharWarning = 'w';
 constexpr char kPrefixCharInfo = 'i';
 constexpr char kPrefixCharDebug = 'd';
 
-void ToggleLogLevel();
 bool ShouldLog(LogLevel log_level,
                uint32_t log_mask = xe::LogSrc::Uncategorized);
 

@@ -10,6 +10,4 @@
 #include "xenia/hid/hid_flags.h"
 
 DEFINE_bool(guide_button, true,
-            "Toggle the context menu with the guide button when "
-            "controller_hotkeys is disabled.",
-            "HID");
+            "Toggle the context menu with the guide button.", "HID");
