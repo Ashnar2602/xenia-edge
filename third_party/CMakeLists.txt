@@ -513,6 +513,33 @@ target_include_directories(pugixml PUBLIC pugixml/src)
 # ==============================================================================
 # snappy
 # ==============================================================================
+if(ANDROID)
+  # Use the NDK for feature checks and keep desktop-generated headers separate.
+  # This also avoids requiring a second, native make tool on a clean checkout.
+  function(xe_copy_dependency_sources name)
+    execute_process(COMMAND git ls-files
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${name}"
+      OUTPUT_VARIABLE _files RESULT_VARIABLE _result
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _result EQUAL 0)
+      message(FATAL_ERROR "Could not enumerate the pinned ${name} sources")
+    endif()
+    string(REPLACE "\n" ";" _files "${_files}")
+    foreach(_file IN LISTS _files)
+      if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${name}/${_file}")
+        continue()  # Nested test-only submodules are not needed.
+      endif()
+      configure_file("${name}/${_file}"
+        "${CMAKE_CURRENT_BINARY_DIR}/${name}-src/${_file}" COPYONLY)
+    endforeach()
+  endfunction()
+  xe_copy_dependency_sources(snappy)
+  set(SNAPPY_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(SNAPPY_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+  set(SNAPPY_INSTALL OFF CACHE BOOL "" FORCE)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/snappy-src" snappy EXCLUDE_FROM_ALL)
+else()
 # Generate snappy-stubs-public.h if missing
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/snappy/snappy-stubs-public.h")
   if(XE_TARGET_X86_64)
@@ -541,6 +568,7 @@ add_library(snappy STATIC
   snappy/snappy.h
 )
 target_include_directories(snappy PUBLIC snappy)
+endif()
 
 # ==============================================================================
 # xxhash
@@ -597,18 +625,8 @@ if(ANDROID)
   # zlib's CMake renames generated headers in its source directory. Desktop
   # builds keep those headers there, so configure a copy of the tracked sources
   # to leave existing desktop builds intact and avoid using their host headers.
-  execute_process(COMMAND git ls-files
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/zlib-ng"
-    OUTPUT_VARIABLE _xe_zlib_files RESULT_VARIABLE _xe_zlib_result
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if(NOT _xe_zlib_result EQUAL 0)
-    message(FATAL_ERROR "Could not enumerate the pinned zlib-ng sources")
-  endif()
-  string(REPLACE "\n" ";" _xe_zlib_files "${_xe_zlib_files}")
+  xe_copy_dependency_sources(zlib-ng)
   set(_xe_zlib_source "${CMAKE_CURRENT_BINARY_DIR}/zlib-ng-src")
-  foreach(_file IN LISTS _xe_zlib_files)
-    configure_file("zlib-ng/${_file}" "${_xe_zlib_source}/${_file}" COPYONLY)
-  endforeach()
   set(ZLIB_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
   set(WITH_GTEST OFF CACHE BOOL "" FORCE)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
