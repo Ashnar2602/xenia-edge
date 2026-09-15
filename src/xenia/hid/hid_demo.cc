@@ -23,7 +23,6 @@
 #include "xenia/base/logging.h"
 #include "xenia/base/platform.h"
 #include "xenia/base/threading.h"
-#include "xenia/hid/hid_flags.h"
 #include "xenia/hid/input_system.h"
 #include "xenia/ui/imgui_dialog.h"
 #include "xenia/ui/imgui_drawer.h"
@@ -229,8 +228,6 @@ void HidDemoApp::Draw(ImGuiIO& io) {
 
     static bool enable_GetState = false;
     ImGui::Checkbox("Active", &enable_GetState);
-    ImGui::SameLine();
-    ImGui::Checkbox("Guide Button", &cvars::guide_button);
     if (enable_GetState) {
       ImGui::Spacing();
       DrawInputGetState();

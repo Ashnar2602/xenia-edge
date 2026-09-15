@@ -92,7 +92,6 @@ class ImGuiDrawer : public WindowInputListener, public UIDrawer {
 
   bool HasOpenDialogs() const { return !dialogs_.empty(); }
   void LoadInputSystem(hid::InputSystem* input_system);
-  void SetGuideButtonAction(std::function<void(uint8_t)> func);
 
   // Post a callback to be executed after the current frame completes
   void PostDeferredCallback(std::function<void()> callback);
@@ -138,7 +137,6 @@ class ImGuiDrawer : public WindowInputListener, public UIDrawer {
   ImGuiContext* internal_state_ = nullptr;
   hid::InputSystem* input_system_ = nullptr;
 
-  std::function<void(uint8_t)> onGuidePressFunction_;
   // All currently-attached dialogs that get drawn.
   std::vector<ImGuiDialog*> dialogs_;
 

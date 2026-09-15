@@ -244,10 +244,6 @@ void ImGuiDrawer::LoadInputSystem(hid::InputSystem* input_system) {
   input_system_ = input_system;
 }
 
-void ImGuiDrawer::SetGuideButtonAction(std::function<void(uint8_t)> func) {
-  onGuidePressFunction_ = func;
-}
-
 void ImGuiDrawer::PostDeferredCallback(std::function<void()> callback) {
   if (window_) {
     window_->app_context().CallInUIThreadDeferred(std::move(callback));
@@ -1100,14 +1096,6 @@ void ImGuiDrawer::UpdateGamepads() {
 
   io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
   hid::X_INPUT_GAMEPAD& gamepad = gamepad_state.gamepad;
-
-  // GUIDE BUTTON - More info needed
-  if (gamepad_state.gamepad.buttons ==
-      hid::X_INPUT_GAMEPAD_BUTTON::X_INPUT_GAMEPAD_GUIDE) {
-    if (onGuidePressFunction_) {
-      onGuidePressFunction_(controller_to_poke);
-    }
-  }
 
 #define IM_SATURATE(V) (V < 0.0f ? 0.0f : V > 1.0f ? 1.0f : V)
 #define MAP_BUTTON(KEY_NO, BUTTON_ENUM)                           \

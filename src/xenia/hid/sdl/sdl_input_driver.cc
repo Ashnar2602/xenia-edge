@@ -25,7 +25,6 @@
 #include "xenia/base/logging.h"
 #include "xenia/base/threading.h"
 #include "xenia/helper/sdl/sdl_helper.h"
-#include "xenia/hid/hid_flags.h"
 #include "xenia/ui/virtual_key.h"
 #include "xenia/ui/window.h"
 
@@ -763,9 +762,6 @@ void SDLInputDriver::OnControllerDeviceButtonChanged(const SDL_Event& event) {
   auto xbutton = xbutton_lookup.at(event.gbutton.button);
   // Pressed or released?
   if (event.gbutton.down) {
-    if (xbutton == X_INPUT_GAMEPAD_GUIDE && !cvars::guide_button) {
-      return;
-    }
     xbuttons |= xbutton;
   } else {
     xbuttons &= ~xbutton;
@@ -844,8 +840,7 @@ void SDLInputDriver::UpdateXCapabilities(ControllerState& state) {
       SDL_GetJoystickType(SDL_GetGamepadJoystick(state.sdl)),
       SDL_GetGamepadName(state.sdl));
   c.flags = cap_flags;
-  c.gamepad.buttons =
-      0xF3FF | (cvars::guide_button ? X_INPUT_GAMEPAD_GUIDE : 0x0);
+  c.gamepad.buttons = 0xF3FF | X_INPUT_GAMEPAD_GUIDE;
   c.gamepad.left_trigger = 0xFF;
   c.gamepad.right_trigger = 0xFF;
   c.gamepad.thumb_lx = static_cast<int16_t>(0xFFFFu);

@@ -64,17 +64,4 @@ bool SetProcessPriorityClass(const uint32_t priority_class) {
                           xeniaToWindowsPriorityClassMapping[priority_class]);
 }
 
-bool IsUseNexusForGameBarEnabled() {
-  constexpr LPCWSTR reg_path = L"SOFTWARE\\Microsoft\\GameBar";
-  constexpr LPCWSTR key = L"UseNexusForGameBarEnabled";
-
-  DWORD value = 0;
-  DWORD dataSize = sizeof(value);
-
-  RegGetValue(HKEY_CURRENT_USER, reg_path, key, RRF_RT_DWORD, nullptr, &value,
-              &dataSize);
-
-  return static_cast<bool>(value);
-}
-
 }  // namespace xe

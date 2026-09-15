@@ -738,12 +738,6 @@ void EmulatorWindow::OnEmulatorInitialized() {
     SetFullscreen(true);
   }
 
-  if (IsUseNexusForGameBarEnabled()) {
-    XELOGE(
-        "Xbox Gamebar Enabled, using BACK button instead of GUIDE for "
-        "controller hotkeys!!!");
-  }
-
   // Create a thread to listen for controller hotkeys. Also started when
   // hid=sdl so SDL controller input keeps being pumped.
   if (cvars::controller_hotkeys || cvars::hid == "sdl") {
@@ -3137,21 +3131,9 @@ void EmulatorWindow::SetInitializingShaderStorage(bool initializing) {
 // For titles that do such as dashboards these titles could be excluded based on
 // their title ID.
 //
-// Xbox Gamebar:
-// If the Xbox Gamebar overlay is enabled Windows will consume the guide
-// button's input, this can be seen using hid-demo.
-//
-// Workaround: Detect if the Xbox Gamebar overlay is enabled then use the BACK
-// button instead of the GUIDE button. Therefore BACK and GUIDE are reserved
-// buttons for hotkeys.
-//
-// This is not an issue with DualShock controllers because Windows will not
-// open the gamebar overlay using the PlayStation menu button.
-//
 // Steam:
 // If guide button focus is enabled steam will open.
-// Steam uses BACK + GUIDE to open an On-Screen keyboard, however this is not a
-// problem since both these buttons are reserved.
+// Steam uses BACK + GUIDE to open an On-Screen keyboard, which no hotkey uses.
 const std::map<int, EmulatorWindow::ControllerHotKey> controller_hotkey_map = {
     // Must use the Guide Button for all pass through hotkeys
     {X_INPUT_GAMEPAD_A | X_INPUT_GAMEPAD_GUIDE,
@@ -3227,19 +3209,9 @@ EmulatorWindow::ControllerHotKey EmulatorWindow::ProcessControllerHotkey(
   // Hotkey cool-down to prevent toggling too fast
   constexpr std::chrono::milliseconds delay(75);
 
-  // If the Xbox Gamebar is enabled or the Guide button is disabled then
-  // replace the Guide button with the Back button without redeclaring the key
-  // mappings
-  if (IsUseNexusForGameBarEnabled() || !cvars::guide_button) {
-    if ((buttons & X_INPUT_GAMEPAD_BACK) == X_INPUT_GAMEPAD_BACK) {
-      buttons &= ~X_INPUT_GAMEPAD_BACK;
-      buttons |= X_INPUT_GAMEPAD_GUIDE;
-    }
-  }
-
   // When controller_hotkeys is disabled, use guide button alone to toggle
   // context menu (with edge detection to prevent repeated toggling)
-  if (!cvars::controller_hotkeys) {
+  if (!cvars::controller_hotkeys && cvars::guide_button) {
     bool guide_pressed = (buttons == X_INPUT_GAMEPAD_GUIDE);
 
     if (guide_pressed && !prev_guide_pressed) {
