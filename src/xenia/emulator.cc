@@ -1585,7 +1585,7 @@ const std::filesystem::path Emulator::GetNewDiscPath(
         if (std::filesystem::exists(game_path)) {
           initial_dir = game_path.parent_path();
           XELOGI("Setting file picker initial directory to game directory: {}",
-                 initial_dir.string().c_str());
+                 xe::path_to_utf8(initial_dir));
         }
       }
     }
@@ -1629,7 +1629,7 @@ const std::filesystem::path Emulator::GetNewDiscPath(
     if (result == kernel::xam::ui::DiscSwapResult::kSelected) {
       path = selected_path;
       XELOGI("GetNewDiscPath: Selected disc from saved paths: {}",
-             path.string());
+             xe::path_to_utf8(path));
       return path;
     } else if (result == kernel::xam::ui::DiscSwapResult::kBrowse) {
       use_file_picker = true;

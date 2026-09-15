@@ -112,8 +112,8 @@ std::vector<FileInfo> FilterByName(const std::vector<FileInfo>& files,
 
   std::ranges::copy_if(files, std::back_inserter(filtered_entries),
                        [pattern](const FileInfo& file) {
-                         return std::regex_match(file.name.filename().string(),
-                                                 pattern);
+                         return std::regex_match(
+                             xe::path_to_utf8(file.name.filename()), pattern);
                        });
   return filtered_entries;
 }

@@ -436,10 +436,11 @@ void GameListPanel::LaunchOrPrompt(const LibraryKey& key,
     launch_cb_(path);
     return;
   }
-  wxString warning = path.empty()
-                         ? _("No file path is set for this title.")
-                         : wxString::Format(_("File not found:\n%s"),
-                                            wxString::FromUTF8(path.string()));
+  wxString warning =
+      path.empty()
+          ? _("No file path is set for this title.")
+          : wxString::Format(_("File not found:\n%s"),
+                             wxString::FromUTF8(xe::path_to_utf8(path)));
   wxMessageDialog confirm(this, warning + _("\n\nBrowse for the file?"),
                           _("Title not found"), wxYES_NO | wxICON_WARNING);
   if (confirm.ShowModal() != wxID_YES) {
@@ -450,7 +451,7 @@ void GameListPanel::LaunchOrPrompt(const LibraryKey& key,
   wxFileDialog dlg(this, _("Select Content Package"),
                    initial_dir.empty()
                        ? wxString()
-                       : wxString::FromUTF8(initial_dir.string()),
+                       : wxString::FromUTF8(xe::path_to_utf8(initial_dir)),
                    wxEmptyString,
                    _("Supported Files|*;*.iso;*.xex;*.zar|"
                      "Disc Image (*.iso)|*.iso|"

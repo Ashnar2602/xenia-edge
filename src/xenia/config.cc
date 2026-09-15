@@ -258,7 +258,7 @@ uint32_t LoadGameConfigForFile(const std::filesystem::path& game_path) {
     return 0;
   }
 
-  std::string ext = game_path.extension().string();
+  std::string ext = xe::path_to_utf8(game_path.extension());
   std::transform(ext.begin(), ext.end(), ext.begin(),
                  [](unsigned char c) { return std::tolower(c); });
 
@@ -290,11 +290,12 @@ uint32_t LoadGameConfigForFile(const std::filesystem::path& game_path) {
   }
 
   if (title_id == 0) {
-    XELOGI("Could not extract title_id from: {}", game_path.string());
+    XELOGI("Could not extract title_id from: {}", xe::path_to_utf8(game_path));
     return 0;
   }
 
-  XELOGI("Extracted title_id {:08X} from: {}", title_id, game_path.string());
+  XELOGI("Extracted title_id {:08X} from: {}", title_id,
+         xe::path_to_utf8(game_path));
 
   // Load the game config directly into cvars.
   auto title_id_str = fmt::format("{:08X}", title_id);
@@ -484,7 +485,7 @@ toml::table LoadGameConfig(uint32_t title_id) {
   toml::table config_table;
   if (std::filesystem::exists(game_config_path)) {
     try {
-      config_table = toml::parse_file(game_config_path.string());
+      config_table = toml::parse_file(xe::path_to_utf8(game_config_path));
     } catch (const std::exception& e) {
       XELOGE("Failed to parse game config {}: {}",
              xe::path_to_utf8(game_config_path), e.what());

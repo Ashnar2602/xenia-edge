@@ -10,6 +10,7 @@
 #include "xenia/kernel/xam/ui/disc_swap_ui.h"
 
 #include "third_party/imgui/imgui.h"
+#include "xenia/base/filesystem.h"
 #include "xenia/base/logging.h"
 
 namespace xe {
@@ -126,7 +127,7 @@ void DiscSwapUI::OnDraw(ImGuiIO& io) {
           selected_path_ = disc.path;
           result_ = DiscSwapResult::kSelected;
           XELOGI("DiscSwapUI: Selected disc from saved paths: {}",
-                 selected_path_.string());
+                 xe::path_to_utf8(selected_path_));
           ImGui::CloseCurrentPopup();
           Close();
         }
@@ -142,7 +143,7 @@ void DiscSwapUI::OnDraw(ImGuiIO& io) {
           selected_path_ = disc.path;
           result_ = DiscSwapResult::kSelected;
           XELOGI("DiscSwapUI: Selected disc {} from saved paths: {}", i + 1,
-                 selected_path_.string());
+                 xe::path_to_utf8(selected_path_));
           ImGui::CloseCurrentPopup();
           Close();
         }

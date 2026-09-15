@@ -61,7 +61,7 @@ std::optional<ExtractedMetadata> TryExtractMetadata(
   }
 
   try {
-    std::string ext = ToLower(path.extension().string());
+    std::string ext = ToLower(xe::path_to_utf8(path.extension()));
 
     // Try to extract based on extension hint.
     if (ext == ".iso") {

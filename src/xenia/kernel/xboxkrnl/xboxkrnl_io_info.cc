@@ -7,6 +7,7 @@
  ******************************************************************************
  */
 
+#include "xenia/base/filesystem.h"
 #include "xenia/base/logging.h"
 #include "xenia/kernel/info/file.h"
 #include "xenia/kernel/info/volume.h"
@@ -232,7 +233,7 @@ dword_result_t NtSetInformationFile_entry(
           util::TranslateAnsiPath(kernel_memory(), &info->ansi_string);
 
       // Place IsValidPath in path from where it can be accessed everywhere
-      if (!IsValidPath(target_path.string(), false)) {
+      if (!IsValidPath(xe::path_to_utf8(target_path), false)) {
         return X_STATUS_OBJECT_NAME_INVALID;
       }
 

@@ -47,7 +47,7 @@ void PluginLoader::LoadConfigs() {
 
   for (const auto& entry : dir_files) {
     const uint32_t title_id = string_util::from_string<uint32_t>(
-        entry.name.filename().string(), true);
+        xe::path_to_utf8(entry.name.filename()), true);
 
     LoadTitleConfig(title_id);
   }

@@ -239,7 +239,7 @@ int TraceDump::Run() {
     player_->WaitOnPlayback();
     if (i == cvars::trace_dump_edram_frame) {
       std::filesystem::path edram_path = base_output_path_;
-      edram_path.replace_filename(edram_path.stem().string() + "_edram.bin");
+      edram_path.replace_filename(edram_path.stem().concat("_edram.bin"));
       // The dump submits GPU work, so it has to run on the GPU thread.
       CommandProcessor* command_processor =
           graphics_system_->command_processor();
@@ -260,7 +260,7 @@ int TraceDump::Run() {
     }
     if (i == cvars::trace_dump_memory_frame) {
       std::filesystem::path mem_path = base_output_path_;
-      mem_path.replace_filename(mem_path.stem().string() + "_mem.bin");
+      mem_path.replace_filename(mem_path.stem().concat("_mem.bin"));
       auto mem_handle = filesystem::OpenFile(mem_path, "wb");
       if (mem_handle) {
         fwrite(emulator_->memory()->physical_membase() +
@@ -277,13 +277,13 @@ int TraceDump::Run() {
       std::filesystem::path frame_path = base_output_path_;
       char suffix[32];
       std::snprintf(suffix, sizeof(suffix), "_f%05d.png", i);
-      frame_path.replace_filename(frame_path.stem().string() + suffix);
+      frame_path.replace_filename(frame_path.stem().concat(suffix));
       CaptureToPng(frame_path);
       if (cvars::trace_dump_memory_series) {
         std::filesystem::path mem_path = base_output_path_;
         char mem_suffix[40];
         std::snprintf(mem_suffix, sizeof(mem_suffix), "_f%05d_mem.bin", i);
-        mem_path.replace_filename(mem_path.stem().string() + mem_suffix);
+        mem_path.replace_filename(mem_path.stem().concat(mem_suffix));
         auto h = filesystem::OpenFile(mem_path, "wb");
         if (h) {
           fwrite(emulator_->memory()->physical_membase() +

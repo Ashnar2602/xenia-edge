@@ -750,7 +750,7 @@ dword_result_t XamSwapDisc_entry(
         kernel_state()->emulator()->GetNewDiscPath(
             xe::to_utf8(text_message) + "\n\n" + error_dialog_message);
     XELOGI("XamSwapDisc: GetNewDiscPath returned path {}.",
-           new_disc_path.string().c_str());
+           xe::path_to_utf8(new_disc_path));
 
     // Clear the error message for next iteration
     error_dialog_message.clear();
@@ -771,7 +771,7 @@ dword_result_t XamSwapDisc_entry(
         kernel_state()->emulator()->MountPath(new_disc_path, mount_path);
     if (mount_result != X_ERROR_SUCCESS) {
       XELOGE("XamSwapDisc: Failed to mount disc at path: {}",
-             new_disc_path.string());
+             xe::path_to_utf8(new_disc_path));
       error_dialog_message =
           "ERROR: Failed to mount the selected disc image.\n"
           "Please select a valid disc image file.";

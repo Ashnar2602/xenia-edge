@@ -502,7 +502,7 @@ void VirtualFileSystem::ExtractContentHeader(Device* device,
       return;
     }
   }
-  auto header_filename = base_path.filename().string() + ".header";
+  auto header_filename = base_path.filename().concat(".header");
   auto header_path = base_path.parent_path() / header_filename;
   xe::filesystem::CreateEmptyFile(header_path);
 
@@ -512,7 +512,7 @@ void VirtualFileSystem::ExtractContentHeader(Device* device,
         xcontent_device->content_header();
     uint32_t license_mask = xcontent_device->license_mask();
 
-    data.set_file_name(base_path.filename().string());
+    data.set_file_name(xe::path_to_utf8(base_path.filename()));
     fwrite(&data, 1, sizeof(kernel::xam::XCONTENT_AGGREGATE_DATA), file);
     fwrite(&license_mask, 1, sizeof(license_mask), file);
     fclose(file);

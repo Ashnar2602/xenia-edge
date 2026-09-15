@@ -3235,7 +3235,8 @@ void EmulatorWindow::LaunchTitleInNewProcess(
 
   // Verify the file exists
   if (!path_to_file.empty() && !std::filesystem::exists(path_to_file)) {
-    XELOGE("Cannot launch title - file not found: {}", path_to_file.string());
+    XELOGE("Cannot launch title - file not found: {}",
+           xe::path_to_utf8(path_to_file));
     return;
   }
 
@@ -3395,7 +3396,7 @@ void EmulatorWindow::LaunchTitleInNewProcess(
   }
 #endif
 
-  XELOGI("Launched title in new process: {}", path_to_file.string());
+  XELOGI("Launched title in new process: {}", xe::path_to_utf8(path_to_file));
 
   // Exit UI process - game process will spawn new UI when it exits
   xe::FlushLog();
