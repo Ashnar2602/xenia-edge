@@ -5,6 +5,10 @@ project(xenia-host-tools LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+if(MSVC)
+  # Dependencies use __cplusplus to select their C++20 implementations.
+  add_compile_options(/Zc:__cplusplus)
+endif()
 get_filename_component(XENIA_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "" FORCE)
