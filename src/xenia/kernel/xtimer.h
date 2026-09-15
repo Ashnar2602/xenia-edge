@@ -38,12 +38,15 @@ class XTimer : public XObject {
   xe::threading::WaitHandle* GetWaitHandle() override { return timer_.get(); }
 
  private:
+  // Callers must cancel the host timer first.
+  void RemoveApc();
+
   std::unique_ptr<xe::threading::Timer> timer_;
   std::mutex timer_lock_;
 
-  XThread* callback_thread_ = nullptr;
-  uint32_t callback_routine_ = 0;
-  uint32_t callback_routine_arg_ = 0;
+  // Reused across expiries like the KAPC a KTIMER embeds.
+  uint32_t apc_ptr_ = 0;
+  object_ref<XThread> apc_thread_;
 };
 
 }  // namespace kernel

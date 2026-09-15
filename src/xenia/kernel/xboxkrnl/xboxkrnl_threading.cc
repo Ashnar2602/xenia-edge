@@ -1443,9 +1443,17 @@ uint32_t xeNtQueueApcThread(uint32_t thread_handle, uint32_t apc_routine,
   xeKeInitializeApc(apc, thread->guest_object(), XAPC::kDummyKernelRoutine, 0,
                     apc_routine, 1 /*user apc mode*/, apc_routine_context);
 
-  if (!xeKeInsertQueueApc(apc, arg1, arg2, 0, context)) {
+  if (!xeInsertQueueApcAndWake(thread.get(), apc, arg1, arg2, context)) {
     memory->SystemHeapFree(apc_ptr);
     return X_STATUS_UNSUCCESSFUL;
+  }
+  return X_STATUS_SUCCESS;
+}
+
+uint32_t xeInsertQueueApcAndWake(XThread* thread, XAPC* apc, uint32_t arg1,
+                                 uint32_t arg2, cpu::ppc::PPCContext* context) {
+  if (!xeKeInsertQueueApc(apc, arg1, arg2, 0, context)) {
+    return 0;
   }
   // Awaken a sleeping alertable thread to process real apcs. A host thread gets
   // a no-op user callback to break its wait, a fiber gets a scheduler poke so
@@ -1453,9 +1461,9 @@ uint32_t xeNtQueueApcThread(uint32_t thread_handle, uint32_t apc_routine,
   if (thread->thread()) {
     thread->thread()->QueueUserCallback([]() {});
   } else {
-    kernelstate->guest_scheduler()->WakeAll();
+    context->kernel_state->guest_scheduler()->WakeAll();
   }
-  return X_STATUS_SUCCESS;
+  return 1;
 }
 dword_result_t NtQueueApcThread_entry(dword_t thread_handle,
                                       lpvoid_t apc_routine,
@@ -1495,12 +1503,16 @@ static bool ProcessApcList(PPCContext* ctx, X_KTHREAD* current_thread,
     xe::store_and_swap<uint32_t>(scratch_ptr + 4, apc->normal_context);
     xe::store_and_swap<uint32_t>(scratch_ptr + 8, apc->arg1);
     xe::store_and_swap<uint32_t>(scratch_ptr + 12, apc->arg2);
+    // An owned APC can be freed by its owner as soon as the lock drops.
+    uint32_t kernel_routine = apc->kernel_routine;
     util::XeRemoveEntryList(&apc->list_entry, ctx);
     apc->enqueued = 0;
 
     xeKeKfReleaseSpinLock(ctx, &current_thread->apc_lock, unlocked_irql);
     processed_any = true;
-    if (apc->kernel_routine != XAPC::kDummyKernelRoutine) {
+    if (kernel_routine == XAPC::kDummyKernelRoutine) {
+      ctx->kernel_state->memory()->SystemHeapFree(apc_ptr);
+    } else if (kernel_routine != XAPC::kOwnedKernelRoutine) {
       uint64_t kernel_args[] = {
           apc_ptr,
           scratch_address + 0,
@@ -1508,10 +1520,8 @@ static bool ProcessApcList(PPCContext* ctx, X_KTHREAD* current_thread,
           scratch_address + 8,
           scratch_address + 12,
       };
-      ctx->processor->Execute(ctx->thread_state, apc->kernel_routine,
-                              kernel_args, xe::countof(kernel_args));
-    } else {
-      ctx->kernel_state->memory()->SystemHeapFree(apc_ptr);
+      ctx->processor->Execute(ctx->thread_state, kernel_routine, kernel_args,
+                              xe::countof(kernel_args));
     }
 
     uint32_t normal_routine = xe::load_and_swap<uint32_t>(scratch_ptr + 0);
@@ -1601,7 +1611,7 @@ static void YankApcList(PPCContext* ctx, X_KTHREAD* current_thread,
         kernel_state()->processor()->Execute(ctx->thread_state,
                                              this_entry->rundown_routine, args,
                                              xe::countof(args));
-      } else {
+      } else if (this_entry->kernel_routine != XAPC::kOwnedKernelRoutine) {
         ctx->kernel_state->memory()->SystemHeapFree(
             ctx->HostToGuestVirtual(this_entry));
       }
@@ -1707,8 +1717,7 @@ dword_result_t KeInsertQueueApc_entry(pointer_t<XAPC> apc, lpvoid_t arg1,
 }
 DECLARE_XBOXKRNL_EXPORT1(KeInsertQueueApc, kThreading, kImplemented);
 
-dword_result_t KeRemoveQueueApc_entry(pointer_t<XAPC> apc,
-                                      const ppc_context_t& context) {
+uint32_t xeKeRemoveQueueApc(XAPC* apc, cpu::ppc::PPCContext* context) {
   bool result = false;
 
   uint32_t thread_guest_pointer = apc->thread_ptr;
@@ -1727,6 +1736,11 @@ dword_result_t KeRemoveQueueApc_entry(pointer_t<XAPC> apc,
   xeKeKfReleaseSpinLock(context, &target_thread->apc_lock, old_irql);
 
   return result ? 1 : 0;
+}
+
+dword_result_t KeRemoveQueueApc_entry(pointer_t<XAPC> apc,
+                                      const ppc_context_t& context) {
+  return xeKeRemoveQueueApc(apc, context);
 }
 DECLARE_XBOXKRNL_EXPORT1(KeRemoveQueueApc, kThreading, kImplemented);
 

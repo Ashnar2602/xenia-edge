@@ -87,6 +87,8 @@ struct XAPC {
   static constexpr uint32_t kSize = 40;
   static constexpr uint32_t kDummyKernelRoutine = 0xF00DFF00;
   static constexpr uint32_t kDummyRundownRoutine = 0xF00DFF01;
+  // Kernel routine of an APC its owner frees, skipped on delivery.
+  static constexpr uint32_t kOwnedKernelRoutine = 0xF00DFF02;
 
   // KAPC is 0x28(40) bytes? (what's passed to ExAllocatePoolWithTag)
   // This is 4b shorter than NT - looks like the reserved dword at +4 is gone.
@@ -454,6 +456,9 @@ class XThread : public XObject, public cpu::Thread {
 
   void EnqueueApc(uint32_t normal_routine, uint32_t normal_context,
                   uint32_t arg1, uint32_t arg2);
+  // Queues an owned APC initialized for this thread, unless already queued.
+  bool InsertOwnedApc(uint32_t apc_ptr, uint32_t arg1, uint32_t arg2);
+  void RemoveOwnedApc(uint32_t apc_ptr);
 
   // True if this thread has a user-mode APC queued (or pending). Used by the
   // cooperative scheduler's alertable waits to return USER_APC, the same way a
@@ -673,6 +678,7 @@ class XThread : public XObject, public cpu::Thread {
 
   void DeliverAPCs();
   void RundownAPCs();
+  cpu::ppc::PPCContext* ApcQueueContext();
 
   // Publishes a new effective priority to the guest KTHREAD field, the host
   // thread and the scheduler's ready queue. Every change goes through here.
