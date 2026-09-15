@@ -14,8 +14,8 @@
 
 #include "xenia/hid/input_system.h"
 
+#include "xenia/base/cvar.h"
 #include "xenia/base/profiling.h"
-#include "xenia/hid/hid_flags.h"
 #include "xenia/hid/input_driver.h"
 #include "xenia/kernel/util/shim_utils.h"
 

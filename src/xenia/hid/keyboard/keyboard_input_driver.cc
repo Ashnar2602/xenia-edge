@@ -11,8 +11,8 @@
 
 #include <cstring>
 
+#include "xenia/base/cvar.h"
 #include "xenia/base/logging.h"
-#include "xenia/hid/hid_flags.h"
 #include "xenia/hid/input_system.h"
 #include "xenia/ui/virtual_key.h"
 #include "xenia/ui/window.h"

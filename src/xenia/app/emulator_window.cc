@@ -176,7 +176,6 @@ DECLARE_string(hid);
 DECLARE_string(gpu);
 DECLARE_string(apu);
 
-DECLARE_bool(guide_button);
 DECLARE_string(config);
 
 DEFINE_transient_bool(return_to_ui, false,
@@ -186,6 +185,9 @@ DEFINE_transient_bool(return_to_ui, false,
 
 DEFINE_bool(fullscreen, false, "Whether to launch the emulator in fullscreen.",
             "Display");
+
+DEFINE_bool(guide_button, true,
+            "Toggle the context menu with the guide button.", "UI");
 
 DEFINE_string(
     postprocess_antialiasing, "",
