@@ -2,11 +2,14 @@ package jp.xenia.emulator;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.view.Gravity;
+import android.view.View;
+import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -17,6 +20,20 @@ final class Ui {
     static final int GREEN = Color.rgb(155, 224, 107), LINE = Color.rgb(48, 61, 74);
     static int dp(Context c, float n) {
         return Math.round(n * c.getResources().getDisplayMetrics().density);
+    }
+    static void applyInsets(View root, int horizontal, int top) {
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            Context c = v.getContext();
+            android.graphics.Insets safe = insets.getInsets(WindowInsets.Type.systemBars()
+                    | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
+            boolean landscape = c.getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_LANDSCAPE;
+            int margin = dp(c, landscape ? Math.max(horizontal, 24) : horizontal);
+            int left = landscape ? Math.max(safe.left, safe.right) : safe.left;
+            int right = landscape ? left : safe.right;
+            v.setPadding(margin + left, dp(c, top) + safe.top, margin + right, safe.bottom);
+            return insets;
+        });
     }
     static GradientDrawable shape(Context c, int color, int radius) {
         GradientDrawable d = new GradientDrawable();

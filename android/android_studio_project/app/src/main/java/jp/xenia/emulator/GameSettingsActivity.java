@@ -8,7 +8,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
-import android.view.WindowInsets;
 import android.widget.*;
 import java.io.File;
 import java.util.*;
@@ -38,12 +37,7 @@ public class GameSettingsActivity extends LocalizedActivity {
         getWindow().setNavigationBarColor(Ui.BG);
         LinearLayout root = Ui.column(this);
         root.setBackgroundColor(Ui.BG);
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(bars.left + Ui.dp(this, 16), bars.top + Ui.dp(this, 8),
-                    bars.right + Ui.dp(this, 16), bars.bottom);
-            return insets;
-        });
+        Ui.applyInsets(root, 16, 8);
         setContentView(root);
         Button back = Ui.button(this,
                 "‹  " + getString(global ? R.string.global_options : R.string.game_options), false);

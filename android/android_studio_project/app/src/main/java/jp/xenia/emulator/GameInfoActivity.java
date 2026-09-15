@@ -7,7 +7,6 @@ import android.text.format.DateFormat;
 import android.text.format.Formatter;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -41,12 +40,7 @@ public class GameInfoActivity extends LocalizedActivity {
         getWindow().setNavigationBarColor(Ui.BG);
         LinearLayout root = Ui.column(this);
         root.setBackgroundColor(Ui.BG);
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(bars.left + Ui.dp(this, 20), bars.top + Ui.dp(this, 12),
-                    bars.right + Ui.dp(this, 20), bars.bottom);
-            return insets;
-        });
+        Ui.applyInsets(root, 20, 12);
         setContentView(root);
         Button back = Ui.button(this, "‹  " + getString(R.string.back_library), false);
         back.setOnClickListener(v -> finish());

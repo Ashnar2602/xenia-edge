@@ -539,6 +539,8 @@ if(ANDROID)
   set(SNAPPY_INSTALL OFF CACHE BOOL "" FORCE)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
   add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/snappy-src" snappy EXCLUDE_FROM_ALL)
+  # Xenia derives from snappy::Sink and requires its RTTI in unoptimized builds.
+  target_compile_options(snappy PRIVATE -frtti)
 else()
 # Generate snappy-stubs-public.h if missing
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/snappy/snappy-stubs-public.h")

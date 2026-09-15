@@ -86,6 +86,7 @@
 
     <string name="library">Library</string><string name="recent">Recent</string><string name="settings">Settings</string>
 
+    <string name="library_title_count" translatable="false">%1$s (%2$d)</string>
     <string name="your_games">Your games</string><string name="recent_games">Recently played</string>
 
     <string name="library_subtitle">Your Xbox 360 games, opened directly from storage.</string>

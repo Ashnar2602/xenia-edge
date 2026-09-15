@@ -11,7 +11,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowInsets;
 import android.widget.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +26,7 @@ public class LauncherActivity extends LocalizedActivity {
     private GameIcons icons;
     private SharedPreferences settings;
     private LinearLayout root, page, gameList;
-    private TextView importStatus;
+    private TextView importStatus, libraryTitle;
     private String query = "", progressText = "";
     private boolean showingSettings;
     private boolean importing, indexing;
@@ -80,12 +79,7 @@ public class LauncherActivity extends LocalizedActivity {
         getWindow().setNavigationBarColor(Ui.BG);
         root = Ui.column(this);
         root.setBackgroundColor(Ui.BG);
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(Ui.dp(this, 20) + bars.left, Ui.dp(this, 12) + bars.top,
-                    Ui.dp(this, 20) + bars.right, bars.bottom);
-            return insets;
-        });
+        Ui.applyInsets(root, 20, 12);
         setContentView(root);
         LinearLayout brand = Ui.row(this);
         ImageView logo = new ImageView(this);
@@ -122,9 +116,17 @@ public class LauncherActivity extends LocalizedActivity {
             buildLibrary();
     }
     private void buildLibrary() {
+        boolean landscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
         LinearLayout heading = Ui.row(this);
-        TextView title = Ui.text(this, getString(R.string.your_games), 24, Ui.TEXT, true);
-        heading.addView(title, new LinearLayout.LayoutParams(0, -2, 1));
+        libraryTitle = Ui.text(this, "", landscape ? 20 : 24, Ui.TEXT, true);
+        libraryTitle.setMaxLines(2);
+        libraryTitle.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        if (landscape)
+            libraryTitle.setMaxWidth(Ui.dp(this,
+                    getResources().getConfiguration().screenWidthDp / 3f));
+        heading.addView(libraryTitle,
+                new LinearLayout.LayoutParams(landscape ? -2 : 0, -2, landscape ? 0 : 1));
         Button add = Ui.button(this, getString(R.string.add_games), true);
         add.setId(R.id.library_add_games);
         add.setSingleLine(true);
@@ -149,6 +151,7 @@ public class LauncherActivity extends LocalizedActivity {
             importStatus = null;
         EditText search = new EditText(this);
         search.setSingleLine(true);
+        search.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);
         search.setTextSize(14);
         search.setTextColor(Ui.TEXT);
         search.setHintTextColor(Ui.MUTED);
@@ -171,7 +174,14 @@ public class LauncherActivity extends LocalizedActivity {
                         .setNegativeButton(android.R.string.cancel, null)
                         .show());
         searchRow.addView(sort, new LinearLayout.LayoutParams(Ui.dp(this, 48), Ui.dp(this, 48)));
-        page.addView(searchRow, Ui.space(this, 48, 14));
+        if (landscape) {
+            LinearLayout.LayoutParams searchSize =
+                    new LinearLayout.LayoutParams(0, Ui.dp(this, 48), 1);
+            searchSize.setMarginStart(Ui.dp(this, 12));
+            heading.addView(searchRow, 1, searchSize);
+        } else {
+            page.addView(searchRow, Ui.space(this, 48, 14));
+        }
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         gameList = Ui.column(this);
@@ -243,6 +253,8 @@ public class LauncherActivity extends LocalizedActivity {
             order = order.reversed();
         shown.sort(order.thenComparing(g -> g.name.toLowerCase(Locale.ROOT))
                         .thenComparing(g -> g.path));
+        libraryTitle.setText(getString(R.string.library_title_count,
+                getString(R.string.your_games), shown.size()));
         if (shown.isEmpty()) {
             LinearLayout empty = Ui.column(this);
             empty.setGravity(Gravity.CENTER);
@@ -261,11 +273,6 @@ public class LauncherActivity extends LocalizedActivity {
             gameList.addView(empty);
             return;
         }
-        gameList.addView(Ui.text(this,
-                                 getResources().getQuantityString(
-                                         R.plurals.game_count, shown.size(), shown.size()),
-                                 12, Ui.MUTED, false),
-                Ui.space(this, -2, 10));
         int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2;
         for (int i = 0; i < shown.size(); i += columns) {
             LinearLayout row = Ui.row(this);

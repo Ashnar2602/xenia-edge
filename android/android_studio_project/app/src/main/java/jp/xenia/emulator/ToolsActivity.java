@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowInsets;
 import android.widget.*;
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -41,12 +40,7 @@ public class ToolsActivity extends WindowedAppActivity {
         }
         LinearLayout root = Ui.column(this);
         root.setBackgroundColor(Ui.BG);
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
-            v.setPadding(bars.left + Ui.dp(this, 16), bars.top + Ui.dp(this, 8),
-                    bars.right + Ui.dp(this, 16), bars.bottom);
-            return insets;
-        });
+        Ui.applyInsets(root, 16, 8);
         setContentView(root);
         Button back = Ui.button(this, "‹  " + getString(R.string.back_library), false);
         back.setOnClickListener(v -> onBackPressed());
