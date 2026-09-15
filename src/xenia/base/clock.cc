@@ -170,12 +170,6 @@ void Clock::set_guest_tick_frequency(uint64_t frequency) {
   RecomputeGuestTickScalar();
 }
 
-uint64_t Clock::guest_system_time_base() { return guest_system_time_base_; }
-
-void Clock::set_guest_system_time_base(uint64_t time_base) {
-  guest_system_time_base_ = time_base;
-}
-
 uint64_t Clock::QueryGuestTickCount() {
   auto guest_tick_count = UpdateGuestClock();
   return guest_tick_count;
