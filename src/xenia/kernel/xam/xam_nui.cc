@@ -10,7 +10,6 @@
 #include "xenia/base/logging.h"
 #include "xenia/emulator.h"
 #include "xenia/kernel/guest_scheduler.h"
-#include "xenia/kernel/kernel_flags.h"
 #include "xenia/kernel/kernel_state.h"
 #include "xenia/kernel/util/shim_utils.h"
 #include "xenia/kernel/xam/xam_private.h"
@@ -362,10 +361,6 @@ dword_result_t XamShowNuiTroubleshooterUI_entry(dword_t user_index,
      - XamNuiNatalCameraUpdateComplete calls
      XamShowNuiTroubleshooterUI(0xff,0,0) if param = -0x7ff8fffe
   */
-
-  if (cvars::headless) {
-    return 0;
-  }
 
   const Emulator* emulator = kernel_state()->emulator();
   ui::Window* display_window = emulator->display_window();

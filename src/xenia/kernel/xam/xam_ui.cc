@@ -143,8 +143,8 @@ X_RESULT xeXamDispatchDialogEx(
   }
 }
 
-X_RESULT xeXamDispatchHeadless(std::function<X_RESULT()> run_callback,
-                               uint32_t overlapped) {
+X_RESULT xeXamDispatchWithoutDialog(std::function<X_RESULT()> run_callback,
+                                    uint32_t overlapped) {
   auto pre = []() {
     kernel_state()->BroadcastNotification(kXNotificationSystemUI, true);
     xe::threading::Sleep(std::chrono::milliseconds(25));
@@ -169,30 +169,6 @@ X_RESULT xeXamDispatchHeadless(std::function<X_RESULT()> run_callback,
   }
 }
 
-X_RESULT xeXamDispatchHeadlessEx(
-    std::function<X_RESULT(uint32_t&, uint32_t&)> run_callback,
-    uint32_t overlapped) {
-  auto pre = []() {
-    kernel_state()->BroadcastNotification(kXNotificationSystemUI, true);
-  };
-  auto post = []() {
-    xe::threading::Sleep(kUIDelayMillis);
-    kernel_state()->BroadcastNotification(kXNotificationSystemUI, false);
-  };
-  if (!overlapped) {
-    pre();
-    uint32_t extended_error, length;
-    auto result = run_callback(extended_error, length);
-    post();
-    // TODO(gibbed): do something with extended_error/length?
-    return result;
-  } else {
-    kernel_state()->CompleteOverlappedDeferredEx(run_callback, overlapped, pre,
-                                                 post);
-    return X_ERROR_IO_PENDING;
-  }
-}
-
 template <typename T>
 X_RESULT xeXamDispatchDialogAsync(T* dialog,
                                   std::function<void(T*)> close_callback) {
@@ -202,27 +178,6 @@ X_RESULT xeXamDispatchDialogAsync(T* dialog,
   // destroyed.
   dialog->set_close_callback([dialog, close_callback]() {
     close_callback(dialog);
-
-    kernel_state()->xam_state()->is_xam_dialog_present_.store(false);
-
-    auto run = []() -> void {
-      xe::threading::Sleep(kUIDelayMillis);
-      kernel_state()->BroadcastNotification(kXNotificationSystemUI, false);
-    };
-
-    std::thread thread(run);
-    thread.detach();
-  });
-
-  return X_ERROR_SUCCESS;
-}
-
-X_RESULT xeXamDispatchHeadlessAsync(std::function<void()> run_callback) {
-  kernel_state()->BroadcastNotification(kXNotificationSystemUI, true);
-
-  auto display_window = kernel_state()->emulator()->display_window();
-  display_window->app_context().CallInUIThread([run_callback]() {
-    run_callback();
 
     kernel_state()->xam_state()->is_xam_dialog_present_.store(false);
 
@@ -401,62 +356,52 @@ static dword_result_t XamShowMessageBoxUi(
   }
 
   X_RESULT result;
-  if (cvars::headless) {
-    // Auto-pick the focused button.
-    auto run = [result_ptr, active_button]() -> X_RESULT {
-      result_ptr->ButtonPressed = static_cast<uint32_t>(active_button);
+  switch (flags & 0xF) {
+    case XMBox_NOICON: {
+    } break;
+    case XMBox_ERRORICON: {
+    } break;
+    case XMBox_WARNINGICON: {
+    } break;
+    case XMBox_ALERTICON: {
+    } break;
+  }
+
+  if (kernel_state()->xam_state()->IsUIActive()) {
+    return X_ERROR_ACCESS_DENIED;
+  }
+
+  kernel_state()->xam_state()->is_xam_dialog_present_.store(true);
+
+  const Emulator* emulator = kernel_state()->emulator();
+  xe::ui::ImGuiDrawer* imgui_drawer = emulator->imgui_drawer();
+  xe::hid::InputSystem* input_system = emulator->input_system();
+
+  if (flags & XMBox_PASSCODEMODE || flags & XMBox_VERIFYPASSCODEMODE) {
+    auto close = [result_ptr,
+                  active_button](ui::ProfilePasscodeUI* dialog) -> X_RESULT {
+      if (dialog->SelectedSignedIn()) {
+        // Logged in
+        return X_ERROR_SUCCESS;
+      } else {
+        return X_ERROR_FUNCTION_FAILED;
+      }
+    };
+
+    result = xeXamDispatchDialog<ui::ProfilePasscodeUI>(
+        new ui::ProfilePasscodeUI(imgui_drawer, title, text, result_ptr), close,
+        overlapped);
+  } else {
+    auto close = [result_ptr](MessageBoxDialog* dialog) -> X_RESULT {
+      result_ptr->ButtonPressed = dialog->chosen_button();
+      kernel_state()->xam_state()->is_xam_dialog_present_.store(false);
       return X_ERROR_SUCCESS;
     };
 
-    result = xeXamDispatchHeadless(run, overlapped);
-  } else {
-    switch (flags & 0xF) {
-      case XMBox_NOICON: {
-      } break;
-      case XMBox_ERRORICON: {
-      } break;
-      case XMBox_WARNINGICON: {
-      } break;
-      case XMBox_ALERTICON: {
-      } break;
-    }
-
-    if (kernel_state()->xam_state()->IsUIActive()) {
-      return X_ERROR_ACCESS_DENIED;
-    }
-
-    kernel_state()->xam_state()->is_xam_dialog_present_.store(true);
-
-    const Emulator* emulator = kernel_state()->emulator();
-    xe::ui::ImGuiDrawer* imgui_drawer = emulator->imgui_drawer();
-    xe::hid::InputSystem* input_system = emulator->input_system();
-
-    if (flags & XMBox_PASSCODEMODE || flags & XMBox_VERIFYPASSCODEMODE) {
-      auto close = [result_ptr,
-                    active_button](ui::ProfilePasscodeUI* dialog) -> X_RESULT {
-        if (dialog->SelectedSignedIn()) {
-          // Logged in
-          return X_ERROR_SUCCESS;
-        } else {
-          return X_ERROR_FUNCTION_FAILED;
-        }
-      };
-
-      result = xeXamDispatchDialog<ui::ProfilePasscodeUI>(
-          new ui::ProfilePasscodeUI(imgui_drawer, title, text, result_ptr),
-          close, overlapped);
-    } else {
-      auto close = [result_ptr](MessageBoxDialog* dialog) -> X_RESULT {
-        result_ptr->ButtonPressed = dialog->chosen_button();
-        kernel_state()->xam_state()->is_xam_dialog_present_.store(false);
-        return X_ERROR_SUCCESS;
-      };
-
-      result = xeXamDispatchDialog<MessageBoxDialog>(
-          new MessageBoxDialog(imgui_drawer, input_system, title, text, buttons,
-                               static_cast<uint32_t>(active_button)),
-          close, overlapped);
-    }
+    result = xeXamDispatchDialog<MessageBoxDialog>(
+        new MessageBoxDialog(imgui_drawer, input_system, title, text, buttons,
+                             static_cast<uint32_t>(active_button)),
+        close, overlapped);
   }
 
   return result;
@@ -527,77 +472,58 @@ dword_result_t XamShowKeyboardUI_entry(
 
   assert_not_null(overlapped);
 
-  auto buffer_size = static_cast<size_t>(buffer_length) * sizeof(char16_t);
-
-  X_RESULT result;
-  if (cvars::headless) {
-    auto run = [default_text, buffer, buffer_length,
-                buffer_size]() -> X_RESULT {
-      // Redirect default_text back into the buffer.
-      if (!default_text) {
-        std::memset(buffer, 0, buffer_size);
-      } else {
-        string_util::copy_and_swap_truncating(buffer, default_text.value(),
-                                              buffer_length);
-      }
+  auto close = [buffer, buffer_length](KeyboardInputDialog* dialog,
+                                       uint32_t& extended_error,
+                                       uint32_t& length) -> X_RESULT {
+    if (dialog->cancelled()) {
+      extended_error = X_ERROR_CANCELLED;
+      length = 0;
       return X_ERROR_SUCCESS;
-    };
-    result = xeXamDispatchHeadless(run, overlapped);
-  } else {
-    auto close = [buffer, buffer_length](KeyboardInputDialog* dialog,
-                                         uint32_t& extended_error,
-                                         uint32_t& length) -> X_RESULT {
-      if (dialog->cancelled()) {
-        extended_error = X_ERROR_CANCELLED;
-        length = 0;
-        return X_ERROR_SUCCESS;
-      } else {
-        // Zero the output buffer.
-        auto text = xe::to_utf16(dialog->text());
-        string_util::copy_and_swap_truncating(buffer, text, buffer_length);
-        extended_error = X_ERROR_SUCCESS;
-        length = 0;
-        return X_ERROR_SUCCESS;
-      }
-    };
-
-    if (kernel_state()->xam_state()->IsUIActive()) {
-      return X_ERROR_ACCESS_DENIED;
+    } else {
+      // Zero the output buffer.
+      auto text = xe::to_utf16(dialog->text());
+      string_util::copy_and_swap_truncating(buffer, text, buffer_length);
+      extended_error = X_ERROR_SUCCESS;
+      length = 0;
+      return X_ERROR_SUCCESS;
     }
+  };
 
-    kernel_state()->xam_state()->is_xam_dialog_present_.store(true);
-
-    const Emulator* emulator = kernel_state()->emulator();
-    xe::ui::ImGuiDrawer* imgui_drawer = emulator->imgui_drawer();
-    xe::hid::InputSystem* input_system = emulator->input_system();
-
-    std::string title_str = title ? xe::to_utf8(title.value()) : "";
-    std::string desc_str = description ? xe::to_utf8(description.value()) : "";
-    std::string def_text_str =
-        default_text ? xe::to_utf8(default_text.value()) : "";
-
-    // If no default text provided, use the user's gamertag
-    if (def_text_str.empty()) {
-      auto profile_manager = kernel_state()->xam_state()->profile_manager();
-      if (profile_manager) {
-        // Try the specified user_index first, fall back to slot 0
-        auto profile =
-            profile_manager->GetProfile(static_cast<uint8_t>(user_index));
-        if (!profile) {
-          profile = profile_manager->GetProfile(static_cast<uint8_t>(0));
-        }
-        if (profile) {
-          def_text_str = profile->name();
-        }
-      }
-    }
-
-    result = xeXamDispatchDialogEx<KeyboardInputDialog>(
-        new KeyboardInputDialog(imgui_drawer, input_system, title_str, desc_str,
-                                def_text_str, buffer_length),
-        close, overlapped);
+  if (kernel_state()->xam_state()->IsUIActive()) {
+    return X_ERROR_ACCESS_DENIED;
   }
-  return result;
+
+  kernel_state()->xam_state()->is_xam_dialog_present_.store(true);
+
+  const Emulator* emulator = kernel_state()->emulator();
+  xe::ui::ImGuiDrawer* imgui_drawer = emulator->imgui_drawer();
+  xe::hid::InputSystem* input_system = emulator->input_system();
+
+  std::string title_str = title ? xe::to_utf8(title.value()) : "";
+  std::string desc_str = description ? xe::to_utf8(description.value()) : "";
+  std::string def_text_str =
+      default_text ? xe::to_utf8(default_text.value()) : "";
+
+  // If no default text provided, use the user's gamertag
+  if (def_text_str.empty()) {
+    auto profile_manager = kernel_state()->xam_state()->profile_manager();
+    if (profile_manager) {
+      // Try the specified user_index first, fall back to slot 0
+      auto profile =
+          profile_manager->GetProfile(static_cast<uint8_t>(user_index));
+      if (!profile) {
+        profile = profile_manager->GetProfile(static_cast<uint8_t>(0));
+      }
+      if (profile) {
+        def_text_str = profile->name();
+      }
+    }
+  }
+
+  return xeXamDispatchDialogEx<KeyboardInputDialog>(
+      new KeyboardInputDialog(imgui_drawer, input_system, title_str, desc_str,
+                              def_text_str, buffer_length),
+      close, overlapped);
 }
 DECLARE_XAM_EXPORT1(XamShowKeyboardUI, kUI, kImplemented);
 
@@ -617,9 +543,9 @@ dword_result_t XamShowDeviceSelectorUI_entry(
 
   std::vector<const DummyDeviceInfo*> devices = ListStorageDevices();
 
-  if (cvars::headless || !cvars::storage_selection_dialog) {
-    // Default to the first storage device (HDD) if headless.
-    return xeXamDispatchHeadless(
+  if (!cvars::storage_selection_dialog) {
+    // Default to the first storage device (HDD).
+    return xeXamDispatchWithoutDialog(
         [device_id_ptr, devices]() -> X_RESULT {
           if (devices.empty()) {
             return X_ERROR_CANCELLED;
@@ -671,12 +597,6 @@ void XamShowDirtyDiscErrorUI_entry(dword_t user_index,
                                    const ppc_context_t& context) {
   XELOGE("XamShowDirtyDiscErrorUI: title reported a disc read error, lr {:08X}",
          uint32_t(context->lr));
-
-  if (cvars::headless) {
-    assert_always();
-    kernel_state()->TerminateTitle();
-    return;
-  }
 
   std::string title = "Disc Read Error";
   std::string desc =
@@ -742,10 +662,6 @@ dword_result_t XamShowMarketplaceUIEx_entry(dword_t user_index, dword_t ui_type,
 
   if (!kernel_state()->xam_state()->IsUserSignedIn(user_index)) {
     return X_ERROR_NO_SUCH_USER;
-  }
-
-  if (cvars::headless) {
-    return xeXamDispatchHeadlessAsync([]() {});
   }
 
   if (kernel_state()->xam_state()->IsUIActive()) {
@@ -892,17 +808,6 @@ dword_result_t XamShowMarketplaceDownloadItemsUI_entry(
     return X_ERROR_NO_SUCH_USER;
   }
 
-  if (cvars::headless) {
-    return xeXamDispatchHeadless(
-        [hresult_ptr]() -> X_RESULT {
-          if (hresult_ptr) {
-            *hresult_ptr = X_E_SUCCESS;
-          }
-          return X_ERROR_SUCCESS;
-        },
-        overlapped);
-  }
-
   if (kernel_state()->xam_state()->IsUIActive()) {
     return X_ERROR_ACCESS_DENIED;
   }
@@ -1045,24 +950,6 @@ X_RESULT xeXamShowSigninUI(uint32_t user_index, uint32_t users_needed,
     return X_ERROR_INVALID_PARAMETER;
   }
 
-  if (cvars::headless) {
-    return xeXamDispatchHeadlessAsync([users_needed]() {
-      std::map<uint8_t, uint64_t> xuids;
-
-      for (uint32_t i = 0; i < XUserMaxUserCount; i++) {
-        UserProfile* profile = kernel_state()->xam_state()->GetUserProfile(i);
-        if (profile) {
-          xuids[i] = profile->xuid();
-          if (xuids.size() >= users_needed) {
-            break;
-          }
-        }
-      }
-
-      kernel_state()->xam_state()->profile_manager()->LoginMultiple(xuids);
-    });
-  }
-
   if (kernel_state()->xam_state()->IsUIActive()) {
     return X_ERROR_ACCESS_DENIED;
   }
@@ -1084,10 +971,6 @@ X_RESULT xeXamShowCreateProfileUIEx(uint32_t user_index, dword_t flag,
                                     char* unkn2_ptr) {
   Emulator* emulator = kernel_state()->emulator();
   xe::ui::ImGuiDrawer* imgui_drawer = emulator->imgui_drawer();
-
-  if (cvars::headless) {
-    return X_ERROR_SUCCESS;
-  }
 
   if (kernel_state()->xam_state()->IsUIActive()) {
     return X_ERROR_ACCESS_DENIED;
