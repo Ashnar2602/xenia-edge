@@ -212,6 +212,13 @@ class XFile : public XObject {
   object_ref<XEvent> AcquireIoEvent();
   void ReleaseIoEvent(object_ref<XEvent> event);
 
+  // Books this read on the medium and returns when it would be delivered, or
+  // 0 for a read this does not model.
+  uint64_t ReserveDriveTime(uint64_t byte_offset, uint32_t length);
+
+  // Holds the request open until |deadline_ms| by parking the calling fiber.
+  void AwaitDriveTime(uint64_t deadline_ms);
+
   // Bodies run on an I/O worker via RunSynchronousIo. All take file_lock_
   // themselves except ReadInternal, which runs under one its caller holds.
   X_STATUS ReadInternal(uint32_t buffer_guest_address, uint32_t buffer_length,

@@ -11,29 +11,17 @@
 #include "xenia/vfs/virtual_file_system.h"
 
 #include "xenia/base/byte_stream.h"
-#include "xenia/base/cvar.h"
+#include "xenia/base/clock.h"
 #include "xenia/base/logging.h"
 #include "xenia/base/threading.h"
 #include "xenia/kernel/guest_scheduler.h"
 #include "xenia/kernel/kernel_state.h"
-
-DEFINE_int32(file_read_delay_ms, 0,
-             "Diagnostic: sleep this many milliseconds before each file read, "
-             "to approximate disc seek and read time.",
-             "Kernel");
+#include "xenia/kernel/xthread.h"
 
 namespace xe {
 namespace kernel {
 
 namespace {
-// Called inside the blocking host call, so only the thread waiting on the read
-// stalls.
-void DelayFileRead() {
-  if (cvars::file_read_delay_ms > 0) {
-    threading::Sleep(std::chrono::milliseconds(cvars::file_read_delay_ms));
-  }
-}
-
 // What the I/O manager waits with for a title's synchronous request.
 constexpr uint32_t kWaitReasonExecutive = 0;
 constexpr uint32_t kUserMode = 1;
@@ -205,13 +193,15 @@ X_STATUS XFile::Read(uint32_t buffer_guest_address, uint32_t buffer_length,
                      uint32_t apc_context, bool notify_completion) {
   // file_lock_ is taken inside the closure, on an I/O worker, so it is never
   // held while the calling fiber waits.
+  // Booked before the offload, so requests queue in the order they are issued.
+  const uint64_t deadline_ms = ReserveDriveTime(byte_offset, buffer_length);
   X_STATUS result = X_STATUS_SUCCESS;
   RunSynchronousIo([&]() {
-    DelayFileRead();
     std::lock_guard<std::mutex> lock(file_lock_);
     result = ReadInternal(buffer_guest_address, buffer_length, byte_offset,
                           out_bytes_read, apc_context, notify_completion);
   });
+  AwaitDriveTime(deadline_ms);
   return result;
 }
 
@@ -307,17 +297,64 @@ void XFile::PostIo(std::function<void()> fn) {
                                                   io_call_class());
 }
 
+uint64_t XFile::ReserveDriveTime(uint64_t byte_offset, uint32_t length) {
+  // An async completion runs on a shared I/O worker, which must not block.
+  if (GuestScheduler::CurrentThreadIsBlockingCallWorker()) {
+    return 0;
+  }
+  // A caller holding the global lock cannot release it to wait.
+  if (xe::global_critical_region::is_held_by_current_thread()) {
+    return 0;
+  }
+  // Neither of these reaches the medium, and both are common size probes.
+  if (!length) {
+    return 0;
+  }
+  const uint64_t offset =
+      byte_offset == uint64_t(-1) ? position_.load() : byte_offset;
+  if (offset >= file_->entry()->size()) {
+    return 0;
+  }
+  return device()->drive_timing().Reserve(length);
+}
+
+void XFile::AwaitDriveTime(uint64_t deadline_ms) {
+  if (!deadline_ms) {
+    return;
+  }
+  // Null off a fiber, and GetCurrentThread would assert there.
+  XThread* self = XThread::GetCurrentFiberThread();
+  if (!self) {
+    // Without fibers this is the guest thread, so blocking it is faithful.
+    const uint64_t now = Clock::QueryHostUptimeMillis();
+    if (now < deadline_ms) {
+      threading::Sleep(std::chrono::milliseconds(deadline_ms - now));
+    }
+    return;
+  }
+  // The deadline is host time, so it must not pass through a guest-duration
+  // API like XThread::Delay, which scales by the guest time scalar.
+  auto* scheduler = kernel_state()->guest_scheduler();
+  self->set_cooperative_wait_shape(XThread::CooperativeWaitKind::kDelay,
+                                   nullptr, 0);
+  while (Clock::QueryHostUptimeMillis() < deadline_ms) {
+    scheduler->BlockCurrentThread(deadline_ms, 0, false);
+  }
+  self->clear_cooperative_wait_shape();
+}
+
 X_STATUS XFile::ReadScatter(uint32_t segments_guest_address, uint32_t length,
                             uint64_t byte_offset, uint32_t* out_bytes_read,
                             uint32_t apc_context, bool notify_completion) {
   // The whole loop as one request, so the fiber waits once.
+  const uint64_t deadline_ms = ReserveDriveTime(byte_offset, length);
   X_STATUS result = X_STATUS_SUCCESS;
   RunSynchronousIo([&]() {
-    DelayFileRead();
     result =
         ReadScatterInternal(segments_guest_address, length, byte_offset,
                             out_bytes_read, apc_context, notify_completion);
   });
+  AwaitDriveTime(deadline_ms);
   return result;
 }
 

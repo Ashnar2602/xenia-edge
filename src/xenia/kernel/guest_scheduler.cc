@@ -51,6 +51,10 @@ namespace kernel {
 // non-dispatch thread. Set by each CPU's RunLoop.
 static thread_local int t_current_cpu = -1;
 
+// Set while a shared I/O worker is inside a queued call, so code reached from
+// it can tell it is not on a guest thread.
+static thread_local bool t_in_blocking_call = false;
+
 // Raises |target| to |value| if larger. A racing stats reset drops one sample.
 static void AccumulateMax(std::atomic<uint64_t>& target, uint64_t value) {
   uint64_t prev = target.load(std::memory_order_relaxed);
@@ -1132,9 +1136,15 @@ bool GuestScheduler::EnqueueBlockingCall(BlockingCall* call,
   return true;
 }
 
+bool GuestScheduler::CurrentThreadIsBlockingCallWorker() {
+  return t_in_blocking_call;
+}
+
 void GuestScheduler::RunBlockingCall(BlockingCall* call) {
   uint64_t started = Clock::host_tick_count_raw();
+  t_in_blocking_call = true;
   call->fn();
+  t_in_blocking_call = false;
   uint64_t finished = Clock::host_tick_count_raw();
   // Raw ticks, converted only at report time.
   uint64_t queued_for = started - call->queued_ns;

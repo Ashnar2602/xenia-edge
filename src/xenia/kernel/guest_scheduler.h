@@ -105,6 +105,10 @@ class GuestScheduler {
   // host call would stall other fibers and should be offloaded instead.
   static bool CurrentThreadOffloadsBlockingCalls();
 
+  // True inside a call posted by PostHostCall, so on a shared I/O worker
+  // rather than a guest thread.
+  static bool CurrentThreadIsBlockingCallWorker();
+
   // Dispatch thread index a guest CPU maps to, for co-residency checks.
   int DispatchCpuOf(uint8_t guest_cpu) const;
 
