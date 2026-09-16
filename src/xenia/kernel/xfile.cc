@@ -11,16 +11,40 @@
 #include "xenia/vfs/virtual_file_system.h"
 
 #include "xenia/base/byte_stream.h"
+#include "xenia/base/cvar.h"
+#include "xenia/base/logging.h"
+#include "xenia/base/threading.h"
 #include "xenia/kernel/guest_scheduler.h"
 #include "xenia/kernel/kernel_state.h"
+
+DEFINE_int32(file_read_delay_ms, 0,
+             "Diagnostic: sleep this many milliseconds before each file read, "
+             "to approximate disc seek and read time.",
+             "Kernel");
 
 namespace xe {
 namespace kernel {
 
-XFile::XFile(KernelState* kernel_state, vfs::File* file, bool synchronous)
+namespace {
+// Called inside the blocking host call, so only the thread waiting on the read
+// stalls.
+void DelayFileRead() {
+  if (cvars::file_read_delay_ms > 0) {
+    threading::Sleep(std::chrono::milliseconds(cvars::file_read_delay_ms));
+  }
+}
+
+// What the I/O manager waits with for a title's synchronous request.
+constexpr uint32_t kWaitReasonExecutive = 0;
+constexpr uint32_t kUserMode = 1;
+}  // namespace
+
+XFile::XFile(KernelState* kernel_state, vfs::File* file, bool synchronous,
+             bool alertable)
     : XObject(kernel_state, kObjectType),
       file_(file),
-      is_synchronous_(synchronous) {
+      is_synchronous_(synchronous),
+      is_alertable_(alertable) {
   async_event_ = threading::Event::CreateAutoResetEvent(false);
   assert_not_null(async_event_);
 }
@@ -34,12 +58,76 @@ XFile::~XFile() {
   // TODO(benvanik): signal that the file is closing?
   async_event_->Set();
   file_->Destroy();
+  // A worker still signaling one holds a reference; a table reset may have
+  // taken the handles already.
+  for (auto& event : idle_io_events_) {
+    if (!event->handles().empty()) {
+      event->ReleaseHandle();
+    }
+  }
 }
 
 GuestScheduler::BlockingCallClass XFile::io_call_class() const {
   return device()->supports_concurrent_io()
              ? GuestScheduler::BlockingCallClass::kConcurrent
              : GuestScheduler::BlockingCallClass::kSerial;
+}
+
+void XFile::RunSynchronousIo(const std::function<void()>& fn) {
+  auto* scheduler = kernel_state()->guest_scheduler();
+  if (!GuestScheduler::CurrentThreadOffloadsBlockingCalls()) {
+    fn();
+    return;
+  }
+  auto event = AcquireIoEvent();
+  // The worker writes into this frame, so only |done| may end the wait, and a
+  // terminate must not end it either.
+  std::atomic<bool> done{false};
+  scheduler->PostHostCall(
+      [&fn, &done, signal = retain_object(event.get())]() {
+        fn();
+        done.store(true, std::memory_order_release);
+        signal->Set(kIoDiskIncrement, false);
+      },
+      io_call_class());
+  uint32_t alertable = is_alertable_ ? 1 : 0;
+  while (!done.load(std::memory_order_acquire)) {
+    X_STATUS status =
+        event->Wait(kWaitReasonExecutive, kUserMode, alertable, nullptr, false);
+    if (status == X_STATUS_USER_APC) {
+      // An alert cannot cancel the host request. The APCs run at the next
+      // alertable wait, after the caller writes its status block.
+      alertable = 0;
+    } else if (status != X_STATUS_SUCCESS) {
+      // A failed poll does not wait, so give up the CPU instead of spinning.
+      XELOGW("XFile: I/O wait on {} returned {:08X}", name(), status);
+      scheduler->YieldCurrentThread(false);
+    }
+  }
+  ReleaseIoEvent(std::move(event));
+}
+
+object_ref<XEvent> XFile::AcquireIoEvent() {
+  {
+    std::lock_guard<std::mutex> lock(io_event_lock_);
+    if (!idle_io_events_.empty()) {
+      auto event = std::move(idle_io_events_.back());
+      idle_io_events_.pop_back();
+      return event;
+    }
+  }
+  auto event = object_ref<XEvent>(new XEvent(kernel_state(), true));
+  event->Initialize(false, false);
+  // One signal per request would crowd the guest signals out of the ring.
+  event->set_signal_ring_quiet(true);
+  return event;
+}
+
+void XFile::ReleaseIoEvent(object_ref<XEvent> event) {
+  // The completion can land after |done|, leaving it armed for the next user.
+  event->Reset();
+  std::lock_guard<std::mutex> lock(io_event_lock_);
+  idle_io_events_.push_back(std::move(event));
 }
 
 uint64_t XFile::position() const { return position_.load(); }
@@ -51,11 +139,9 @@ X_STATUS XFile::QueryDirectory(X_FILE_DIRECTORY_INFORMATION* out_info,
                                bool restart) {
   // An I/O worker may already hold file_lock_ for a slow read.
   X_STATUS result = X_STATUS_SUCCESS;
-  kernel_state()->guest_scheduler()->RunBlockingHostCall(
-      [&]() {
-        result = QueryDirectoryInternal(out_info, length, file_name, restart);
-      },
-      io_call_class());
+  RunSynchronousIo([&]() {
+    result = QueryDirectoryInternal(out_info, length, file_name, restart);
+  });
   return result;
 }
 
@@ -118,15 +204,14 @@ X_STATUS XFile::Read(uint32_t buffer_guest_address, uint32_t buffer_length,
                      uint64_t byte_offset, uint32_t* out_bytes_read,
                      uint32_t apc_context, bool notify_completion) {
   // file_lock_ is taken inside the closure, on an I/O worker, so it is never
-  // held while the calling fiber is parked.
+  // held while the calling fiber waits.
   X_STATUS result = X_STATUS_SUCCESS;
-  kernel_state()->guest_scheduler()->RunBlockingHostCall(
-      [&]() {
-        std::lock_guard<std::mutex> lock(file_lock_);
-        result = ReadInternal(buffer_guest_address, buffer_length, byte_offset,
-                              out_bytes_read, apc_context, notify_completion);
-      },
-      io_call_class());
+  RunSynchronousIo([&]() {
+    DelayFileRead();
+    std::lock_guard<std::mutex> lock(file_lock_);
+    result = ReadInternal(buffer_guest_address, buffer_length, byte_offset,
+                          out_bytes_read, apc_context, notify_completion);
+  });
   return result;
 }
 
@@ -225,15 +310,14 @@ void XFile::PostIo(std::function<void()> fn) {
 X_STATUS XFile::ReadScatter(uint32_t segments_guest_address, uint32_t length,
                             uint64_t byte_offset, uint32_t* out_bytes_read,
                             uint32_t apc_context, bool notify_completion) {
-  // The whole loop as one unit, so the fiber parks once.
+  // The whole loop as one request, so the fiber waits once.
   X_STATUS result = X_STATUS_SUCCESS;
-  kernel_state()->guest_scheduler()->RunBlockingHostCall(
-      [&]() {
-        result =
-            ReadScatterInternal(segments_guest_address, length, byte_offset,
-                                out_bytes_read, apc_context, notify_completion);
-      },
-      io_call_class());
+  RunSynchronousIo([&]() {
+    DelayFileRead();
+    result =
+        ReadScatterInternal(segments_guest_address, length, byte_offset,
+                            out_bytes_read, apc_context, notify_completion);
+  });
   return result;
 }
 
@@ -296,12 +380,10 @@ X_STATUS XFile::Write(uint32_t buffer_guest_address, uint32_t buffer_length,
                       uint64_t byte_offset, uint32_t* out_bytes_written,
                       uint32_t apc_context) {
   X_STATUS result = X_STATUS_SUCCESS;
-  kernel_state()->guest_scheduler()->RunBlockingHostCall(
-      [&]() {
-        result = WriteInternal(buffer_guest_address, buffer_length, byte_offset,
-                               out_bytes_written, apc_context);
-      },
-      io_call_class());
+  RunSynchronousIo([&]() {
+    result = WriteInternal(buffer_guest_address, buffer_length, byte_offset,
+                           out_bytes_written, apc_context);
+  });
   return result;
 }
 
@@ -334,12 +416,10 @@ X_STATUS XFile::WriteInternal(uint32_t buffer_guest_address,
 
 X_STATUS XFile::SetLength(size_t length) {
   X_STATUS result = X_STATUS_SUCCESS;
-  kernel_state()->guest_scheduler()->RunBlockingHostCall(
-      [&]() {
-        std::lock_guard<std::mutex> lock(file_lock_);
-        result = file_->SetLength(length);
-      },
-      io_call_class());
+  RunSynchronousIo([&]() {
+    std::lock_guard<std::mutex> lock(file_lock_);
+    result = file_->SetLength(length);
+  });
   return result;
 }
 X_STATUS XFile::Rename(const std::filesystem::path file_path) {

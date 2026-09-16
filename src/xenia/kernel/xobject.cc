@@ -251,7 +251,8 @@ void WaitExit(X_KTHREAD* kthread, X_STATUS result) {
 template <typename PollFn>
 X_STATUS CooperativeWait(GuestScheduler* scheduler, XThread* self,
                          X_KTHREAD* kthread, XObject* wait_object,
-                         bool alertable, uint64_t deadline_ms, PollFn&& poll) {
+                         bool alertable, uint64_t deadline_ms, PollFn&& poll,
+                         bool interruptible = true) {
   while (true) {
     // Alertable waits return on a queued user APC (the cooperative equivalent
     // of a host alertable-wait wake), then the caller runs xeProcessUserApcs.
@@ -279,7 +280,8 @@ X_STATUS CooperativeWait(GuestScheduler* scheduler, XThread* self,
       WaitExit(self, kthread, X_STATUS_TIMEOUT);
       return X_STATUS_TIMEOUT;
     }
-    scheduler->BlockCurrentThread(deadline_ms, wait_epoch, alertable);
+    scheduler->BlockCurrentThread(deadline_ms, wait_epoch, alertable,
+                                  interruptible);
   }
 }
 
@@ -362,11 +364,16 @@ uint64_t g_signal_ring_seq = 0;
 }  // namespace
 
 void XObject::RecordCooperativeSignal(XObject* object) {
+  if (object->signal_ring_quiet_) {
+    return;
+  }
   SignalRecord rec = {};
-  rec.handle = object->handle();
+  // A signal can trail the handle's removal.
+  rec.handle = object->handles().empty() ? 0 : object->handle();
   rec.type = static_cast<uint8_t>(object->type());
   rec.uptime_ms = uint32_t(Clock::QueryGuestUptimeMillis());
-  if (auto* thread = XThread::GetCurrentThread()) {
+  if (XThread::IsInThread()) {
+    auto* thread = XThread::GetCurrentThread();
     rec.signaler_thread = thread->handle();
     if (auto* state = thread->thread_state()) {
       rec.signaler_lr = uint32_t(state->context()->lr);
@@ -441,7 +448,8 @@ xe::threading::WaitHandle* XObject::GetWaitHandleForCurrentThread(size_t slot) {
 }
 
 X_STATUS XObject::Wait(uint32_t wait_reason, uint32_t processor_mode,
-                       uint32_t alertable, uint64_t* opt_timeout) {
+                       uint32_t alertable, uint64_t* opt_timeout,
+                       bool interruptible) {
   auto wait_handle = GetWaitHandleForCurrentThread(0);
   if (!wait_handle) {
     // Object doesn't support waiting.
@@ -500,7 +508,8 @@ X_STATUS XObject::Wait(uint32_t wait_reason, uint32_t processor_mode,
             case xe::threading::WaitResult::kFailed:
               return X_STATUS_ABANDONED_WAIT_0;
           }
-        });
+        },
+        interruptible);
     LeaveCooperativeWait(self);
     return status;
   }
