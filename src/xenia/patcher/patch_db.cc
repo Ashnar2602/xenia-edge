@@ -9,6 +9,7 @@
 #include "xenia/patcher/patch_db.h"
 
 #include <algorithm>
+#include <regex>
 #include <unordered_map>
 
 #include "xenia/base/cvar.h"
@@ -26,6 +27,31 @@ DEFINE_bool(apply_patches, true, "Enables custom patching functionality",
 namespace xe {
 namespace patcher {
 
+namespace {
+
+const std::regex kPatchFilenameRegex("^[A-Fa-f0-9]{8}.*\\.patch\\.toml$");
+
+// Hands every readable .patch.toml in dir to visit as (filename, contents).
+template <typename Fn>
+void ForEachPatchFileInDir(const std::filesystem::path& dir, Fn&& visit) {
+  if (!std::filesystem::exists(dir) || !std::filesystem::is_directory(dir)) {
+    return;
+  }
+  for (const auto& fi : xe::filesystem::ListFiles(dir)) {
+    std::string filename = xe::path_to_utf8(fi.name);
+    if (!std::regex_match(filename, kPatchFilenameRegex)) {
+      continue;
+    }
+    std::string contents = xe::filesystem::ReadAllText(fi.path / fi.name);
+    if (contents.empty()) {
+      continue;
+    }
+    visit(std::move(filename), std::move(contents));
+  }
+}
+
+}  // namespace
+
 PatchDB::PatchDB(std::filesystem::path patches_dir)
     : patches_dir_(std::move(patches_dir)) {}
 
@@ -37,26 +63,14 @@ void PatchDB::LoadPatches() {
     return;
   }
 
-  if (!std::filesystem::exists(patches_dir_) ||
-      !std::filesystem::is_directory(patches_dir_)) {
-    return;
-  }
-
-  for (const auto& fi : xe::filesystem::ListFiles(patches_dir_)) {
-    std::string filename = xe::path_to_utf8(fi.name);
-    if (!std::regex_match(filename, patch_filename_regex_)) {
-      continue;
-    }
-    std::string contents = xe::filesystem::ReadAllText(fi.path / fi.name);
-    if (contents.empty()) {
-      continue;
-    }
-    PatchFileEntry loaded = ReadPatchFromString(filename, contents);
-    if (loaded.title_id != -1) {
-      loaded.filename = std::move(filename);
-      loaded_patches_.push_back(std::move(loaded));
-    }
-  }
+  ForEachPatchFileInDir(
+      patches_dir_, [this](std::string filename, std::string contents) {
+        PatchFileEntry loaded = ReadPatchFromString(filename, contents);
+        if (loaded.title_id != -1) {
+          loaded.filename = std::move(filename);
+          loaded_patches_.push_back(std::move(loaded));
+        }
+      });
   XELOGI("PatchDB: Loaded patches for {} titles", loaded_patches_.size());
 }
 
@@ -297,7 +311,7 @@ namespace {
 // Decompresses + parses the embedded bundle once and indexes by title_id.
 // The bundle is compiled in and immutable, so the cache lives forever.
 struct BundledIndex {
-  std::vector<BundledPatchFile> all;
+  std::vector<PatchSourceFile> all;
   std::unordered_map<uint32_t, std::vector<size_t>> by_title;
 };
 
@@ -320,14 +334,14 @@ const BundledIndex& GetBundledIndex() {
       if (entry.title_id == static_cast<uint32_t>(-1)) {
         return;
       }
-      BundledPatchFile bpf;
-      bpf.filename = std::move(filename);
-      bpf.toml_content = std::string(data);
-      bpf.entry = std::move(entry);
-      idx.all.push_back(std::move(bpf));
+      PatchSourceFile file;
+      file.filename = std::move(filename);
+      file.toml_content = std::string(data);
+      file.entry = std::move(entry);
+      idx.all.push_back(std::move(file));
     });
     std::sort(idx.all.begin(), idx.all.end(),
-              [](const BundledPatchFile& a, const BundledPatchFile& b) {
+              [](const PatchSourceFile& a, const PatchSourceFile& b) {
                 return a.filename < b.filename;
               });
     for (size_t i = 0; i < idx.all.size(); ++i) {
@@ -340,9 +354,9 @@ const BundledIndex& GetBundledIndex() {
 
 }  // namespace
 
-std::vector<BundledPatchFile> EnumerateBundledPatchesForTitle(
+std::vector<PatchSourceFile> EnumerateBundledPatchesForTitle(
     uint32_t title_id) {
-  std::vector<BundledPatchFile> out;
+  std::vector<PatchSourceFile> out;
   if (title_id == 0) {
     return out;
   }
@@ -358,7 +372,34 @@ std::vector<BundledPatchFile> EnumerateBundledPatchesForTitle(
   return out;
 }
 
-std::string BundledPatchDisplayName(const BundledPatchFile& file) {
+std::vector<PatchSourceFile> EnumerateLocalPatchesForTitle(
+    const std::filesystem::path& patches_dir, uint32_t title_id) {
+  std::vector<PatchSourceFile> out;
+  if (title_id == 0) {
+    return out;
+  }
+  // The title id inside the file decides ownership, not the filename prefix.
+  PatchDB scratch{std::filesystem::path()};
+  ForEachPatchFileInDir(
+      patches_dir, [&](std::string filename, std::string contents) {
+        PatchFileEntry entry = scratch.ReadPatchFromString(filename, contents);
+        if (entry.title_id != title_id) {
+          return;
+        }
+        PatchSourceFile file;
+        file.filename = std::move(filename);
+        file.toml_content = std::move(contents);
+        file.entry = std::move(entry);
+        out.push_back(std::move(file));
+      });
+  std::sort(out.begin(), out.end(),
+            [](const PatchSourceFile& a, const PatchSourceFile& b) {
+              return a.filename < b.filename;
+            });
+  return out;
+}
+
+std::string PatchDisplayName(const PatchSourceFile& file) {
   std::string display = file.filename;
   if (auto dash = display.find(" - "); dash != std::string::npos) {
     display = display.substr(dash + 3);

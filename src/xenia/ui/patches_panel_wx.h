@@ -31,12 +31,12 @@ namespace app {
 
 class EmulatorWindow;
 
-// Checkbox per patch in one bundled .patch.toml, writing each toggle straight
-// through to the file. Unscrolled: the host provides the scrolling.
+// Checkbox per patch in one .patch.toml, writing each toggle straight through
+// to the file. Unscrolled: the host provides the scrolling.
 class PatchesPanel : public wxPanel {
  public:
   PatchesPanel(wxWindow* parent, EmulatorWindow* emulator_window,
-               patcher::BundledPatchFile bundled);
+               patcher::PatchSourceFile file);
 
   // Fired when re-wrapping changes the panel's height, so a scrolling host
   // can re-measure.
