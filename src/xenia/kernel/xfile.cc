@@ -315,7 +315,7 @@ uint64_t XFile::ReserveDriveTime(uint64_t byte_offset, uint32_t length) {
   if (offset >= file_->entry()->size()) {
     return 0;
   }
-  return device()->drive_timing().Reserve(length);
+  return device()->drive_timing().Reserve(file_->entry(), offset, length);
 }
 
 void XFile::AwaitDriveTime(uint64_t deadline_ms) {

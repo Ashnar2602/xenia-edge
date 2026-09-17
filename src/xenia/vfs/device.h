@@ -23,21 +23,23 @@ namespace vfs {
 
 // Models the time storage needs to service a request, since a completion that
 // lands sooner than hardware could deliver it breaks some titles' loaders.
-// A request costs a fixed charge plus its transfer, and nothing for position.
+// A request costs its transfer, plus a seek unless it continues the last one.
 class DriveTiming {
  public:
   // Enables the model, which is inert on a device that never calls this.
   void Configure();
 
-  // Reserves the medium for one request, returning the host uptime millisecond
-  // it would be delivered at, or 0 when unconfigured. The caller does the wait.
-  uint64_t Reserve(size_t length);
+  // Returns the host uptime millisecond it completes at, or 0 when untimed.
+  uint64_t Reserve(const Entry* entry, uint64_t offset, size_t length);
 
  private:
   bool enabled_ = false;
   std::mutex lock_;
-  // When the medium finishes everything already reserved.
-  uint64_t free_at_ms_ = 0;
+  // When the medium frees up, fractional so short transfers accumulate.
+  double free_at_ms_ = 0.0;
+  // Where the previous request ended.
+  const Entry* head_entry_ = nullptr;
+  uint64_t head_offset_ = 0;
 };
 
 class Device {
