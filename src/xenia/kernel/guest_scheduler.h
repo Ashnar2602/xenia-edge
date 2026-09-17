@@ -95,27 +95,19 @@ class GuestScheduler {
     kConcurrent,
   };
 
-  // Runs |fn|, a blocking host call such as a disc read, without stalling the
-  // dispatch thread. On a fiber it hands |fn| to an I/O worker and parks until
-  // it finishes, otherwise it runs inline. kSerial calls share one worker,
-  // kConcurrent calls go to a pool so one slow call cannot hold up the rest.
-  template <typename Fn>
-  void RunBlockingHostCall(
-      Fn&& fn, BlockingCallClass call_class = BlockingCallClass::kSerial) {
-    if (!CurrentThreadOffloadsBlockingCalls()) {
-      fn();
-      return;
-    }
-    RunBlockingHostCallOffloaded(std::function<void()>(std::forward<Fn>(fn)),
-                                 call_class);
-  }
-
-  // Runs |fn| on an I/O worker without parking the caller.
+  // Runs |fn|, a blocking host call such as a disc read, on an I/O worker
+  // without waiting. kSerial calls share one worker, kConcurrent calls go to a
+  // pool so one slow call cannot hold up the rest. Runs inline once shutdown
+  // has begun.
   void PostHostCall(std::function<void()> fn, BlockingCallClass call_class);
 
   // True when the calling thread is a scheduler-managed fiber, so a blocking
   // host call would stall other fibers and should be offloaded instead.
   static bool CurrentThreadOffloadsBlockingCalls();
+
+  // True inside a call posted by PostHostCall, so on a shared I/O worker
+  // rather than a guest thread.
+  static bool CurrentThreadIsBlockingCallWorker();
 
   // Dispatch thread index a guest CPU maps to, for co-residency checks.
   int DispatchCpuOf(uint8_t guest_cpu) const;
@@ -274,10 +266,7 @@ class GuestScheduler {
   // slice, since a dispatch thread cannot tick while it runs a fiber.
   void WatchdogLoop();
   struct BlockingCall;
-  // Offload path of RunBlockingHostCall: queue to an I/O worker and park.
-  void RunBlockingHostCallOffloaded(const std::function<void()>& fn,
-                                    BlockingCallClass call_class);
-  // False for a posted call once shutdown has begun.
+  // False once shutdown has begun.
   bool EnqueueBlockingCall(BlockingCall* call, BlockingCallClass call_class);
   // Lazily starts the serial I/O worker on the first kSerial offload.
   void EnsureIoWorker();
@@ -287,12 +276,8 @@ class GuestScheduler {
   // Caller holds io_pool_lock_.
   void StartPoolWorkerLocked();
   void IoPoolWorkerLoop();
-  // Runs one queued call, accumulates its counters and wakes the caller.
+  // Runs one queued call, accumulates its counters and frees it.
   void RunBlockingCall(BlockingCall* call);
-  // WakeAll narrowed to one CPU, for a wake whose single waiter is known to
-  // be parked there. Takes an index rather than the thread, so a caller that
-  // has already resumed and exited cannot be dereferenced.
-  void WakeBlockedCpu(int cpu_index);
   // Unlinks |thread| from a singly-linked list (ready_next), fixing up tail.
   static void UnlinkLocked(XThread*& head, XThread*& tail, XThread* thread);
   // Appends to a singly-linked list (ready_next), fixing up tail.
@@ -360,17 +345,11 @@ class GuestScheduler {
   std::atomic<bool> dispatched_any_{false};
   std::atomic<bool> never_dispatched_warned_{false};
 
-  // On the parked caller's fiber stack, or heap-owned when posted.
+  // Heap-owned, deleted by the worker after running.
   struct BlockingCall {
-    const std::function<void()>* fn = nullptr;
-    // Set only for posted calls, which the worker deletes after running.
-    std::function<void()> posted_fn;
-    std::atomic<bool> done{false};
+    std::function<void()> fn;
     // Raw host ticks when queued, for the I/O wait-time counter.
     uint64_t queued_ns = 0;
-    // Dispatch CPU the waiting fiber parks on. A stale index after a
-    // migration costs one spurious re-poll, which the ungated wait absorbs.
-    int waiter_cpu = -1;
   };
   // Cheap counters for the costs this scheduler adds on a mobile SoC: how
   // often parked waiters force a dispatch CPU awake, and how long offloaded

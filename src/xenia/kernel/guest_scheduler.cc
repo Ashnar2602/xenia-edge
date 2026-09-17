@@ -51,6 +51,10 @@ namespace kernel {
 // non-dispatch thread. Set by each CPU's RunLoop.
 static thread_local int t_current_cpu = -1;
 
+// Set while a shared I/O worker is inside a queued call, so code reached from
+// it can tell it is not on a guest thread.
+static thread_local bool t_in_blocking_call = false;
+
 // Raises |target| to |value| if larger. A racing stats reset drops one sample.
 static void AccumulateMax(std::atomic<uint64_t>& target, uint64_t value) {
   uint64_t prev = target.load(std::memory_order_relaxed);
@@ -352,7 +356,8 @@ void GuestScheduler::Shutdown() {
   }
   // Waits out a racing EnsureIoWorker and stops later ones starting a worker.
   std::call_once(io_once_, [] {});
-  // After the dispatch threads, so no fiber is still watching a BlockingCall.
+  // Before the leftover fibers are reclaimed, so no worker still writes into a
+  // parked fiber's stack.
   if (io_thread_) {
     xe::threading::Wait(io_thread_.get(), false);
     io_thread_.reset();
@@ -361,14 +366,12 @@ void GuestScheduler::Shutdown() {
     xe::threading::Wait(thread.get(), false);
   }
   io_pool_threads_.clear();
-  // Free posted calls no worker is left to run.
+  // Free calls no worker is left to run.
   auto drop_queued = [](std::mutex& queue_lock,
                         std::queue<BlockingCall*>& queue) {
     std::lock_guard<std::mutex> lock(queue_lock);
     for (; !queue.empty(); queue.pop()) {
-      if (queue.front()->posted_fn) {
-        delete queue.front();
-      }
+      delete queue.front();
     }
   };
   drop_queued(io_lock_, io_queue_);
@@ -1105,36 +1108,12 @@ void GuestScheduler::WaitOnFence(xe::threading::Fence& fence) {
   self->clear_cooperative_wait_shape();
 }
 
-void GuestScheduler::RunBlockingHostCallOffloaded(
-    const std::function<void()>& fn, BlockingCallClass call_class) {
-  XThread* self = XThread::GetCurrentFiberThread();
-  BlockingCall call;
-  call.fn = &fn;
-  // Set before queueing, since the worker can finish before this fiber parks.
-  // Nothing switches fibers between here and the park, so this is the CPU it
-  // parks on.
-  call.waiter_cpu = t_current_cpu;
-  EnqueueBlockingCall(&call, call_class);
-  if (self) {
-    self->set_cooperative_wait_shape(XThread::CooperativeWaitKind::kIoOffload,
-                                     nullptr, 0);
-  }
-  while (!call.done.load(std::memory_order_acquire)) {
-    // The worker writes |call| on this stack, terminate must not free it.
-    BlockCurrentThread(0, 0, false, false);
-  }
-  if (self) {
-    self->clear_cooperative_wait_shape();
-  }
-}
-
 void GuestScheduler::PostHostCall(std::function<void()> fn,
                                   BlockingCallClass call_class) {
   auto* call = new BlockingCall;
-  call->posted_fn = std::move(fn);
-  call->fn = &call->posted_fn;
+  call->fn = std::move(fn);
   if (!EnqueueBlockingCall(call, call_class)) {
-    call->posted_fn();
+    call->fn();
     delete call;
   }
 }
@@ -1148,7 +1127,7 @@ bool GuestScheduler::EnqueueBlockingCall(BlockingCall* call,
   EnsureIoWorker();
   {
     std::lock_guard<std::mutex> lock(io_lock_);
-    if (call->posted_fn && shutting_down_.load()) {
+    if (shutting_down_.load()) {
       return false;
     }
     io_queue_.push(call);
@@ -1157,9 +1136,15 @@ bool GuestScheduler::EnqueueBlockingCall(BlockingCall* call,
   return true;
 }
 
+bool GuestScheduler::CurrentThreadIsBlockingCallWorker() {
+  return t_in_blocking_call;
+}
+
 void GuestScheduler::RunBlockingCall(BlockingCall* call) {
   uint64_t started = Clock::host_tick_count_raw();
-  (*call->fn)();
+  t_in_blocking_call = true;
+  call->fn();
+  t_in_blocking_call = false;
   uint64_t finished = Clock::host_tick_count_raw();
   // Raw ticks, converted only at report time.
   uint64_t queued_for = started - call->queued_ns;
@@ -1167,40 +1152,7 @@ void GuestScheduler::RunBlockingCall(BlockingCall* call) {
   stats_.io_queue_ns.fetch_add(queued_for, std::memory_order_relaxed);
   stats_.io_run_ns.fetch_add(finished - started, std::memory_order_relaxed);
   AccumulateMax(stats_.io_queue_max_ns, queued_for);
-  if (call->posted_fn) {
-    delete call;
-    return;
-  }
-  // Read before publishing. Once done is set the caller can resume, unwind the
-  // stack frame |call| lives in, and exit.
-  int waiter_cpu = call->waiter_cpu;
-  call->done.store(true, std::memory_order_release);
-  // Exactly one fiber is waiting, so poke its CPU rather than sweep all of
-  // them the way a signal on a shared object has to.
-  WakeBlockedCpu(waiter_cpu);
-}
-
-void GuestScheduler::WakeBlockedCpu(int cpu_index) {
-  if (cpu_index < 0 || cpu_index >= kMaxCpus || !started_.load()) {
-    return;
-  }
-  {
-    std::lock_guard<std::mutex> lock(lock_);
-    Cpu& cpu = cpus_[cpu_index];
-    if (!cpu.blocked_head) {
-      return;
-    }
-    cpu.repoll_now.store(true, std::memory_order_relaxed);
-    XThread* running = cpu.current_thread;
-    // Speculative like WakeAll's, so a re-poll wake rather than a preemption.
-    if (running && cpu.max_blocked_prio > ClampPriority(running->priority())) {
-      running->scheduler_links().repoll_preempt = true;
-      running->thread_state()->context()->preempt_requested = 1;
-    }
-  }
-  if (cpus_[cpu_index].parked.load() && cpus_[cpu_index].ready_event) {
-    cpus_[cpu_index].ready_event->Set();
-  }
+  delete call;
 }
 
 void GuestScheduler::IoWorkerLoop() {
@@ -1236,7 +1188,7 @@ void GuestScheduler::StartPoolWorkerLocked() {
 bool GuestScheduler::EnqueuePoolCall(BlockingCall* call) {
   {
     std::lock_guard<std::mutex> lock(io_pool_lock_);
-    if (call->posted_fn && shutting_down_.load()) {
+    if (shutting_down_.load()) {
       return false;
     }
     io_pool_queue_.push(call);
@@ -1811,8 +1763,6 @@ const char* CooperativeWaitKindName(uint8_t kind) {
       return "delay";
     case XThread::CooperativeWaitKind::kFence:
       return "fence";
-    case XThread::CooperativeWaitKind::kIoOffload:
-      return "io-offload";
     default:
       return "none";
   }

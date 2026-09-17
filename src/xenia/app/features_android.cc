@@ -1,4 +1,5 @@
 // Android bindings to desktop profile, content, patch and statistics services.
+#include <algorithm>
 #include <charconv>
 #include <chrono>
 #include "third_party/stb/stb_image.h"
@@ -123,21 +124,36 @@ std::filesystem::path Child(const std::filesystem::path& root,
       "Invalid file name");
   return root / child;
 }
+auto PatchFiles(xe::Emulator* emulator, uint32_t title) {
+  auto files = xe::patcher::EnumerateBundledPatchesForTitle(title);
+  for (auto& local : xe::patcher::EnumerateLocalPatchesForTitle(
+           emulator->storage_root() / "patches", title)) {
+    if (std::none_of(files.begin(), files.end(), [&](const auto& file) {
+          return file.filename == local.filename;
+        })) {
+      files.push_back(std::move(local));
+    }
+  }
+  return files;
+}
+auto PatchEditor(xe::Emulator* emulator,
+                 const xe::patcher::PatchSourceFile& file, bool temporary) {
+  auto path = Child(emulator->storage_root() / "patches", file.filename);
+  auto source = std::filesystem::exists(path)
+                    ? xe::filesystem::ReadAllText(path)
+                    : file.toml_content;
+  Require(!source.empty(), "Cannot read patch file");
+  if (temporary) {
+    path += ".tmp";
+  }
+  return xe::patcher::PatchFileEditor(source, path);
+}
 auto Patch(xe::Emulator* emulator, uint32_t title, const std::string& filename,
            bool temporary = false) {
-  for (auto& bundled : xe::patcher::EnumerateBundledPatchesForTitle(title)) {
-    if (bundled.filename != filename) {
-      continue;
+  for (const auto& file : PatchFiles(emulator, title)) {
+    if (file.filename == filename) {
+      return PatchEditor(emulator, file, temporary);
     }
-    auto path = Child(emulator->storage_root() / "patches", filename);
-    auto source = std::filesystem::exists(path)
-                      ? xe::filesystem::ReadAllText(path)
-                      : bundled.toml_content;
-    Require(!source.empty(), "Cannot read patch file");
-    if (temporary) {
-      path += ".tmp";
-    }
-    return xe::patcher::PatchFileEditor(source, path);
   }
   throw std::invalid_argument("Unknown patch file");
 }
@@ -203,15 +219,13 @@ Rows List(xe::Emulator* emulator, const std::string& mode, uint32_t title,
       row.insert(row.end(), choices.begin(), choices.end());
     }
   } else if (mode == "patches") {
-    for (const auto& bundled :
-         xe::patcher::EnumerateBundledPatchesForTitle(title)) {
-      auto editor = Patch(emulator, title, bundled.filename);
+    for (const auto& file : PatchFiles(emulator, title)) {
+      auto editor = PatchEditor(emulator, file, false);
       for (size_t i = 0; i < editor.patches().size(); ++i) {
         const auto& patch = editor.patches()[i];
-        rows.push_back({bundled.filename, patch.name,
-                        patch.description + "\n" + patch.author,
-                        std::to_string(i),
-                        patch.is_enabled ? "true" : "false"});
+        rows.push_back(
+            {file.filename, patch.name, patch.description + "\n" + patch.author,
+             std::to_string(i), patch.is_enabled ? "true" : "false"});
       }
     }
   } else if (mode == "content" || mode == "saves") {

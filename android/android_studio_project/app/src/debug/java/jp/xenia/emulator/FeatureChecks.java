@@ -121,6 +121,25 @@ final class FeatureChecks {
         check(java.util.Arrays.equals(before, Files.readAllBytes(override.toPath())),
                 "Failed patch edit preserved file");
         AndroidTools.changeNative(context, "patch", title, 0, patch[0], patch[3] + ":" + patch[4]);
+        check(AndroidTools.listNative(context, "patches", title, 0).length == patches.length,
+                "Saved bundled patch is not duplicated");
+        // Ownership follows the TOML title_id, even with a different filename prefix.
+        File localPatch = new File(root, "patches/00000001 - Android fixture.patch.toml");
+        Files.copy(override.toPath(), localPatch.toPath());
+        try {
+            String[] local = field(
+                    AndroidTools.listNative(context, "patches", title, 0), localPatch.getName());
+            String enabled = Boolean.toString(!Boolean.parseBoolean(local[4]));
+            AndroidTools.changeNative(context, "patch", title, 0, local[0], local[3] + ":" + enabled);
+            check(field(AndroidTools.listNative(context, "patches", title, 0), local[0])[4]
+                            .equals(enabled),
+                    "Local-only patch edits persisted");
+            rejects(() -> AndroidTools.changeNative(context, "patch", 1, 0, local[0], "0:true"));
+            rejects(() -> AndroidTools.changeNative(context, "patch", title, 0,
+                    "../" + local[0], "0:true"));
+        } finally {
+            Files.delete(localPatch.toPath());
+        }
         for (int type : new int[] {0x00000002, 0x000B0000}) {
             ByteBuffer header = ByteBuffer.allocate(0xA000);
             header.putInt(0, 0x4C495645)

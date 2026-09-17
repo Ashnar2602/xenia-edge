@@ -234,8 +234,11 @@ class XObject {
 
   void SetAttributes(uint32_t obj_attributes_ptr);
 
+  // |interruptible| false keeps a terminate from ending a fiber inside the
+  // wait, for a signaler that writes into the waiter's stack.
   X_STATUS Wait(uint32_t wait_reason, uint32_t processor_mode,
-                uint32_t alertable, uint64_t* opt_timeout);
+                uint32_t alertable, uint64_t* opt_timeout,
+                bool interruptible = true);
   static X_STATUS SignalAndWait(XObject* signal_object, XObject* wait_object,
                                 uint32_t wait_reason, uint32_t processor_mode,
                                 uint32_t alertable, uint64_t* opt_timeout);
@@ -256,8 +259,13 @@ class XObject {
   // Priority increment stored by the most recent signal operation
   // (KeSetEvent, KeReleaseSemaphore, etc.).  Read by the waiter on wake
   // to apply a priority boost matching real Xenon scheduler behavior.
-  uint32_t priority_increment() const { return priority_increment_; }
-  void set_priority_increment(uint32_t inc) { priority_increment_ = inc; }
+  // Atomic: a pooled object can be signalled again while a waiter reads it.
+  uint32_t priority_increment() const {
+    return priority_increment_.load(std::memory_order_relaxed);
+  }
+  void set_priority_increment(uint32_t inc) {
+    priority_increment_.store(inc, std::memory_order_relaxed);
+  }
 
  protected:
   bool SaveObject(ByteStream* stream);
@@ -313,6 +321,8 @@ class XObject {
   static void RecordCooperativeSignal(XObject* object);
   // Oldest-first, at most |max| entries.
   static std::vector<SignalRecord> RecentCooperativeSignals(size_t max);
+  // Keeps an object signalled at I/O rates out of the ring above.
+  void set_signal_ring_quiet(bool quiet) { signal_ring_quiet_ = quiet; }
 
   // Registers |thread| as a cooperative waiter on this object and records the
   // registration on the thread, so a terminate that never unwinds the parked
@@ -349,12 +359,13 @@ class XObject {
 
   KernelState* kernel_state_;
 
-  uint32_t priority_increment_ = 0;
+  std::atomic<uint32_t> priority_increment_{0};
 
   std::atomic<uint32_t> cooperative_signal_epoch_{0};
 
   // Host objects are persisted through resets/etc.
   bool host_object_ = false;
+  bool signal_ring_quiet_ = false;
 
  private:
   std::atomic<int32_t> pointer_ref_count_;

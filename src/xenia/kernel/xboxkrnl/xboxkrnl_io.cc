@@ -24,10 +24,6 @@ namespace xe {
 namespace kernel {
 namespace xboxkrnl {
 
-// Boost a thread woken by a completed file read or write, as NT's I/O manager
-// does with IO_DISK_INCREMENT.
-constexpr uint32_t kIoDiskIncrement = 1;
-
 // File-pointer reads (offset -1) and reads at or past EOF complete inline.
 static bool CompletesAsync(XFile* file, uint64_t byte_offset) {
   return !file->is_synchronous() && byte_offset < file->entry()->size();
@@ -100,10 +96,13 @@ dword_result_t NtCreateFile_entry(lpdword_t handle_out, dword_t desired_access,
   X_HANDLE handle = X_INVALID_HANDLE_VALUE;
   if (XSUCCEEDED(result)) {
     // If true, desired_access SYNCHRONIZE flag must be set.
+    bool alertable =
+        (create_options & CreateOptions::FILE_SYNCHRONOUS_IO_ALERT) != 0;
     bool synchronous =
-        (create_options & CreateOptions::FILE_SYNCHRONOUS_IO_ALERT) ||
+        alertable ||
         (create_options & CreateOptions::FILE_SYNCHRONOUS_IO_NONALERT);
-    file = object_ref<XFile>(new XFile(kernel_state(), vfs_file, synchronous));
+    file = object_ref<XFile>(
+        new XFile(kernel_state(), vfs_file, synchronous, alertable));
 
     // Handle ref is incremented, so return that.
     handle = file->handle();
@@ -183,7 +182,7 @@ dword_result_t NtReadFile_entry(dword_t file_handle, dword_t event_handle,
       }
       file->NotifyCompletion(status, bytes_read, apc_context_address);
       if (ev) {
-        ev->Set(kIoDiskIncrement, false);
+        ev->Set(XFile::kIoDiskIncrement, false);
       }
       return status;
     };
@@ -259,7 +258,7 @@ dword_result_t NtReadFileScatter_entry(
       }
       file->NotifyCompletion(status, bytes_read, apc_context_address);
       if (ev) {
-        ev->Set(kIoDiskIncrement, false);
+        ev->Set(XFile::kIoDiskIncrement, false);
       }
       return status;
     };
@@ -371,7 +370,7 @@ dword_result_t NtWriteFile_entry(dword_t file_handle, dword_t event_handle,
   }
 
   if (ev && signal_event) {
-    ev->Set(kIoDiskIncrement, false);
+    ev->Set(XFile::kIoDiskIncrement, false);
   }
 
   return result;

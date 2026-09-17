@@ -11,6 +11,7 @@
 #define XENIA_VFS_DEVICE_H_
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "xenia/base/mutex.h"
@@ -19,6 +20,27 @@
 
 namespace xe {
 namespace vfs {
+
+// Models the time storage needs to service a request, since a completion that
+// lands sooner than hardware could deliver it breaks some titles' loaders.
+// A request costs its transfer, plus a seek unless it continues the last one.
+class DriveTiming {
+ public:
+  // Enables the model, which is inert on a device that never calls this.
+  void Configure();
+
+  // Returns the host uptime millisecond it completes at, or 0 when untimed.
+  uint64_t Reserve(const Entry* entry, uint64_t offset, size_t length);
+
+ private:
+  bool enabled_ = false;
+  std::mutex lock_;
+  // When the medium frees up, fractional so short transfers accumulate.
+  double free_at_ms_ = 0.0;
+  // Where the previous request ended.
+  const Entry* head_entry_ = nullptr;
+  uint64_t head_offset_ = 0;
+};
 
 class Device {
  public:
@@ -46,9 +68,13 @@ class Device {
   virtual uint32_t sectors_per_allocation_unit() const = 0;
   virtual uint32_t bytes_per_sector() const = 0;
 
+  // Request timing for this device, configured where the device is mounted.
+  DriveTiming& drive_timing() { return drive_timing_; }
+
  protected:
   xe::global_critical_region global_critical_region_;
   std::string mount_path_;
+  DriveTiming drive_timing_;
 };
 
 }  // namespace vfs

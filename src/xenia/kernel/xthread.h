@@ -535,7 +535,6 @@ class XThread : public XObject, public cpu::Thread {
     kMultiAll,
     kDelay,
     kFence,
-    kIoOffload,
   };
   // Records the wait shape for diagnostics. Extra handles beyond the array are
   // dropped; the count reported is the real one so truncation stays visible.

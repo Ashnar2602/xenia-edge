@@ -489,6 +489,7 @@ X_STATUS Emulator::TerminateTitle() {
 
 const std::unique_ptr<vfs::Device> Emulator::CreateVfsDevice(
     const std::filesystem::path& path, const std::string_view mount_path) {
+  std::unique_ptr<vfs::Device> device;
   // Must check if the type has changed e.g. XamSwapDisc
   switch (GetFileSignature(path)) {
     case FileSignatureType::XEX0:
@@ -498,21 +499,20 @@ const std::unique_ptr<vfs::Device> Emulator::CreateVfsDevice(
     case FileSignatureType::XEX1:
     case FileSignatureType::XEX2:
     case FileSignatureType::ELF: {
-      auto parent_path = path.parent_path();
-      return std::make_unique<vfs::HostPathDevice>(
-          mount_path, parent_path, !cvars::allow_game_relative_writes);
+      device = std::make_unique<vfs::HostPathDevice>(
+          mount_path, path.parent_path(), !cvars::allow_game_relative_writes);
     } break;
     case FileSignatureType::LIVE:
     case FileSignatureType::CON:
     case FileSignatureType::PIRS: {
-      return vfs::XContentContainerDevice::CreateContentDevice(mount_path,
-                                                               path);
+      device =
+          vfs::XContentContainerDevice::CreateContentDevice(mount_path, path);
     } break;
     case FileSignatureType::XISO: {
-      return std::make_unique<vfs::DiscImageDevice>(mount_path, path);
+      device = std::make_unique<vfs::DiscImageDevice>(mount_path, path);
     } break;
     case FileSignatureType::ZAR: {
-      return std::make_unique<vfs::DiscZarchiveDevice>(mount_path, path);
+      device = std::make_unique<vfs::DiscZarchiveDevice>(mount_path, path);
     } break;
     case FileSignatureType::XBE:
     case FileSignatureType::EXE:
@@ -521,6 +521,13 @@ const std::unique_ptr<vfs::Device> Emulator::CreateVfsDevice(
       return nullptr;
       break;
   }
+
+  // The launched title's own storage, and the only mount given request timing,
+  // since nothing streams content through the save, profile or cache mounts.
+  if (device) {
+    device->drive_timing().Configure();
+  }
+  return device;
 }
 
 uint64_t Emulator::GetPersistentEmulatorFlags() {

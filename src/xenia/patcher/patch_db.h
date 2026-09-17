@@ -14,7 +14,6 @@
 #include <filesystem>
 #include <map>
 #include <optional>
-#include <regex>
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -121,9 +120,6 @@ class PatchDB {
                      const std::pair<std::string, PatchData> data_type,
                      const toml::table* patch_fields) const;
 
-  inline static const std::regex patch_filename_regex_ =
-      std::regex("^[A-Fa-f0-9]{8}.*\\.patch\\.toml$");
-
   const std::map<std::string, PatchData> patch_data_types_size_ = {
       {"string", PatchData(0, PatchDataType::kString)},
       {"u16string", PatchData(0, PatchDataType::kU16String)},
@@ -139,17 +135,21 @@ class PatchDB {
   std::vector<PatchFileEntry> loaded_patches_;
 };
 
-struct BundledPatchFile {
+// One .patch.toml, from the embedded bundle or from the patches directory.
+struct PatchSourceFile {
   std::string filename;
   std::string toml_content;
   PatchFileEntry entry;
 };
 
-std::vector<BundledPatchFile> EnumerateBundledPatchesForTitle(
-    uint32_t title_id);
+std::vector<PatchSourceFile> EnumerateBundledPatchesForTitle(uint32_t title_id);
+
+// Patch files in patches_dir, applied at launch whether bundled or not.
+std::vector<PatchSourceFile> EnumerateLocalPatchesForTitle(
+    const std::filesystem::path& patches_dir, uint32_t title_id);
 
 // Filename with the "<title id> - " prefix and ".patch.toml" suffix trimmed.
-std::string BundledPatchDisplayName(const BundledPatchFile& file);
+std::string PatchDisplayName(const PatchSourceFile& file);
 
 }  // namespace patcher
 }  // namespace xe

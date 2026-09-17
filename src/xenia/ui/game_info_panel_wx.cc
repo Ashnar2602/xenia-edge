@@ -666,17 +666,34 @@ void GameInfoPanel::BuildContentSection(wxWindow* parent, wxBoxSizer* sizer,
 }
 
 void GameInfoPanel::BuildPatchesSection(wxWindow* parent, wxBoxSizer* sizer) {
-  auto bundled = patcher::EnumerateBundledPatchesForTitle(key_.title_id);
-  if (bundled.empty()) {
-    AddSectionHeader(parent, sizer, _("Patches"), {});
+  auto files = patcher::EnumerateBundledPatchesForTitle(key_.title_id);
+  auto* emulator = emulator_window_ ? emulator_window_->emulator() : nullptr;
+  std::filesystem::path patches_dir;
+  if (emulator) {
+    patches_dir = emulator->storage_root() / "patches";
+    for (auto& local :
+         patcher::EnumerateLocalPatchesForTitle(patches_dir, key_.title_id)) {
+      // A file named like a bundled one is its saved copy, not a new patch.
+      const bool is_saved_bundled =
+          std::any_of(files.begin(), files.end(),
+                      [&local](const patcher::PatchSourceFile& bundled) {
+                        return bundled.filename == local.filename;
+                      });
+      if (!is_saved_bundled) {
+        files.push_back(std::move(local));
+      }
+    }
+  }
+
+  AddSectionHeader(parent, sizer, _("Patches"), patches_dir);
+  if (files.empty()) {
     AddNoteRow(parent, sizer, _("No patches are bundled for this title."));
     return;
   }
-  // One editor per bundled file, headed by the file it writes to.
-  for (const auto& file : bundled) {
+  // One editor per file, headed by the file it writes to.
+  for (const auto& file : files) {
     AddSectionHeader(parent, sizer,
-                     wxString::FromUTF8(patcher::BundledPatchDisplayName(file)),
-                     {});
+                     wxString::FromUTF8(patcher::PatchDisplayName(file)), {});
     auto* patches = new PatchesPanel(parent, emulator_window_, file);
     // Wrapping a description changes its height, so the page must re-measure.
     patches->SetContentChangedCallback(

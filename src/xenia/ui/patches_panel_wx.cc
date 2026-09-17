@@ -26,15 +26,18 @@ namespace {
 // Description text is indented under its checkbox, in logical DIPs.
 constexpr int kDescriptionIndent = 16;
 
+// Panel width floor in logical DIPs.
+constexpr int kMinWidth = 60;
+
 }  // namespace
 
 PatchesPanel::PatchesPanel(wxWindow* parent, EmulatorWindow* emulator_window,
-                           patcher::BundledPatchFile bundled)
+                           patcher::PatchSourceFile file)
     : wxPanel(parent, wxID_ANY), emulator_window_(emulator_window) {
   std::filesystem::path storage_path;
   if (emulator_window_ && emulator_window_->emulator()) {
     storage_path = emulator_window_->emulator()->storage_root() / "patches" /
-                   xe::to_path(bundled.filename);
+                   xe::to_path(file.filename);
   }
 
   std::string source_text;
@@ -42,7 +45,7 @@ PatchesPanel::PatchesPanel(wxWindow* parent, EmulatorWindow* emulator_window,
     source_text = xe::filesystem::ReadAllText(storage_path);
   }
   if (source_text.empty()) {
-    source_text = std::move(bundled.toml_content);
+    source_text = std::move(file.toml_content);
   }
 
   editor_ =
@@ -100,6 +103,8 @@ void PatchesPanel::Build() {
   sizer->Add(info_label_, wxSizerFlags().Border(wxTOP, 8));
 
   SetSizer(sizer);
+  // Long patch text would otherwise widen the host page past its visible edge.
+  SetMinSize(wxSize(FromDIP(kMinWidth), -1));
   Bind(wxEVT_SIZE, &PatchesPanel::OnSize, this);
 }
 

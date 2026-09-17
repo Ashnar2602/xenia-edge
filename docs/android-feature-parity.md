@@ -1,7 +1,7 @@
 # Android feature parity
 
-Baseline: desktop frontend and optional Vulkan tools in this checkout, HEAD
-`8205e00e8` plus the uncommitted Android port. This tracks accessible features,
+Baseline: desktop frontend and optional Vulkan tools at upstream `edge`
+`e987fd7f5`, integrated with the Android port. This tracks accessible features,
 not game compatibility.
 
 **Total parity is not certified.** Earlier implementation passes include complete
@@ -11,6 +11,39 @@ below implements them; real-content and hardware qualifications still apply. An 
 Android Discord backend is prepared, but its SDK-enabled build and behavior still
 require the official AAR. Hardware and real-game
 validation remain separate from code and synthetic-fixture coverage.
+
+## Upstream synchronization (2026-09-17)
+
+Integrated four commits from upstream `edge`, `04b3b63d9` through `e987fd7f5`:
+synchronous file I/O dispatcher waits, storage request timing, local patch
+listing, and the sequential-read seek correction. The one merge conflict was
+the host-thread signal guard in `XObject`; upstream now provides the same
+protection, so its implementation replaces the Android branch's equivalent fix.
+
+Android lists and edits local-only patch files using the new shared enumerator.
+Saved copies of bundled patches appear once, and title ownership follows the
+TOML contents. The existing feature fixture now covers local patch edits,
+duplicate suppression, wrong-title rejection and invalid paths.
+
+`Storage.storage_request_timing` keeps upstream's default (`true`) and is
+automatically exposed by Android's settings registry. It models console drive
+latency for the launched title's storage; it may affect loading and streaming
+measurements. Disabling it uses host read speed. This update does not establish
+game compatibility or performance gains.
+
+Pre-existing uncommitted Vulkan/build optimizations and dirty submodules were
+preserved separately from this merge. Backup files and build logs are under
+`build/upstream-sync-20260917-152638/`; the previous committed branch tip is
+`backup/android-before-sync-20260917`.
+
+Validation: Android `assembleGithubRelease`, `lintGithubRelease` and
+`compileGithubDebugJavaWithJavac` passed. This local build includes the preserved
+uncommitted optimizations. The added device fixture compiled but was not run;
+no game or performance result is claimed. Windows C++ compilation of the kernel,
+patcher and VFS targets passed with no errors or warnings. The full Windows
+target build stopped earlier in unchanged Boost.Context MASM sources
+(`BOOST_CONTEXT_EXPORT` / `FRAME`); desktop linking and the other platforms
+still require CI validation.
 
 ## Upstream synchronization (2026-09-15)
 
